@@ -15,7 +15,8 @@ return new class extends Migration
             $table->string('titulacion')->nullable();
             $table->integer('anios_experiencia')->default(0);
             $table->integer('horas_semanales')->default(0);
-            $table->enum('estado', ['activa', 'inactiva'])->default('activa');
+            // Añadido 'baja' para que coincida con gimnastas y con el resto del código
+            $table->enum('estado', ['activa', 'inactiva', 'baja'])->default('activa');
             $table->timestamps();
         });
     }
