@@ -16,6 +16,8 @@ class Entrenador extends Model
         'user_id',
         'club_id',
         'titulacion',
+        'biografia',
+        'foto_url',
         'anios_experiencia',
         'horas_semanales',
         'estado',

@@ -7,6 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
+
   <style>
     :root {
       --burgundy: #6B1A3A;
@@ -17,604 +20,690 @@
       --text:     #2A1520;
       --muted:    #9B7080;
       --white:    #ffffff;
+      --error:    #D94F4F;
+      --success:  #2e7d32;
       --shadow-soft: 0 10px 30px rgba(107,26,58,.08);
       --radius-lg: 20px;
       --radius-md: 14px;
-      --accent-gold: #C0A080;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background-color: var(--off-white); color: var(--text); display: flex; min-height: 100vh; }
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--off-white);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    .layout { display: flex; min-height: 100vh; }
-
-    /* ── Sidebar ── */
-    .sidebar {
-      width: 250px;
-      background: var(--cream);
-      border-right: 1px solid var(--blush);
-      display: flex;
-      flex-direction: column;
-      padding: 2.5rem 1.4rem;
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      z-index: 10;
-    }
-
-    .sidebar-logo {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 3.5rem;
-      padding-left: .5rem;
-    }
-
-    .sidebar-logo svg {
-      width: 36px; 
-      height: 36px;
-      fill: var(--burgundy);
-    }
-
-    .sidebar-logo span {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: var(--burgundy);
-    }
-
-    .nav-label {
-      font-size: .72rem;
-      font-weight: 500;
-      color: var(--muted);
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      padding: 0 .8rem;
-      margin-bottom: .6rem;
-      margin-top: 1.5rem;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: .8rem;
-      padding: .75rem 1.1rem;
-      border-radius: 20px;
-      font-size: .9rem;
-      color: var(--text);
-      cursor: pointer;
-      transition: all .2s;
-      text-decoration: none;
-      margin-bottom: .3rem;
-    }
-
-    .nav-item:hover { color: var(--burgundy); }
-
-    .nav-item.active {
-      background: var(--blush);
-      color: var(--burgundy);
-      font-weight: 600;
-    }
-
-    .nav-icon {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
-    }
-
-    .sidebar-footer {
-      margin-top: auto;
-      border-top: 1px solid var(--blush);
-      padding-top: 1.5rem;
-    }
-
-    .user-chip {
-      display: flex;
-      align-items: center;
-      gap: .8rem;
-      padding: .5rem .3rem;
-    }
-
-    .user-avatar {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--burgundy), var(--rose));
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: white;
-      font-size: .95rem;
-      font-weight: 600;
-      flex-shrink: 0;
-      font-family: 'DM Sans', sans-serif;
-    }
-
+    /* === SIDEBAR === */
+    .sidebar { width: 280px; background-color: var(--white); border-right: 1px solid var(--blush); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10; }
+    .brand { padding: 2rem; font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 600; color: var(--burgundy); text-align: center; border-bottom: 1px solid var(--blush); }
+    .nav-links { flex: 1; padding: 2rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .nav-link { padding: 1rem 1.5rem; border-radius: var(--radius-md); color: var(--muted); text-decoration: none; font-weight: 500; transition: all 0.3s; display: flex; align-items: center; gap: 1rem; cursor: pointer; border: none; background: none; font-size: 1rem; width: 100%; text-align: left; }
+    .nav-link:hover, .nav-link.active { background-color: var(--cream); color: var(--burgundy); }
+    .user-profile { padding: 2rem; border-top: 1px solid var(--blush); display: flex; align-items: center; gap: 1rem; }
+    .avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--burgundy), var(--rose)); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.2rem; flex-shrink: 0; }
     .user-info { flex: 1; min-width: 0; }
-    .user-name { font-size: .9rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-role { font-size: .8rem; color: var(--muted); }
+    .user-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 0.8rem; color: var(--muted); }
+    .logout-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2rem; transition: color 0.3s; }
+    .logout-btn:hover { color: var(--error); }
 
-    .btn-logout-new {
-      background: none; border: none; cursor: pointer;
-      color: var(--text);
-      padding: .5rem; border-radius: 6px;
-      transition: all .2s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .btn-logout-new:hover { color: #D94F4F; background: rgba(217,79,79,.05); }
+    /* === MAIN CONTENT === */
+    .main-content { flex: 1; margin-left: 280px; padding: 3rem; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; }
+    .page-title { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--burgundy); }
+    .page-subtitle { color: var(--muted); margin-top: 0.5rem; }
 
-    /* ── Main ── */
-    .main {
-      margin-left: 250px;
-      flex: 1;
-      padding: 3rem;
-    }
+    /* === BUTTONS === */
+    .btn-primary { background: linear-gradient(135deg, var(--burgundy), var(--rose)); color: var(--white); padding: 0.8rem 1.5rem; border-radius: var(--radius-md); border: none; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: opacity 0.3s, transform 0.2s; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1.5px solid var(--blush); color: var(--text); padding: 0.6rem 1.2rem; border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
+    .btn-outline:hover { border-color: var(--burgundy); color: var(--burgundy); background-color: var(--cream); }
+    .btn-danger { background: transparent; border: 1.5px solid rgba(217,79,79,.4); color: var(--error); padding: 0.5rem 1rem; border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; font-size: 0.85rem; font-family: 'DM Sans', sans-serif; }
+    .btn-danger:hover { background: #ffebee; }
 
-    .page-header { margin-bottom: 2.5rem; }
+    /* === EQUIPO TÉCNICO — listado === */
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+    .team-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-soft); border: 1px solid var(--blush); display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.3s; }
+    .team-card:hover { transform: translateY(-5px); }
+    .card-avatar { width: 80px; height: 80px; background: linear-gradient(135deg, var(--cream), var(--blush)); color: var(--burgundy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem; border: 2px solid var(--blush); font-weight: 600; font-family: 'Cormorant Garamond', serif; }
+    .card-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--text); margin-bottom: 0.3rem; }
+    .card-role { font-size: 0.85rem; color: var(--rose); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+    .card-club { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .card-stats { display: flex; gap: 2rem; margin-bottom: 1.5rem; justify-content: center; }
+    .stat { display: flex; flex-direction: column; align-items: center; }
+    .stat-val { font-weight: 700; color: var(--burgundy); font-size: 1.3rem; font-family: 'Cormorant Garamond', serif; }
+    .stat-label { font-size: 0.75rem; color: var(--muted); }
+    .card-actions { display: flex; gap: 0.75rem; width: 100%; }
 
-    .page-header h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 2.2rem;
-      font-weight: 600;
-      color: var(--burgundy);
-      line-height: 1.2;
-    }
+    /* === BADGE ESTADO === */
+    .badge { display: inline-block; padding: 0.2rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .badge-activa   { background-color: #e8f5e9; color: #2e7d32; }
+    .badge-inactiva { background-color: #fff8e1; color: #f57f17; }
+    .badge-baja     { background-color: #ffebee; color: #c62828; }
 
-    .page-header p {
-      font-size: .92rem;
-      color: var(--muted);
-      margin-top: .4rem;
-    }
+    /* === LOADING / EMPTY === */
+    .loading-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--blush); border-top-color: var(--rose); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 4rem 2rem; }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-title { font-family: 'Cormorant Garamond', serif; color: var(--burgundy); font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .empty-desc { color: var(--muted); }
 
-    /* ── Controles ── */
-    .controls-container {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2.5rem;
-      align-items: center;
-      padding: 1rem;
-      background: var(--white);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-soft);
-    }
+    /* === MODAL PERFIL === */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(42,21,32,.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-content { background: var(--white); width: 90%; max-width: 540px; border-radius: var(--radius-lg); padding: 2.5rem; position: relative; transform: translateY(20px); transition: transform 0.3s; box-shadow: 0 20px 60px rgba(0,0,0,.15); max-height: 90vh; overflow-y: auto; }
+    .modal-overlay.open .modal-content { transform: translateY(0); }
+    .modal-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; }
+    .modal-avatar { width: 70px; height: 70px; background: linear-gradient(135deg, var(--cream), var(--blush)); color: var(--burgundy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; font-family: 'Cormorant Garamond', serif; flex-shrink: 0; }
+    .modal-name { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--text); }
+    .modal-subtitle { color: var(--muted); font-size: 0.9rem; }
+    .modal-section { margin-bottom: 1.5rem; }
+    .modal-section-title { font-family: 'Cormorant Garamond', serif; color: var(--burgundy); font-size: 1.2rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--blush); }
+    .modal-row { display: flex; gap: 0.75rem; padding: 0.5rem 0; }
+    .modal-label { color: var(--muted); font-size: 0.85rem; min-width: 140px; }
+    .modal-value { color: var(--text); font-weight: 500; font-size: 0.95rem; }
+    .modal-bio { color: var(--text); line-height: 1.7; font-size: 0.95rem; font-style: italic; background: var(--cream); padding: 1rem; border-radius: var(--radius-md); }
+    .modal-close-btn { width: 100%; padding: 0.8rem; background: var(--off-white); border: 1px solid var(--blush); border-radius: var(--radius-md); color: var(--muted); cursor: pointer; transition: all 0.3s; font-family: 'DM Sans', sans-serif; margin-top: 1.5rem; }
+    .modal-close-btn:hover { background: var(--blush); color: var(--burgundy); }
 
-    .search-wrap { position: relative; flex: 1; max-width: 360px; }
+    /* === MODAL USUARIO (crear/editar) === */
+    .form-modal { max-width: 600px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid var(--blush); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--cream); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--rose); background: var(--white); box-shadow: 0 0 0 3px rgba(196,92,126,.12); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    .form-section-title { font-family: 'Cormorant Garamond', serif; color: var(--burgundy); font-size: 1.1rem; margin: 1rem 0 0.75rem; grid-column: 1 / -1; border-top: 1px solid var(--blush); padding-top: 1rem; }
+    .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .modal-actions .btn-primary { flex: 1; }
+    .alert-banner { padding: 0.75rem 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.9rem; display: none; }
+    .alert-error   { background: #ffebee; color: var(--error); border: 1px solid rgba(217,79,79,.3); display: block; }
+    .alert-success { background: #e8f5e9; color: var(--success); border: 1px solid #c8e6c9; display: block; }
 
-    .search-wrap input {
-      width: 100%;
-      padding: .7rem 1rem .7rem 2.8rem;
-      border: 1.5px solid var(--blush);
-      border-radius: var(--radius-md);
-      font-family: 'DM Sans', sans-serif;
-      font-size: .9rem;
-      color: var(--text);
-      background: var(--white);
-      outline: none;
-      transition: border-color .2s;
-    }
+    /* === TABLA GESTIÓN === */
+    .table-toolbar { display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 200px; padding: 0.7rem 1rem; border: 1.5px solid var(--blush); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--white); outline: none; }
+    .search-input:focus { border-color: var(--rose); }
+    .filter-select { padding: 0.7rem 1rem; border: 1.5px solid var(--blush); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--white); outline: none; }
+    .table-wrap { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--cream); }
+    th { padding: 1rem 1.5rem; text-align: left; font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 1rem 1.5rem; font-size: 0.9rem; border-top: 1px solid var(--blush); }
+    tr:hover td { background: var(--off-white); }
+    .td-actions { display: flex; gap: 0.5rem; }
 
-    .search-wrap input:focus { border-color: var(--rose); }
-    .search-wrap input::placeholder { color: var(--muted); font-size: .88rem; }
+    /* === PAGINATION === */
+    .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+    .page-btn { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--blush); background: var(--white); color: var(--text); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+    .page-btn:hover, .page-btn.active { background: var(--burgundy); color: var(--white); border-color: var(--burgundy); }
 
-    .search-icon-new {
-      position: absolute;
-      left: 1rem; top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      width: 18px; height: 18px;
-    }
-
-    .filter-select {
-      padding: .7rem 1.2rem;
-      border: 1.5px solid var(--blush);
-      border-radius: var(--radius-md);
-      font-family: 'DM Sans', sans-serif;
-      font-size: .9rem;
-      color: var(--text);
-      background: var(--white);
-      outline: none;
-      cursor: pointer;
-      min-width: 170px;
-    }
-
-    .filter-select:focus { border-color: var(--rose); }
-
-    .btn-add-new {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-      padding: .75rem 1.4rem;
-      background: var(--burgundy);
-      color: white;
-      border: none;
-      border-radius: var(--radius-md);
-      font-family: 'DM Sans', sans-serif;
-      font-size: .9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .2s;
-    }
-
-    .btn-add-new:hover { background: var(--rose); }
-
-    /* ── Estado Vacío ── */
-    .empty-state-elegant {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 5rem 2rem;
-      flex: 1;
-    }
-
-    .empty-illustration {
-      width: 140px;
-      height: 140px;
-      margin-bottom: 2rem;
-      fill: none;
-      stroke: var(--accent-gold);
-      stroke-width: 1.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .empty-state-elegant h3 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: var(--burgundy);
-      margin-bottom: .6rem;
-    }
-
-    .empty-state-elegant p {
-      font-size: .9rem;
-      color: var(--muted);
-      max-width: 320px;
-      margin-bottom: 1.5rem;
-    }
-
-    .test-modal-link {
-      color: var(--rose);
-      font-size: 0.9rem;
-      text-decoration: underline;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    /* ── Modal Perfil Detallado ── */
-    .modal-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(42,21,32,.6);
-      backdrop-filter: blur(5px);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .modal-overlay.open { display: flex; opacity: 1; }
-
-    .modal {
-      background: var(--off-white);
-      border-radius: var(--radius-lg);
-      width: 100%;
-      max-width: 540px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 24px 60px rgba(107,26,58,.2);
-      transform: translateY(20px) scale(0.95);
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-
-    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
-
-    .modal-header {
-      background: var(--burgundy);
-      padding: 2.5rem 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      position: relative;
-    }
-
-    .modal-avatar {
-      width: 76px; height: 76px;
-      border-radius: 50%;
-      background: var(--rose);
-      border: 3px solid var(--white);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2rem;
-      font-weight: 600;
-      color: white;
-      font-family: 'Cormorant Garamond', serif;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 600; color: white; line-height: 1.1; }
-    .modal-subtitle { font-size: .85rem; color: var(--blush); margin-top: .4rem; font-weight: 500;}
-
-    .modal-body { padding: 2rem; background: var(--white); }
-
-    .modal-section-title {
-      font-size: .75rem;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-      margin-top: 1.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .modal-section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--blush);
-    }
-
-    .modal-section-title:first-child { margin-top: 0; }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
-    .detail-item {
-      background: var(--off-white);
-      border-radius: var(--radius-md);
-      padding: 1rem 1.2rem;
-      border: 1px solid rgba(242, 213, 223, 0.5);
-    }
-
-    .detail-label { font-size: .7rem; color: var(--muted); margin-bottom: .3rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 500;}
-    .detail-value { font-size: .95rem; font-weight: 500; color: var(--text); }
-
-    .modal-bio {
-      background: var(--off-white);
-      border-left: 3px solid var(--rose);
-      border-radius: 0 var(--radius-md) var(--radius-md) 0;
-      padding: 1.2rem 1.5rem;
-      font-size: .9rem;
-      color: var(--text);
-      line-height: 1.6;
-      font-style: italic;
-    }
-
-    .modal-close-btn {
-      display: block;
-      width: 100%;
-      margin-top: 2rem;
-      padding: 1rem;
-      background: var(--cream);
-      border: 1px solid var(--blush);
-      border-radius: var(--radius-md);
-      font-family: 'DM Sans', sans-serif;
-      font-size: .95rem;
-      font-weight: 500;
-      color: var(--burgundy);
-      cursor: pointer;
-      transition: all .2s;
-    }
-
-    .modal-close-btn:hover { background: var(--blush); }
-
-    @media (max-width: 900px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; padding: 2rem; }
-      .controls-container { flex-wrap: wrap; }
-      .btn-add-new { margin-left: 0; width: 100%; justify-content: center; }
-      .detail-grid { grid-template-columns: 1fr; }
-      .detail-item[style*="grid-column"] { grid-column: auto !important; }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main-content { margin-left: 0; padding: 1.5rem; }
+      .form-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<div class="layout">
+<div id="app">
 
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-      </svg>
-      <span>Rytmia</span>
-    </div>
-
-    <div class="nav-label">Principal</div>
-    <a class="nav-item active" href="#">
-      <svg class="nav-icon" viewBox="0 0 24 24">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-      </svg>
-      Equipo Técnico
-    </a>
-    <a class="nav-item" href="#">
-      <svg class="nav-icon" viewBox="0 0 24 24">
-        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-      </svg>
-      Gimnastas
-    </a>
-
-    <div class="nav-label">Gestión</div>
-    <a class="nav-item" href="#">
-      <svg class="nav-icon" viewBox="0 0 24 24">
-        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97.7l-2.03-1.1c-.5-.28-1-.18-1 .3l-.3 3.6c-.02.22.06.44.22.6.16.16.38.2.6.17l3.7-.6c.26-.03.26-.5.2-.67l-1.3-.9c-.2-.14-.23-.42-.08-.6l2.1-2.4a.5.5 0 0 1 .45-.2h5c.2 0 .4-.1.46-.27l2.1-2.4c.15-.18.12-.46-.08-.6l-1.3-.9c-.18-.12-.22-.38-.2-.67l3.7.6c.22.03.44-.01.6-.17.16-.16.24-.38.22-.6l-.3-3.6c0-.48-.5-.58-1-.3l-2.03 1.1c-.5.28-.97-.15-.97-.7V14.66a2.5 2.5 0 0 0 1.66-2.36V7.5a1.5 1.5 0 0 0-1.5-1.5H16a2 2 0 0 1-2-2h-1c-.55 0-1 .45-1 1a2 2 0 1 1-2 2H8a1.5 1.5 0 0 0-1.5 1.5v4.8c0 1.25.68 2.25 1.66 2.36z"></path>
-      </svg>
-      Competiciones
-    </a>
-    <a class="nav-item" href="#">
-      <svg class="nav-icon" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>
-      </svg>
-      Bailes
-    </a>
-    <a class="nav-item" href="#">
-      <svg class="nav-icon" viewBox="0 0 24 24">
-        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line>
-      </svg>
-      Pagos
-    </a>
-
-    <div class="sidebar-footer">
-      <div class="user-chip">
-        <div class="user-avatar" id="sidebarAvatar">A</div>
-        <div class="user-info">
-          <div class="user-name" id="sidebarName">Admin Rytmia</div>
-          <div class="user-role">Administrador</div>
-        </div>
-        <button class="btn-logout-new" onclick="logout()" title="Cerrar sesión">
-          <svg class="nav-icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-        </button>
+    <div class="brand">Rytmia.</div>
+    <nav class="nav-links">
+      <button class="nav-link active" id="nav-equipo"    onclick="showView('equipo')">👥 Equipo Técnico</button>
+      <button class="nav-link"        id="nav-gimnastas" onclick="showView('gimnastas')">🤸‍♀️ Gimnastas</button>
+      <button class="nav-link"        id="nav-admins"    onclick="showView('admins')">⚙️ Administradores</button>
+    </nav>
+    <div class="user-profile">
+      <div class="avatar" id="sidebarAvatar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Admin</div>
+        <div class="user-role">Administrador</div>
       </div>
+      <button class="logout-btn" onclick="logout()" title="Cerrar sesión">🚪</button>
     </div>
   </aside>
 
-  <main class="main">
-    <div class="page-header">
-      <h1>Equipo Técnico</h1>
-      <p>Gestiona las entrenadoras del club — perfiles, experiencia y estado.</p>
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- ── VISTA: EQUIPO TÉCNICO ───────────────────────────────── -->
+    <div class="view active" id="view-equipo">
+      <div class="header">
+        <div>
+          <h1 class="page-title">Equipo Técnico</h1>
+          <p class="page-subtitle">Gestiona las entrenadoras del club</p>
+        </div>
+        <button class="btn-primary" onclick="abrirFormUsuario('entrenadora')">+ Nueva Entrenadora</button>
+      </div>
+      <div id="teamGrid" class="team-grid">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Cargando entrenadoras…</p>
+        </div>
+      </div>
     </div>
 
-    <div class="controls-container">
-      <div class="search-wrap">
-        <svg class="search-icon-new" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" id="searchInput" placeholder="Buscar por nombre, DNI..." />
+    <!-- ── VISTA: GIMNASTAS ────────────────────────────────────── -->
+    <div class="view" id="view-gimnastas">
+      <div class="header">
+        <div>
+          <h1 class="page-title">Gimnastas</h1>
+          <p class="page-subtitle">Listado de todas las gimnastas del club</p>
+        </div>
+        <button class="btn-primary" onclick="abrirFormUsuario('gimnasta')">+ Nueva Gimnasta</button>
       </div>
-      <select class="filter-select" id="estadoFilter">
-        <option value="">Todos los estados</option>
-      </select>
-      <button class="btn-add-new" onclick="abrirFormNueva()">
-        <svg class="nav-icon" viewBox="0 0 24 24" style="stroke: white; margin-right: 4px;">
-          <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        Nueva entrenadora
+      <div class="table-toolbar">
+        <input type="text" id="searchGimnastas" class="search-input" placeholder="Buscar por nombre, DNI…" oninput="buscarUsuarios('gimnasta')"/>
+        <select class="filter-select" id="filterEstadoGimnastas" onchange="buscarUsuarios('gimnasta')">
+          <option value="">Todos los estados</option>
+          <option value="1">Activas</option>
+          <option value="0">Inactivas</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Nombre</th><th>DNI</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="tbodyGimnastas"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagGimnastas"></div>
+    </div>
+
+    <!-- ── VISTA: ADMINISTRADORES ──────────────────────────────── -->
+    <div class="view" id="view-admins">
+      <div class="header">
+        <div>
+          <h1 class="page-title">Administradores</h1>
+          <p class="page-subtitle">Gestiona las cuentas de administrador</p>
+        </div>
+        <button class="btn-primary" onclick="abrirFormUsuario('administrador')">+ Nuevo Admin</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Nombre</th><th>DNI</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="tbodyAdmins"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── MODAL PERFIL ENTRENADORA ───────────────────────────────── -->
+  <div class="modal-overlay" id="modalPerfil" onclick="cerrarModal('modalPerfil', event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-avatar" id="mpAvatar">L</div>
+        <div>
+          <div class="modal-name" id="mpName">–</div>
+          <div class="modal-subtitle" id="mpTitulacion">–</div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Información de contacto</div>
+        <div class="modal-row"><span class="modal-label">Email</span><span class="modal-value" id="mpEmail">–</span></div>
+        <div class="modal-row"><span class="modal-label">Teléfono</span><span class="modal-value" id="mpTelefono">–</span></div>
+        <div class="modal-row"><span class="modal-label">DNI</span><span class="modal-value" id="mpDni">–</span></div>
+        <div class="modal-row"><span class="modal-label">Club</span><span class="modal-value" id="mpClub">–</span></div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Experiencia</div>
+        <div class="modal-row"><span class="modal-label">Años de experiencia</span><span class="modal-value" id="mpAnios">–</span></div>
+        <div class="modal-row"><span class="modal-label">Horas semanales</span><span class="modal-value" id="mpHoras">–</span></div>
+        <div class="modal-row"><span class="modal-label">Estado</span><span class="modal-value" id="mpEstado">–</span></div>
+      </div>
+
+      <div class="modal-section" id="mpBiografiaSection" style="display:none">
+        <div class="modal-section-title">Biografía</div>
+        <div class="modal-bio" id="mpBiografia">–</div>
+      </div>
+
+      <button class="modal-close-btn" onclick="document.getElementById('modalPerfil').classList.remove('open')">
+        Cerrar perfil
       </button>
     </div>
+  </div>
 
-    <div class="empty-state-elegant" id="emptyState">
-      <svg class="empty-illustration" viewBox="0 0 24 24">
-        <path d="M12 3a2 2 0 1 0 0 4 2 2 0 1 0 0-4z"></path>
-        <path d="M12 7v7"></path>
-        <path d="M9 10c3 1 6-1 9-4"></path>
-        <path d="M12 14c-2 2-4 5-6 8"></path>
-        <path d="M12 14c2 2 5 2 8 1"></path>
-      </svg>
-      <h3>Sin resultados</h3>
-      <p>No hay entrenadoras que coincidan con la búsqueda.</p>
-      
-      <span class="test-modal-link" onclick="abrirModalPerfil()">✨ Ver perfil de prueba</span>
-    </div>
-  </main>
-</div>
+  <!-- ── MODAL CREAR / EDITAR USUARIO ──────────────────────────── -->
+  <div class="modal-overlay" id="modalForm" onclick="cerrarModal('modalForm', event)">
+    <div class="modal-content form-modal" onclick="event.stopPropagation()">
+      <h2 class="modal-name" id="formTitle" style="margin-bottom:1.5rem">Nuevo Usuario</h2>
+      <div class="alert-banner" id="formAlert"></div>
 
-<div class="modal-overlay" id="modalOverlay" onclick="cerrarModal(event)">
-  <div class="modal" id="modal">
-    <div class="modal-header">
-      <div class="modal-avatar" id="modalAvatar">M</div>
-      <div>
-        <div class="modal-title" id="modalNombre">María Gómez</div>
-        <div class="modal-subtitle" id="modalClub">📍 Club Rytmia Central</div>
-      </div>
-    </div>
-    <div class="modal-body">
-      <div class="modal-section-title">Información de contacto</div>
-      <div class="detail-grid">
-        <div class="detail-item">
-          <div class="detail-label">DNI</div>
-          <div class="detail-value" id="modalDni">12345678A</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Teléfono</div>
-          <div class="detail-value" id="modalTelefono">+34 600 000 000</div>
-        </div>
-        <div class="detail-item" style="grid-column: span 2;">
-          <div class="detail-label">Email</div>
-          <div class="detail-value" id="modalEmail">maria.gomez@rytmia.com</div>
-        </div>
-      </div>
+      <form id="userForm" onsubmit="submitUsuario(event)">
+        <input type="hidden" id="formMode" value="crear" />
+        <input type="hidden" id="formUserId" value="" />
+        <input type="hidden" id="formRol" value="" />
 
-      <div class="modal-section-title">Experiencia profesional</div>
-      <div class="detail-grid">
-        <div class="detail-item">
-          <div class="detail-label">Titulación</div>
-          <div class="detail-value" id="modalTitulacion">Nivel III</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Años exp.</div>
-          <div class="detail-value" id="modalAnios">5 años</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Horas semanales</div>
-          <div class="detail-value" id="modalHoras">20 h/semana</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Estado</div>
-          <div class="detail-value" id="modalEstado">Activa</div>
-        </div>
-      </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="formNombre">Nombre *</label>
+            <input class="form-input" id="formNombre" type="text" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formApellidos">Apellidos *</label>
+            <input class="form-input" id="formApellidos" type="text" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formDni">DNI * (8 dígitos + letra)</label>
+            <input class="form-input" id="formDni" type="text" maxlength="9" placeholder="12345678A" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formEmail">Email</label>
+            <input class="form-input" id="formEmail" type="email" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formTelefono">Teléfono</label>
+            <input class="form-input" id="formTelefono" type="text" maxlength="15" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formPassword">Contraseña <span id="pwRequired">*</span></label>
+            <input class="form-input" id="formPassword" type="password" placeholder="Mín. 8 car., mayús. y números" />
+          </div>
 
-      <div class="modal-section-title">Biografía</div>
-      <div class="modal-bio" id="modalBio">
-        Especialista en aparatos y preparación física. Ha competido a nivel nacional durante 10 años antes de dedicarse a la formación de nuevas gimnastas.
-      </div>
-      
-      <button class="modal-close-btn" onclick="cerrarModal()">Cerrar perfil</button>
+          <!-- Campos entrenadora -->
+          <div id="fieldsEntrenadora" style="display:contents">
+            <div class="form-section-title full">Perfil Entrenadora</div>
+            <div class="form-group">
+              <label class="form-label" for="formTitulacion">Titulación</label>
+              <input class="form-input" id="formTitulacion" type="text" placeholder="Ej. Nivel III RFEG" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="formAniosExp">Años de experiencia</label>
+              <input class="form-input" id="formAniosExp" type="number" min="0" value="0" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="formHorasSem">Horas semanales</label>
+              <input class="form-input" id="formHorasSem" type="number" min="0" value="0" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="formEstado">Estado</label>
+              <select class="form-select" id="formEstado">
+                <option value="activa">Activa</option>
+                <option value="inactiva">Inactiva</option>
+                <option value="baja">Baja</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="formBiografia">Biografía</label>
+              <textarea class="form-textarea" id="formBiografia" placeholder="Describe la trayectoria y experiencia de la entrenadora…"></textarea>
+            </div>
+          </div>
+
+          <!-- Activo (solo edición) -->
+          <div class="form-group" id="activoField" style="display:none">
+            <label class="form-label" for="formActivo">Estado de cuenta</label>
+            <select class="form-select" id="formActivo">
+              <option value="1">Activa / Activo</option>
+              <option value="0">Inactiva / Inactivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" onclick="document.getElementById('modalForm').classList.remove('open')">Cancelar</button>
+          <button type="submit" class="btn-primary" id="btnSubmit">Guardar</button>
+        </div>
+      </form>
     </div>
   </div>
+
 </div>
 
 <script>
-  // Script para manejar el comportamiento de la interfaz
-  const user = JSON.parse(localStorage.getItem('rytmia_user') || '{}');
+  /* ════════════════════════════════════════════════════
+   * Configuración
+   * ════════════════════════════════════════════════════ */
+  const API   = '/api';
+  const token = localStorage.getItem('rytmia_token');
+  const user  = JSON.parse(localStorage.getItem('rytmia_user') || '{}');
 
-  if (user.nombre) {
-    document.getElementById('sidebarName').textContent = user.nombre + ' ' + (user.apellidos || '');
-    document.getElementById('sidebarAvatar').textContent = user.nombre[0].toUpperCase();
-  }
-
-  function abrirFormNueva() {
-    alert('Formulario de nueva entrenadora — próximamente.');
-  }
-
-  function logout() {
-    alert('Cerrando sesión...');
-    localStorage.removeItem('rytmia_token');
-    localStorage.removeItem('rytmia_user');
+  // Guardia de seguridad: solo admins
+  if (!token || user.rol !== 'administrador') {
     window.location.href = '/';
   }
 
-  // Funciones del Modal de Perfil
-  function abrirModalPerfil() {
-    document.getElementById('modalOverlay').classList.add('open');
+  // Nombre en sidebar
+  document.getElementById('sidebarName').textContent   = `${user.nombre ?? ''} ${user.apellidos ?? ''}`.trim();
+  document.getElementById('sidebarAvatar').textContent = (user.nombre?.[0] ?? 'A').toUpperCase();
+
+  /* ════════════════════════════════════════════════════
+   * Navegación entre vistas
+   * ════════════════════════════════════════════════════ */
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+
+    if (name === 'equipo')    cargarEntrenadoras();
+    if (name === 'gimnastas') cargarTablaUsuarios('gimnasta', 1);
+    if (name === 'admins')    cargarTablaUsuarios('administrador', 1);
   }
 
-  function cerrarModal(e) {
-    // Solo cierra si no hay evento (llamado desde el botón) o si el clic fue en el overlay oscuro
-    if (!e || e.target === document.getElementById('modalOverlay')) {
-      document.getElementById('modalOverlay').classList.remove('open');
+  /* ════════════════════════════════════════════════════
+   * Helpers fetch
+   * ════════════════════════════════════════════════════ */
+  async function apiFetch(path, opts = {}) {
+    const res = await fetch(API + path, {
+      ...opts,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept':       'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...(opts.headers ?? {}),
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) throw data;
+    return data;
+  }
+
+  /* ════════════════════════════════════════════════════
+   * EQUIPO TÉCNICO — tarjetas entrenadoras
+   * ════════════════════════════════════════════════════ */
+  async function cargarEntrenadoras() {
+    const grid = document.getElementById('teamGrid');
+    grid.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Cargando entrenadoras…</p></div>`;
+
+    try {
+      const data = await apiFetch('/usuarios?rol=entrenadora&per_page=50');
+      const lista = data.data ?? [];
+
+      if (!lista.length) {
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">Sin entrenadoras</div><div class="empty-desc">Aún no hay entrenadoras registradas en el club.</div></div>`;
+        return;
+      }
+
+      grid.innerHTML = lista.map(u => `
+        <div class="team-card">
+          <div class="card-avatar">${(u.nombre?.[0] ?? '?').toUpperCase()}</div>
+          <div class="card-name">${u.nombre} ${u.apellidos ?? ''}</div>
+          <div class="card-role">${u.entrenador?.titulacion ?? 'Entrenadora'}</div>
+          <div class="card-club">${u.entrenador?.club?.nombre ?? '–'}</div>
+          <div class="card-stats">
+            <div class="stat">
+              <span class="stat-val">${u.entrenador?.anios_experiencia ?? 0}</span>
+              <span class="stat-label">Años exp.</span>
+            </div>
+            <div class="stat">
+              <span class="stat-val">${u.entrenador?.horas_semanales ?? 0}</span>
+              <span class="stat-label">H/Semana</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-outline" style="flex:1" onclick='abrirPerfilEntrenadora(${JSON.stringify(u)})'>Ver perfil</button>
+            <button class="btn-outline" onclick='abrirFormEditar(${JSON.stringify(u)})'>✏️</button>
+            <button class="btn-danger"  onclick='eliminarUsuario(${u.id}, "la entrenadora")'>🗑️</button>
+          </div>
+        </div>
+      `).join('');
+
+    } catch (err) {
+      grid.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error al cargar</div><div class="empty-desc">${err.message ?? 'Inténtalo de nuevo.'}</div></div>`;
     }
   }
-</script>
 
+  function abrirPerfilEntrenadora(u) {
+    document.getElementById('mpAvatar').textContent   = (u.nombre?.[0] ?? '?').toUpperCase();
+    document.getElementById('mpName').textContent     = `${u.nombre} ${u.apellidos ?? ''}`;
+    document.getElementById('mpTitulacion').textContent = u.entrenador?.titulacion ?? 'Entrenadora';
+    document.getElementById('mpEmail').textContent    = u.email ?? '–';
+    document.getElementById('mpTelefono').textContent = u.telefono ?? '–';
+    document.getElementById('mpDni').textContent      = u.dni ?? '–';
+    document.getElementById('mpClub').textContent     = u.entrenador?.club?.nombre ?? '–';
+    document.getElementById('mpAnios').textContent    = `${u.entrenador?.anios_experiencia ?? 0} años`;
+    document.getElementById('mpHoras').textContent    = `${u.entrenador?.horas_semanales ?? 0} h/semana`;
+    document.getElementById('mpEstado').innerHTML     = `<span class="badge badge-${u.entrenador?.estado ?? 'activa'}">${u.entrenador?.estado ?? 'activa'}</span>`;
+
+    const bio = u.entrenador?.biografia;
+    const bioSec = document.getElementById('mpBiografiaSection');
+    if (bio) {
+      document.getElementById('mpBiografia').textContent = bio;
+      bioSec.style.display = 'block';
+    } else {
+      bioSec.style.display = 'none';
+    }
+
+    document.getElementById('modalPerfil').classList.add('open');
+  }
+
+  /* ════════════════════════════════════════════════════
+   * TABLA USUARIOS (gimnastas / admins)
+   * ════════════════════════════════════════════════════ */
+  let paginaActual = { gimnasta: 1, administrador: 1 };
+
+  async function cargarTablaUsuarios(rol, pagina = 1) {
+    paginaActual[rol] = pagina;
+    const search  = document.getElementById('searchGimnastas')?.value ?? '';
+    const activo  = document.getElementById('filterEstadoGimnastas')?.value ?? '';
+    const tbodyId = rol === 'gimnasta' ? 'tbodyGimnastas' : 'tbodyAdmins';
+    const pagId   = rol === 'gimnasta' ? 'pagGimnastas' : null;
+
+    let url = `/usuarios?rol=${rol}&page=${pagina}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (activo !== '') url += `&activo=${activo}`;
+
+    const tbody = document.getElementById(tbodyId);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Cargando…</td></tr>`;
+
+    try {
+      const data = await apiFetch(url);
+      const lista = data.data ?? [];
+
+      if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Sin resultados.</td></tr>`;
+      } else {
+        tbody.innerHTML = lista.map(u => `
+          <tr>
+            <td><strong>${u.nombre} ${u.apellidos ?? ''}</strong></td>
+            <td>${u.dni ?? '–'}</td>
+            <td>${u.email ?? '–'}</td>
+            <td>${u.telefono ?? '–'}</td>
+            <td><span class="badge ${u.activo ? 'badge-activa' : 'badge-inactiva'}">${u.activo ? 'Activo' : 'Inactivo'}</span></td>
+            <td>
+              <div class="td-actions">
+                <button class="btn-outline" onclick='abrirFormEditar(${JSON.stringify(u)})'>✏️ Editar</button>
+                <button class="btn-danger"  onclick='eliminarUsuario(${u.id}, "el usuario")'>🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Paginación
+      if (pagId && data.last_page > 1) {
+        const pagEl = document.getElementById(pagId);
+        pagEl.innerHTML = '';
+        for (let i = 1; i <= data.last_page; i++) {
+          const btn = document.createElement('button');
+          btn.className = 'page-btn' + (i === pagina ? ' active' : '');
+          btn.textContent = i;
+          btn.onclick = () => cargarTablaUsuarios(rol, i);
+          pagEl.appendChild(btn);
+        }
+      }
+
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--error)">Error: ${err.message ?? 'inténtalo de nuevo.'}</td></tr>`;
+    }
+  }
+
+  function buscarUsuarios(rol) {
+    clearTimeout(window._searchTimer);
+    window._searchTimer = setTimeout(() => cargarTablaUsuarios(rol, 1), 400);
+  }
+
+  /* ════════════════════════════════════════════════════
+   * CRUD — Formulario crear / editar
+   * ════════════════════════════════════════════════════ */
+  function abrirFormUsuario(rol) {
+    document.getElementById('userForm').reset();
+    document.getElementById('formMode').value   = 'crear';
+    document.getElementById('formUserId').value = '';
+    document.getElementById('formRol').value    = rol;
+    document.getElementById('formTitle').textContent = `Nueva ${rol === 'entrenadora' ? 'Entrenadora' : rol === 'gimnasta' ? 'Gimnasta' : 'Administradora'}`;
+    document.getElementById('pwRequired').style.display = 'inline';
+    document.getElementById('formPassword').required = true;
+    document.getElementById('activoField').style.display = 'none';
+    document.getElementById('fieldsEntrenadora').style.display = rol === 'entrenadora' ? 'contents' : 'none';
+    limpiarAlerta();
+    document.getElementById('modalForm').classList.add('open');
+  }
+
+  function abrirFormEditar(u) {
+    document.getElementById('userForm').reset();
+    document.getElementById('formMode').value     = 'editar';
+    document.getElementById('formUserId').value   = u.id;
+    document.getElementById('formRol').value      = u.rol;
+    document.getElementById('formTitle').textContent = `Editar — ${u.nombre} ${u.apellidos ?? ''}`;
+    document.getElementById('formNombre').value   = u.nombre ?? '';
+    document.getElementById('formApellidos').value= u.apellidos ?? '';
+    document.getElementById('formDni').value      = u.dni ?? '';
+    document.getElementById('formEmail').value    = u.email ?? '';
+    document.getElementById('formTelefono').value = u.telefono ?? '';
+    document.getElementById('formPassword').required = false;
+    document.getElementById('pwRequired').style.display = 'none';
+    document.getElementById('activoField').style.display = 'block';
+    document.getElementById('formActivo').value   = u.activo ? '1' : '0';
+
+    const esEntrenadora = u.rol === 'entrenadora';
+    document.getElementById('fieldsEntrenadora').style.display = esEntrenadora ? 'contents' : 'none';
+    if (esEntrenadora && u.entrenador) {
+      document.getElementById('formTitulacion').value = u.entrenador.titulacion ?? '';
+      document.getElementById('formAniosExp').value   = u.entrenador.anios_experiencia ?? 0;
+      document.getElementById('formHorasSem').value   = u.entrenador.horas_semanales ?? 0;
+      document.getElementById('formEstado').value     = u.entrenador.estado ?? 'activa';
+      document.getElementById('formBiografia').value  = u.entrenador.biografia ?? '';
+    }
+    limpiarAlerta();
+    document.getElementById('modalForm').classList.add('open');
+  }
+
+  async function submitUsuario(e) {
+    e.preventDefault();
+    const btn  = document.getElementById('btnSubmit');
+    const modo = document.getElementById('formMode').value;
+    const id   = document.getElementById('formUserId').value;
+    const rol  = document.getElementById('formRol').value;
+
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+    limpiarAlerta();
+
+    const payload = {
+      nombre:    document.getElementById('formNombre').value.trim(),
+      apellidos: document.getElementById('formApellidos').value.trim(),
+      dni:       document.getElementById('formDni').value.trim().toUpperCase(),
+      email:     document.getElementById('formEmail').value.trim() || undefined,
+      telefono:  document.getElementById('formTelefono').value.trim() || undefined,
+      rol,
+    };
+
+    const pw = document.getElementById('formPassword').value;
+    if (pw) payload.password = pw;
+
+    if (modo === 'editar') {
+      payload.activo = document.getElementById('formActivo').value === '1';
+    }
+
+    if (rol === 'entrenadora') {
+      payload.titulacion        = document.getElementById('formTitulacion').value.trim() || undefined;
+      payload.anios_experiencia = parseInt(document.getElementById('formAniosExp').value) || 0;
+      payload.horas_semanales   = parseInt(document.getElementById('formHorasSem').value) || 0;
+      payload.estado            = document.getElementById('formEstado').value;
+      payload.biografia         = document.getElementById('formBiografia').value.trim() || undefined;
+    }
+
+    try {
+      if (modo === 'crear') {
+        await apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(payload) });
+      } else {
+        await apiFetch(`/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+      }
+
+      document.getElementById('modalForm').classList.remove('open');
+
+      // Recargar vista correspondiente
+      if (rol === 'entrenadora') cargarEntrenadoras();
+      else if (rol === 'gimnasta') cargarTablaUsuarios('gimnasta', paginaActual.gimnasta);
+      else cargarTablaUsuarios('administrador', paginaActual.administrador);
+
+    } catch (err) {
+      const msgs = err.errors ? Object.values(err.errors).flat().join(' | ') : (err.message ?? 'Error inesperado.');
+      mostrarAlerta(msgs, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+    }
+  }
+
+  async function eliminarUsuario(id, label) {
+    if (!confirm(`¿Deseas desactivar ${label}? (borrado lógico)`)) return;
+    try {
+      await apiFetch(`/usuarios/${id}`, { method: 'DELETE' });
+      // Recargar vista activa
+      const vActiva = document.querySelector('.view.active')?.id;
+      if (vActiva === 'view-equipo')    cargarEntrenadoras();
+      if (vActiva === 'view-gimnastas') cargarTablaUsuarios('gimnasta', paginaActual.gimnasta);
+      if (vActiva === 'view-admins')    cargarTablaUsuarios('administrador', paginaActual.administrador);
+    } catch (err) {
+      alert(err.message ?? 'No se pudo eliminar el usuario.');
+    }
+  }
+
+  /* ════════════════════════════════════════════════════
+   * Alertas formulario
+   * ════════════════════════════════════════════════════ */
+  function mostrarAlerta(msg, tipo) {
+    const el = document.getElementById('formAlert');
+    el.textContent = msg;
+    el.className   = `alert-banner alert-${tipo}`;
+  }
+  function limpiarAlerta() {
+    const el = document.getElementById('formAlert');
+    el.className = 'alert-banner';
+    el.textContent = '';
+  }
+
+  /* ════════════════════════════════════════════════════
+   * Modal helper
+   * ════════════════════════════════════════════════════ */
+  function cerrarModal(id, event) {
+    if (!event || event.target.classList.contains('modal-overlay')) {
+      document.getElementById(id).classList.remove('open');
+    }
+  }
+
+  /* ════════════════════════════════════════════════════
+   * Logout
+   * ════════════════════════════════════════════════════ */
+  function logout() {
+    fetch(`${API}/logout`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    }).finally(() => {
+      localStorage.removeItem('rytmia_token');
+      localStorage.removeItem('rytmia_user');
+      window.location.href = '/';
+    });
+  }
+
+  /* ════════════════════════════════════════════════════
+   * Inicialización
+   * ════════════════════════════════════════════════════ */
+  cargarEntrenadoras();
+</script>
 </body>
 </html>

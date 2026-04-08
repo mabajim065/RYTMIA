@@ -25,6 +25,8 @@ class UserResource extends JsonResource
                 fn () => [
                     'id'                => $this->entrenador->id,
                     'titulacion'        => $this->entrenador->titulacion,
+                    'biografia'         => $this->entrenador->biografia,
+                    'foto_url'          => $this->entrenador->foto_url,
                     'anios_experiencia' => $this->entrenador->anios_experiencia,
                     'horas_semanales'   => $this->entrenador->horas_semanales,
                     'estado'            => $this->entrenador->estado,
