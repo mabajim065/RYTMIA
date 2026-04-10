@@ -8,8 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
-
   <style>
     :root {
       --burgundy: #6B1A3A;
@@ -28,6 +26,7 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; background-color: var(--off-white); color: var(--text); display: flex; min-height: 100vh; }
+    #app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
 
     /* === SIDEBAR === */
     .sidebar { width: 280px; background-color: var(--white); border-right: 1px solid var(--blush); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10; }
@@ -60,9 +59,9 @@
     .btn-danger:hover { background: #ffebee; }
 
     /* === EQUIPO TÉCNICO — listado === */
-    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
-    .team-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-soft); border: 1px solid var(--blush); display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.3s; }
-    .team-card:hover { transform: translateY(-5px); }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .team-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-soft); border: 1px solid var(--blush); display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.3s; }
+    .team-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(107,26,58,.12); }
     .card-avatar { width: 80px; height: 80px; background: linear-gradient(135deg, var(--cream), var(--blush)); color: var(--burgundy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem; border: 2px solid var(--blush); font-weight: 600; font-family: 'Cormorant Garamond', serif; }
     .card-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--text); margin-bottom: 0.3rem; }
     .card-role { font-size: 0.85rem; color: var(--rose); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
@@ -140,10 +139,20 @@
     .page-btn { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--blush); background: var(--white); color: var(--text); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
     .page-btn:hover, .page-btn.active { background: var(--burgundy); color: var(--white); border-color: var(--burgundy); }
 
+    /* === NAV MOBILE === */
+    .mobile-nav { display: none; padding: 1rem 1.5rem; background: var(--white); border-bottom: 1px solid var(--blush); align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20; }
+    .mobile-nav .brand { padding: 0; border: none; font-size: 1.8rem; text-align: left; }
+    .menu-btn { background: none; border: none; font-size: 1.8rem; color: var(--burgundy); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
+
     @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); }
+      .mobile-nav { display: flex; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-soft); }
+      .sidebar.open { transform: translateX(0); }
       .main-content { margin-left: 0; padding: 1.5rem; }
       .form-grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .page-title { font-size: 2rem; }
+      table { display: block; overflow-x: auto; white-space: nowrap; }
     }
   </style>
 </head>
@@ -151,11 +160,18 @@
 
 <div id="app">
 
+  <!-- MOBILE TOP NAV -->
+  <div class="mobile-nav">
+    <div class="brand">Rytmia.</div>
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  </div>
+
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
       <button class="nav-link active" id="nav-equipo"    onclick="showView('equipo')">👥 Equipo Técnico</button>
+      <button class="nav-link"        id="nav-grupos"    onclick="showView('grupos')">🏆 Grupos / Clases</button>
       <button class="nav-link"        id="nav-gimnastas" onclick="showView('gimnastas')">🤸‍♀️ Gimnastas</button>
       <button class="nav-link"        id="nav-admins"    onclick="showView('admins')">⚙️ Administradores</button>
     </nav>
@@ -189,6 +205,22 @@
       </div>
     </div>
 
+    <!-- ── VISTA: GRUPOS ───────────────────────────────────────── -->
+    <div class="view" id="view-grupos">
+      <div class="header">
+        <div>
+          <h1 class="page-title">Grupos y Clases</h1>
+          <p class="page-subtitle">Gestiona los conjuntos y sus gimnastas asignadas</p>
+        </div>
+      </div>
+      <div id="gruposGrid" class="team-grid">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Cargando grupos…</p>
+        </div>
+      </div>
+    </div>
+
     <!-- ── VISTA: GIMNASTAS ────────────────────────────────────── -->
     <div class="view" id="view-gimnastas">
       <div class="header">
@@ -209,7 +241,7 @@
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Nombre</th><th>DNI</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Acciones</th>
+            <th>Nombre</th><th>DNI</th><th>Categoría</th><th>Grupo / Clase</th><th>Teléfono</th><th>Estado</th><th>Acciones</th>
           </tr></thead>
           <tbody id="tbodyGimnastas"></tbody>
         </table>
@@ -271,6 +303,49 @@
 
       <button class="modal-close-btn" onclick="document.getElementById('modalPerfil').classList.remove('open')">
         Cerrar perfil
+      </button>
+    </div>
+  </div>
+
+  <!-- ── MODAL GESTIÓN GRUPO ──────────────────────────────────── -->
+  <div class="modal-overlay" id="modalGrupo" onclick="cerrarModal('modalGrupo', event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 700px;">
+      <div class="modal-header" style="margin-bottom:1.5rem">
+        <div>
+          <h2 class="modal-name" id="mgTitle">Grupo</h2>
+          <div class="modal-subtitle" id="mgCategoria">Categoría</div>
+        </div>
+      </div>
+      
+      <div class="alert-banner" id="mgAlert"></div>
+
+      <div class="modal-section" style="margin-bottom: 2rem;">
+        <div class="form-section-title full">Añadir Gimnasta (Misma categoría)</div>
+        <div style="display:flex; gap:1rem; margin-top:0.5rem; align-items:center;">
+          <select class="form-select" id="mgSelectGimnasta" style="flex:1;">
+            <option value="">Cargando gimnastas...</option>
+          </select>
+          <button class="btn-primary" onclick="asignarGimnastaAlGrupo()">Añadir</button>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="form-section-title full" style="margin-bottom: 0.5rem">Gimnastas asignadas (<span id="mgTotal">0</span>)</div>
+        <div class="table-wrap" style="box-shadow:none; border:1px solid var(--blush)">
+          <table>
+            <thead style="background:var(--off-white)"><tr>
+              <th>Nombre Completo</th>
+              <th>Licencia</th>
+              <th style="width: 80px;">Acción</th>
+            </tr></thead>
+            <tbody id="mgTbodyGimnastas">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <button class="modal-close-btn" onclick="document.getElementById('modalGrupo').classList.remove('open')">
+        Cerrar
       </button>
     </div>
   </div>
@@ -341,6 +416,21 @@
             </div>
           </div>
 
+          <!-- Campos Gimnasta -->
+          <div id="fieldsGimnasta" style="display:none">
+            <div class="form-section-title full">Perfil Gimnasta</div>
+            <div class="form-group">
+              <label class="form-label" for="formGimnastaCat">Categoría <span style="color:var(--error)">*</span></label>
+              <select class="form-select" id="formGimnastaCat" onchange="actualizarSelectConjuntos()" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="formGimnastaConj">Grupo / Clase</label>
+              <select class="form-select" id="formGimnastaConj">
+                <option value="">Selecciona una categoría primero</option>
+              </select>
+            </div>
+          </div>
+
           <!-- Activo (solo edición) -->
           <div class="form-group" id="activoField" style="display:none">
             <label class="form-label" for="formActivo">Estado de cuenta</label>
@@ -369,10 +459,19 @@
   const token = localStorage.getItem('rytmia_token');
   const user  = JSON.parse(localStorage.getItem('rytmia_user') || '{}');
 
+  let _categoriasGlobales = [];
+  let _conjuntosGlobales = [];
+
   // Guardia de seguridad: solo admins
   if (!token || user.rol !== 'administrador') {
     window.location.href = '/';
   }
+
+  // Cifrado de cat y conjuntos en fondo
+  Promise.all([
+    apiFetch('/categorias').then(r => _categoriasGlobales = (r.data || r)),
+    apiFetch('/conjuntos').then(r => _conjuntosGlobales = (r.data || []))
+  ]).catch(() => console.error("Error pre-cargando cat/conj"));
 
   // Nombre en sidebar
   document.getElementById('sidebarName').textContent   = `${user.nombre ?? ''} ${user.apellidos ?? ''}`.trim();
@@ -381,13 +480,20 @@
   /* ════════════════════════════════════════════════════
    * Navegación entre vistas
    * ════════════════════════════════════════════════════ */
+  function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+  }
+
   function showView(name) {
+    document.querySelector('.sidebar').classList.remove('open'); // Cerrar en móviles si estaba abierto
+    
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
     document.getElementById('view-' + name).classList.add('active');
     document.getElementById('nav-' + name).classList.add('active');
 
     if (name === 'equipo')    cargarEntrenadoras();
+    if (name === 'grupos')    cargarGrupos();
     if (name === 'gimnastas') cargarTablaUsuarios('gimnasta', 1);
     if (name === 'admins')    cargarTablaUsuarios('administrador', 1);
   }
@@ -496,20 +602,27 @@
     if (activo !== '') url += `&activo=${activo}`;
 
     const tbody = document.getElementById(tbodyId);
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Cargando…</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="100%" style="text-align:center;padding:2rem;color:var(--muted)">Cargando…</td></tr>`;
 
     try {
       const data = await apiFetch(url);
       const lista = data.data ?? [];
 
       if (!lista.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Sin resultados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="100%" style="text-align:center;padding:2rem;color:var(--muted)">Sin resultados.</td></tr>`;
       } else {
-        tbody.innerHTML = lista.map(u => `
-          <tr>
+        tbody.innerHTML = lista.map(u => {
+          let cols = `
             <td><strong>${u.nombre} ${u.apellidos ?? ''}</strong></td>
-            <td>${u.dni ?? '–'}</td>
-            <td>${u.email ?? '–'}</td>
+            <td>${u.dni ?? '–'}</td>`;
+          if (rol === 'gimnasta') {
+            cols += `
+            <td><span class="badge" style="background:var(--cream); color:var(--burgundy); border:1px solid var(--blush)">${u.gimnasta?.categoria?.nombre ?? 'Sin calc'}</span></td>
+            <td>${u.gimnasta?.conjunto?.nombre ?? '<small style="color:var(--muted)">Sin Asignar</small>'}</td>`;
+          } else {
+            cols += `<td>${u.email ?? '–'}</td>`;
+          }
+          cols += `
             <td>${u.telefono ?? '–'}</td>
             <td><span class="badge ${u.activo ? 'badge-activa' : 'badge-inactiva'}">${u.activo ? 'Activo' : 'Inactivo'}</span></td>
             <td>
@@ -517,9 +630,9 @@
                 <button class="btn-outline" onclick='abrirFormEditar(${JSON.stringify(u)})'>✏️ Editar</button>
                 <button class="btn-danger"  onclick='eliminarUsuario(${u.id}, "el usuario")'>🗑️</button>
               </div>
-            </td>
-          </tr>
-        `).join('');
+            </td>`;
+          return `<tr>${cols}</tr>`;
+        }).join('');
       }
 
       // Paginación
@@ -557,7 +670,16 @@
     document.getElementById('pwRequired').style.display = 'inline';
     document.getElementById('formPassword').required = true;
     document.getElementById('activoField').style.display = 'none';
+    
     document.getElementById('fieldsEntrenadora').style.display = rol === 'entrenadora' ? 'contents' : 'none';
+    document.getElementById('fieldsGimnasta').style.display = rol === 'gimnasta' ? 'contents' : 'none';
+    if (rol === 'gimnasta') {
+      document.getElementById('formGimnastaCat').required = true;
+      prepararFormGimnasta();
+    } else {
+      document.getElementById('formGimnastaCat').required = false;
+    }
+
     limpiarAlerta();
     document.getElementById('modalForm').classList.add('open');
   }
@@ -579,7 +701,16 @@
     document.getElementById('formActivo').value   = u.activo ? '1' : '0';
 
     const esEntrenadora = u.rol === 'entrenadora';
+    const esGimnasta = u.rol === 'gimnasta';
+    
     document.getElementById('fieldsEntrenadora').style.display = esEntrenadora ? 'contents' : 'none';
+    document.getElementById('fieldsGimnasta').style.display = esGimnasta ? 'contents' : 'none';
+    document.getElementById('formGimnastaCat').required = esGimnasta;
+
+    if (esGimnasta) {
+      prepararFormGimnasta(u.gimnasta?.categoria?.id, u.gimnasta?.conjunto?.id);
+    }
+
     if (esEntrenadora && u.entrenador) {
       document.getElementById('formTitulacion').value = u.entrenador.titulacion ?? '';
       document.getElementById('formAniosExp').value   = u.entrenador.anios_experiencia ?? 0;
@@ -624,6 +755,13 @@
       payload.horas_semanales   = parseInt(document.getElementById('formHorasSem').value) || 0;
       payload.estado            = document.getElementById('formEstado').value;
       payload.biografia         = document.getElementById('formBiografia').value.trim() || undefined;
+      payload.club_id           = 1;
+    }
+
+    if (rol === 'gimnasta') {
+      payload.categoria_id = document.getElementById('formGimnastaCat').value;
+      payload.conjunto_id  = document.getElementById('formGimnastaConj').value || null;
+      payload.club_id      = 1; // Asumimos club maestra 1
     }
 
     try {
@@ -701,8 +839,193 @@
   }
 
   /* ════════════════════════════════════════════════════
+   * GRUPOS Y CLASES
+   * ════════════════════════════════════════════════════ */
+  let grupoActualActivo = null;
+  let gimnastasDisponibles = [];
+
+  async function cargarGrupos() {
+    const grid = document.getElementById('gruposGrid');
+    grid.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Cargando grupos…</p></div>`;
+
+    try {
+      const data = await apiFetch('/conjuntos');
+      const lista = data.data ?? [];
+
+      if (!lista.length) {
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-title">Sin Grupos</div><div class="empty-desc">Aún no hay grupos creados.</div></div>`;
+        return;
+      }
+
+      grid.innerHTML = lista.map(g => `
+        <div class="team-card">
+          <div class="card-avatar" style="font-size:1.5rem">🏆</div>
+          <div class="card-name">${g.nombre}</div>
+          <div class="card-role">${g.categoria?.nombre ?? 'Sin categoría'}</div>
+          <div class="card-club">${g.horario ?? 'Sin horario definido'}</div>
+          <div class="card-stats">
+            <div class="stat">
+              <span class="stat-val">${g.total_gimnastas ?? 0}</span>
+              <span class="stat-label">Gimnastas</span>
+            </div>
+            <div class="stat">
+              <span class="stat-val">${g.total_entrenadores ?? 0}</span>
+              <span class="stat-label">Entrenadoras</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-primary" style="flex:1" onclick='abrirGestionGrupo(${g.id})'>Gestionar Alumnas</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      grid.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error</div><div class="empty-desc">${err.message ?? 'Carga fallida.'}</div></div>`;
+    }
+  }
+
+  async function abrirGestionGrupo(id) {
+    document.getElementById('modalGrupo').classList.add('open');
+    document.getElementById('mgTbodyGimnastas').innerHTML = `<tr><td colspan="3" style="text-align:center">Cargando...</td></tr>`;
+    document.getElementById('mgAlert').className = 'alert-banner';
+    document.getElementById('mgAlert').textContent = '';
+
+    try {
+      // Fetch completo del grupo (gimnastas incluidas)
+      const resp = await apiFetch(`/conjuntos/${id}`);
+      const g = resp.data;
+      grupoActualActivo = g;
+
+      document.getElementById('mgTitle').textContent = g.nombre;
+      document.getElementById('mgCategoria').textContent = 'Categoría: ' + (g.categoria?.nombre ?? '');
+      document.getElementById('mgTotal').textContent = g.gimnastas?.length ?? 0;
+
+      renderTablaGimnastasGrupo(g.gimnastas ?? []);
+
+      // Fetch de TODAS las gimnastas para filtrarlas
+      const resGim = await apiFetch('/usuarios?rol=gimnasta&per_page=1000');
+      const allGimnastas = resGim.data ?? [];
+
+      // Filtramos: 
+      // 1. Misma categoría que el grupo
+      // 2. Que NO estén ya en este grupo
+      gimnastasDisponibles = allGimnastas.filter(u => 
+        u.gimnasta?.categoria?.id === g.categoria?.id && 
+        u.gimnasta?.conjunto?.id !== g.id
+      );
+
+      const sel = document.getElementById('mgSelectGimnasta');
+      sel.innerHTML = '<option value="">Selecciona una gimnasta para añadir...</option>';
+      if (gimnastasDisponibles.length === 0) {
+        sel.innerHTML = '<option value="">No hay gimnastas disponibles de esta categoría</option>';
+      } else {
+        gimnastasDisponibles.forEach(u => {
+          const groupInfo = u.gimnasta?.conjunto?.nombre ? ` (Actual: ${u.gimnasta.conjunto.nombre})` : ' (Sin grupo)';
+          sel.innerHTML += `<option value="${u.gimnasta?.id}">${u.nombre} ${u.apellidos ?? ''}${groupInfo}</option>`;
+        });
+      }
+
+    } catch (err) {
+      document.getElementById('mgTbodyGimnastas').innerHTML = `<tr><td colspan="3" style="color:var(--error)">Error al cargar la información del grupo.</td></tr>`;
+    }
+  }
+
+  function renderTablaGimnastasGrupo(gimnastas) {
+    const tb = document.getElementById('mgTbodyGimnastas');
+    if (!gimnastas.length) {
+      tb.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted)">Sin gimnastas asignadas.</td></tr>`;
+      return;
+    }
+    tb.innerHTML = gimnastas.map(g => `
+      <tr>
+        <td><strong>${g.nombre} ${g.apellidos ?? ''}</strong></td>
+        <td>${g.numero_licencia ?? '–'}</td>
+        <td>
+          <button class="btn-danger" style="padding: 0.3rem 0.6rem" onclick="quitarGimnastaDeGrupo(${g.id})">Quitar</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function asignarGimnastaAlGrupo() {
+    if (!grupoActualActivo) return;
+    const gId = document.getElementById('mgSelectGimnasta').value;
+    if (!gId) {
+      mostrarAlertaMg('Por favor, selecciona una gimnasta.', 'error');
+      return;
+    }
+
+    try {
+      await apiFetch(`/conjuntos/${grupoActualActivo.id}/gimnastas`, {
+        method: 'POST',
+        body: JSON.stringify({ gimnasta_id: parseInt(gId) })
+      });
+      mostrarAlertaMg('Gimnasta añadida con éxito.', 'success');
+      abrirGestionGrupo(grupoActualActivo.id); // Recargar
+      cargarGrupos(); // Actualizar listado de grupos de fondo
+    } catch (err) {
+      const msgs = err.message ?? (err.errors ? Object.values(err.errors).flat().join(', ') : 'Error al asignar');
+      mostrarAlertaMg(msgs, 'error');
+    }
+  }
+
+  async function quitarGimnastaDeGrupo(gimnastaId) {
+    if (!grupoActualActivo) return;
+    if (!confirm('¿Seguro que deseas quitar a esta gimnasta del grupo? (Quedará sin grupo asignado)')) return;
+
+    try {
+      await apiFetch(`/conjuntos/${grupoActualActivo.id}/gimnastas/${gimnastaId}`, {
+        method: 'DELETE'
+      });
+      mostrarAlertaMg('Gimnasta desvinculada del grupo.', 'success');
+      abrirGestionGrupo(grupoActualActivo.id); // Recargar
+      cargarGrupos(); // Actualizar listado
+    } catch (err) {
+      mostrarAlertaMg(err.message ?? 'Error al desasignar.', 'error');
+    }
+  }
+
+  function mostrarAlertaMg(msg, tipo) {
+    const el = document.getElementById('mgAlert');
+    el.textContent = msg;
+    el.className = 'alert-banner alert-' + tipo;
+  }
+
+  /* ════════════════════════════════════════════════════
    * Inicialización
    * ════════════════════════════════════════════════════ */
+  /* ════════════════════════════════════════════════════
+   * Selecters dependent (Gimnastas)
+   * ════════════════════════════════════════════════════ */
+  function prepararFormGimnasta(catId = null, conjId = null) {
+    const selCat = document.getElementById('formGimnastaCat');
+    selCat.innerHTML = '<option value="">Selecciona una categoría...</option>';
+    _categoriasGlobales.forEach(c => {
+      selCat.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+    });
+
+    if (catId) {
+      selCat.value = catId;
+    }
+    actualizarSelectConjuntos(conjId);
+  }
+
+  function actualizarSelectConjuntos(conjId = null) {
+    const catId = document.getElementById('formGimnastaCat').value;
+    const selConj = document.getElementById('formGimnastaConj');
+    selConj.innerHTML = '<option value="">Sin asignar a grupo</option>';
+
+    if (!catId) return;
+
+    const gruposCompatibles = _conjuntosGlobales.filter(c => c.categoria_id == catId || c.categoria?.id == catId);
+    gruposCompatibles.forEach(c => {
+      selConj.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+    });
+
+    if (conjId && typeof conjId !== 'object') {
+      selConj.value = conjId;
+    }
+  }
+
   cargarEntrenadoras();
 </script>
 </body>

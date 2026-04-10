@@ -61,6 +61,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('usuarios-por-rol/{rol}', [UserController::class, 'porRol'])
              ->name('usuarios.por-rol');
 
+        // Categorías
+        Route::get('categorias', function () {
+            return response()->json(\App\Models\Categoria::orderBy('nombre')->get());
+        });
+
         // Consulta de conjuntos (lectura)
         Route::get('conjuntos',                    [ConjuntoController::class, 'index']);
         Route::get('conjuntos/por-club/{clubId}',  [ConjuntoController::class, 'porClub']);
