@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
   <style>
     :root {
       --burgundy: #6B1A3A;
@@ -29,6 +30,8 @@
       display: flex;
       min-height: 100vh;
     }
+    .view { display: none; }
+    .view.active { display: block; }
     /* === SIDEBAR === */
     .sidebar {
       width: 280px;
@@ -105,7 +108,8 @@
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
-      <a class="nav-link active">🏠 Mi Panel</a>
+      <a class="nav-link active" id="nav-panel" onclick="showView('panel')">🏠 Mi Panel</a>
+      <a class="nav-link" id="nav-calendario" onclick="showView('calendario')">📅 Calendario</a>
       <a class="nav-link" href="/dashboard/admin">👥 Equipo Técnico</a>
     </nav>
     <div class="user-profile">
@@ -119,52 +123,64 @@
   </aside>
 
   <main class="main-content">
-    <header class="header">
-      <h1 class="page-title">Mi Panel</h1>
-      <p class="page-subtitle">Bienvenida de vuelta, <span id="nombreBienvenida">entrenadora</span></p>
-    </header>
+    <div id="view-panel" class="view active">
+      <header class="header">
+        <h1 class="page-title">Mi Panel</h1>
+        <p class="page-subtitle">Bienvenida de vuelta, <span id="nombreBienvenida">entrenadora</span></p>
+      </header>
 
-    <div class="welcome-card">
-      <div class="welcome-title">¡Hola, <span id="welcomeName">entrenadora</span>! 👋</div>
-      <div class="welcome-sub">Aquí puedes consultar tu información de perfil y acceder a los recursos del club.</div>
+      <div class="welcome-card">
+        <div class="welcome-title">¡Hola, <span id="welcomeName">entrenadora</span>! 👋</div>
+        <div class="welcome-sub">Aquí puedes consultar tu información de perfil y acceder a los recursos del club.</div>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-num" id="statAnios">–</div>
+          <div class="stat-desc">Años de experiencia</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statHoras">–</div>
+          <div class="stat-desc">Horas semanales</div>
+        </div>
+      </div>
+
+      <div class="perfil-card">
+        <div class="perfil-title">Mi Perfil</div>
+        <div class="perfil-row">
+          <span class="perfil-label">Nombre completo</span>
+          <span class="perfil-value" id="perfilNombre">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">DNI</span>
+          <span class="perfil-value" id="perfilDni">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Email</span>
+          <span class="perfil-value" id="perfilEmail">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Teléfono</span>
+          <span class="perfil-value" id="perfilTelefono">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Titulación</span>
+          <span class="perfil-value" id="perfilTitulacion">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Biografía</span>
+          <span class="perfil-value" id="perfilBiografia" style="font-style:italic; color: var(--muted);">Sin información</span>
+        </div>
+      </div>
     </div>
-
-    <div class="stats-grid" id="statsGrid">
-      <div class="stat-card">
-        <div class="stat-num" id="statAnios">–</div>
-        <div class="stat-desc">Años de experiencia</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statHoras">–</div>
-        <div class="stat-desc">Horas semanales</div>
-      </div>
-    </div>
-
-    <div class="perfil-card">
-      <div class="perfil-title">Mi Perfil</div>
-      <div class="perfil-row">
-        <span class="perfil-label">Nombre completo</span>
-        <span class="perfil-value" id="perfilNombre">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">DNI</span>
-        <span class="perfil-value" id="perfilDni">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Email</span>
-        <span class="perfil-value" id="perfilEmail">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Teléfono</span>
-        <span class="perfil-value" id="perfilTelefono">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Titulación</span>
-        <span class="perfil-value" id="perfilTitulacion">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Biografía</span>
-        <span class="perfil-value" id="perfilBiografia" style="font-style:italic; color: var(--muted);">Sin información</span>
+    
+    <div id="view-calendario" class="view">
+      <header class="header">
+        <h1 class="page-title">Calendario</h1>
+        <p class="page-subtitle">Competiciones de mis grupos</p>
+      </header>
+      <div class="perfil-card" style="padding: 1rem;">
+        <div id="calendar"></div>
       </div>
     </div>
   </main>
@@ -207,6 +223,38 @@
     }
   })
   .catch(() => {});
+  
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+    
+    if (name === 'calendario') initCalendar();
+  }
+
+  let calendarInstance = null;
+  function initCalendar() {
+    if (calendarInstance) return;
+    const calendarEl = document.getElementById('calendar');
+    fetch(`${API}/competiciones`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    }).then(r => r.json()).then(data => {
+      const events = data.map(c => ({
+        title: c.nombre + ' (' + c.tipo + ')',
+        start: c.fecha,
+        color: c.estado === 'pendiente' ? 'var(--muted)' : 'var(--burgundy)'
+      }));
+      calendarInstance = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        events: events
+      });
+      calendarInstance.render();
+    }).catch(() => {
+      calendarEl.innerHTML = '<p style="color:red">Error cargando calendario.</p>';
+    });
+  }
 
   function logout() {
     fetch(`${API}/logout`, {

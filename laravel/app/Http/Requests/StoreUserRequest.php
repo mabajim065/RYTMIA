@@ -40,6 +40,7 @@ class StoreUserRequest extends FormRequest
 
             // Estado (entrenadora/gimnasta)
             'estado' => ['nullable', 'in:activa,inactiva,baja'],
+            'telefono_contacto' => ['nullable', 'string', 'max:20'],
         ];
     }
 

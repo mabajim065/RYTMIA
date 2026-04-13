@@ -61,6 +61,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('usuarios-por-rol/{rol}', [UserController::class, 'porRol'])
              ->name('usuarios.por-rol');
 
+        // Competiciones
+        Route::get('competiciones', [\App\Http\Controllers\Api\CompeticionController::class, 'index']);
+
         // Categorías
         Route::get('categorias', function () {
             return response()->json(\App\Models\Categoria::orderBy('nombre')->get());

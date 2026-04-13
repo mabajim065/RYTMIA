@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 
   <style>
     :root {
@@ -174,6 +175,7 @@
       <button class="nav-link"        id="nav-grupos"    onclick="showView('grupos')">🏆 Grupos / Clases</button>
       <button class="nav-link"        id="nav-gimnastas" onclick="showView('gimnastas')">🤸‍♀️ Gimnastas</button>
       <button class="nav-link"        id="nav-admins"    onclick="showView('admins')">⚙️ Administradores</button>
+      <button class="nav-link"        id="nav-calendario"onclick="showView('calendario')">📅 Calendario</button>
     </nav>
     <div class="user-profile">
       <div class="avatar" id="sidebarAvatar">A</div>
@@ -265,6 +267,19 @@
           </tr></thead>
           <tbody id="tbodyAdmins"></tbody>
         </table>
+      </div>
+    </div>
+    
+    <!-- ── VISTA: CALENDARIO ───────────────────────────────────── -->
+    <div class="view" id="view-calendario">
+      <div class="header">
+        <div>
+          <h1 class="page-title">Calendario de Competiciones</h1>
+          <p class="page-subtitle">Visualiza todas las competiciones</p>
+        </div>
+      </div>
+      <div class="table-wrap" style="padding: 2rem;">
+        <div id="calendar"></div>
       </div>
     </div>
 
@@ -429,6 +444,10 @@
                 <option value="">Selecciona una categoría primero</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="formTelefonoContacto">Teléfono de Contacto (Gimnasta)</label>
+              <input class="form-input" id="formTelefonoContacto" type="text" maxlength="20" placeholder="Teléfono de contacto" />
+            </div>
           </div>
 
           <!-- Activo (solo edición) -->
@@ -496,6 +515,7 @@
     if (name === 'grupos')    cargarGrupos();
     if (name === 'gimnastas') cargarTablaUsuarios('gimnasta', 1);
     if (name === 'admins')    cargarTablaUsuarios('administrador', 1);
+    if (name === 'calendario') initCalendar();
   }
 
   /* ════════════════════════════════════════════════════
@@ -709,6 +729,7 @@
 
     if (esGimnasta) {
       prepararFormGimnasta(u.gimnasta?.categoria?.id, u.gimnasta?.conjunto?.id);
+      document.getElementById('formTelefonoContacto').value = u.gimnasta?.telefono_contacto ?? '';
     }
 
     if (esEntrenadora && u.entrenador) {
@@ -761,6 +782,7 @@
     if (rol === 'gimnasta') {
       payload.categoria_id = document.getElementById('formGimnastaCat').value;
       payload.conjunto_id  = document.getElementById('formGimnastaConj').value || null;
+      payload.telefono_contacto = document.getElementById('formTelefonoContacto').value.trim() || undefined;
       payload.club_id      = 1; // Asumimos club maestra 1
     }
 
@@ -1024,6 +1046,29 @@
     if (conjId && typeof conjId !== 'object') {
       selConj.value = conjId;
     }
+  }
+
+  let calendarInstance = null;
+  function initCalendar() {
+    if (calendarInstance) return;
+    const calendarEl = document.getElementById('calendar');
+    fetch(`${API}/competiciones`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    }).then(r => r.json()).then(data => {
+      const events = data.map(c => ({
+        title: c.nombre + ' (' + c.tipo + ')',
+        start: c.fecha,
+        color: c.estado === 'pendiente' ? 'var(--muted)' : 'var(--burgundy)'
+      }));
+      calendarInstance = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        events: events
+      });
+      calendarInstance.render();
+    }).catch(() => {
+      calendarEl.innerHTML = '<p style="color:red">Error cargando calendario.</p>';
+    });
   }
 
   cargarEntrenadoras();

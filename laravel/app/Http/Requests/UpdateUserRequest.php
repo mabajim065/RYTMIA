@@ -54,6 +54,7 @@ class UpdateUserRequest extends FormRequest
 
             // Estado
             'estado' => ['sometimes', 'nullable', 'in:activa,inactiva,baja'],
+            'telefono_contacto' => ['sometimes', 'nullable', 'string', 'max:20'],
         ];
     }
 

@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
   <style>
     :root {
       --burgundy: #6B1A3A;
@@ -23,6 +24,8 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; background-color: var(--off-white); color: var(--text); display: flex; min-height: 100vh; }
+    .view { display: none; }
+    .view.active { display: block; }
     /* === SIDEBAR === */
     .sidebar { width: 280px; background-color: var(--white); border-right: 1px solid var(--blush); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10; }
     .brand { padding: 2rem; font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 600; color: var(--burgundy); text-align: center; border-bottom: 1px solid var(--blush); }
@@ -78,7 +81,8 @@
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
-      <a class="nav-link active">🏠 Mi Panel</a>
+      <a class="nav-link active" id="nav-panel" onclick="showView('panel')">🏠 Mi Panel</a>
+      <a class="nav-link" id="nav-calendario" onclick="showView('calendario')">📅 Calendario</a>
     </nav>
     <div class="user-profile">
       <div class="avatar" id="sidebarAvatar">G</div>
@@ -91,64 +95,80 @@
   </aside>
 
   <main class="main-content">
-    <header class="header">
-      <h1 class="page-title">Mi Panel</h1>
-      <p class="page-subtitle">Bienvenida, <span id="nombreBienvenida">gimnasta</span></p>
-    </header>
+    <div id="view-panel" class="view active">
+      <header class="header">
+        <h1 class="page-title">Mi Panel</h1>
+        <p class="page-subtitle">Bienvenida, <span id="nombreBienvenida">gimnasta</span></p>
+      </header>
 
-    <div class="welcome-card">
-      <div class="welcome-title">¡Hola, <span id="welcomeName">gimnasta</span>! 🎀</div>
-      <div class="welcome-sub">Consulta aquí tu información personal y la de tu conjunto.</div>
+      <div class="welcome-card">
+        <div class="welcome-title">¡Hola, <span id="welcomeName">gimnasta</span>! 🎀</div>
+        <div class="welcome-sub">Consulta aquí tu información personal y la de tu conjunto.</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="statAnios">–</div>
+          <div class="stat-desc">Años en el club</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statCategoria">–</div>
+          <div class="stat-desc">Categoría</div>
+        </div>
+      </div>
+
+      <div class="perfil-card">
+        <div class="perfil-title">Mi Ficha</div>
+        <div class="perfil-row">
+          <span class="perfil-label">Nombre completo</span>
+          <span class="perfil-value" id="perfilNombre">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">DNI</span>
+          <span class="perfil-value" id="perfilDni">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Email</span>
+          <span class="perfil-value" id="perfilEmail">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Teléfono usuario</span>
+          <span class="perfil-value" id="perfilTelefono">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Teléfono contacto</span>
+          <span class="perfil-value" id="perfilContacto">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Nº de licencia</span>
+          <span class="perfil-value" id="perfilLicencia">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Fecha de nacimiento</span>
+          <span class="perfil-value" id="perfilFecha">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Conjunto</span>
+          <span class="perfil-value" id="perfilConjunto">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Club</span>
+          <span class="perfil-value" id="perfilClub">–</span>
+        </div>
+        <div class="perfil-row">
+          <span class="perfil-label">Estado</span>
+          <span class="perfil-value" id="perfilEstado">–</span>
+        </div>
+      </div>
     </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-num" id="statAnios">–</div>
-        <div class="stat-desc">Años en el club</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statCategoria">–</div>
-        <div class="stat-desc">Categoría</div>
-      </div>
-    </div>
-
-    <div class="perfil-card">
-      <div class="perfil-title">Mi Ficha</div>
-      <div class="perfil-row">
-        <span class="perfil-label">Nombre completo</span>
-        <span class="perfil-value" id="perfilNombre">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">DNI</span>
-        <span class="perfil-value" id="perfilDni">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Email</span>
-        <span class="perfil-value" id="perfilEmail">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Teléfono</span>
-        <span class="perfil-value" id="perfilTelefono">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Nº de licencia</span>
-        <span class="perfil-value" id="perfilLicencia">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Fecha de nacimiento</span>
-        <span class="perfil-value" id="perfilFecha">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Conjunto</span>
-        <span class="perfil-value" id="perfilConjunto">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Club</span>
-        <span class="perfil-value" id="perfilClub">–</span>
-      </div>
-      <div class="perfil-row">
-        <span class="perfil-label">Estado</span>
-        <span class="perfil-value" id="perfilEstado">–</span>
+    
+    <div id="view-calendario" class="view">
+      <header class="header">
+        <h1 class="page-title">Calendario</h1>
+        <p class="page-subtitle">Competiciones de mi conjunto</p>
+      </header>
+      <div class="perfil-card" style="padding: 1rem;">
+        <div id="calendar"></div>
       </div>
     </div>
   </main>
@@ -187,6 +207,7 @@
       document.getElementById('perfilLicencia').textContent= g.numero_licencia ?? '–';
       document.getElementById('perfilFecha').textContent   = g.fecha_nacimiento
         ? new Date(g.fecha_nacimiento).toLocaleDateString('es-ES') : '–';
+      document.getElementById('perfilContacto').textContent= g.telefono_contacto ?? '–';
       document.getElementById('perfilConjunto').textContent= g.conjunto?.nombre ?? '–';
       document.getElementById('perfilClub').textContent    = g.club?.nombre ?? '–';
 
@@ -195,6 +216,38 @@
     }
   })
   .catch(() => {});
+  
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+    
+    if (name === 'calendario') initCalendar();
+  }
+
+  let calendarInstance = null;
+  function initCalendar() {
+    if (calendarInstance) return;
+    const calendarEl = document.getElementById('calendar');
+    fetch(`${API}/competiciones`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    }).then(r => r.json()).then(data => {
+      const events = data.map(c => ({
+        title: c.nombre + ' (' + c.tipo + ')',
+        start: c.fecha,
+        color: c.estado === 'pendiente' ? 'var(--muted)' : 'var(--burgundy)'
+      }));
+      calendarInstance = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        events: events
+      });
+      calendarInstance.render();
+    }).catch(() => {
+      calendarEl.innerHTML = '<p style="color:red">Error cargando calendario.</p>';
+    });
+  }
 
   function logout() {
     fetch(`${API}/logout`, {

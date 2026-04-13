@@ -49,4 +49,9 @@ class Entrenador extends Model
     {
         return $query->where('estado', 'activa');
     }
+
+    public function conjuntos()
+    {
+        return $this->belongsToMany(Conjunto::class, 'conjunto_entrenador');
+    }
 }

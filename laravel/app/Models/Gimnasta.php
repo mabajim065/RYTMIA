@@ -18,6 +18,7 @@ class Gimnasta extends Model
         'fecha_nacimiento',
         'anios_en_club',
         'estado',
+        'telefono_contacto',
     ];
 
     protected function casts(): array
