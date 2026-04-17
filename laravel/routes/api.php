@@ -48,7 +48,6 @@ Route::middleware('auth:sanctum')->group(function () {
         
         Route::patch('usuarios/{usuario}/toggle-activo', [UserController::class, 'toggleActivo'])
              ->name('usuarios.toggle-activo');
-    });
 
         // Competiciones (Crear)
         Route::post('competiciones', [\App\Http\Controllers\Api\CompeticionController::class, 'store']);
