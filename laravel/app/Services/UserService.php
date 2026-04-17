@@ -15,7 +15,7 @@ class UserService
     public function listar(array $filtros): LengthAwarePaginator
     {
         $query = User::query()
-            ->with(['entrenador.club', 'gimnasta.club'])
+            ->with(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto'])
             ->orderBy('apellidos');
 
         if (isset($filtros['rol'])) {

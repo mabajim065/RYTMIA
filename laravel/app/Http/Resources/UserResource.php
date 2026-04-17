@@ -49,6 +49,7 @@ class UserResource extends JsonResource
                     'fecha_nacimiento' => $this->gimnasta->fecha_nacimiento,
                     'anios_en_club'    => $this->gimnasta->anios_en_club,
                     'estado'           => $this->gimnasta->estado,
+                    'telefono_contacto'=> $this->gimnasta->telefono_contacto,
                     'club'             => $this->when(
                         $this->gimnasta->relationLoaded('club') && $this->gimnasta->club,
                         fn () => [

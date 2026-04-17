@@ -28,4 +28,9 @@ class Competicion extends Model
     {
         return $this->belongsToMany(Categoria::class, 'competicion_categoria');
     }
+
+    public function conjuntos()
+    {
+        return $this->belongsToMany(Conjunto::class, 'competicion_conjunto');
+    }
 }

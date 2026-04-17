@@ -13,7 +13,7 @@ class CompeticionController extends Controller
         $user = $request->user();
 
         if ($user->esAdministrador()) {
-            return response()->json(Competicion::with('categorias')->get());
+            return response()->json(Competicion::with('conjuntos')->get());
         }
 
         if ($user->esGimnasta()) {
@@ -21,11 +21,11 @@ class CompeticionController extends Controller
             if (!$gimnasta || !$gimnasta->conjunto_id) {
                 return response()->json([]);
             }
-            $categoriaId = $gimnasta->conjunto->categoria_id;
+            $conjuntoId = $gimnasta->conjunto_id;
             
-            $competiciones = Competicion::whereHas('categorias', function($q) use ($categoriaId) {
-                $q->where('categorias.id', $categoriaId);
-            })->with('categorias')->get();
+            $competiciones = Competicion::whereHas('conjuntos', function($q) use ($conjuntoId) {
+                $q->where('conjuntos.id', $conjuntoId);
+            })->with('conjuntos')->get();
             return response()->json($competiciones);
         }
 
@@ -34,14 +34,34 @@ class CompeticionController extends Controller
             if (!$entrenador) {
                 return response()->json([]);
             }
-            $categoriaIds = $entrenador->conjuntos()->pluck('categoria_id')->unique();
+            $conjuntoIds = $entrenador->conjuntos()->pluck('conjuntos.id')->unique();
             
-            $competiciones = Competicion::whereHas('categorias', function($q) use ($categoriaIds) {
-                $q->whereIn('categorias.id', $categoriaIds);
-            })->with('categorias')->get();
+            $competiciones = Competicion::whereHas('conjuntos', function($q) use ($conjuntoIds) {
+                $q->whereIn('conjuntos.id', $conjuntoIds);
+            })->with('conjuntos')->get();
             return response()->json($competiciones);
         }
 
         return response()->json([]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string',
+            'fecha' => 'required|date',
+            'conjunto_id' => 'required|exists:conjuntos,id',
+        ]);
+        
+        $competicion = Competicion::create([
+            'nombre' => $data['nombre'],
+            'fecha' => $data['fecha'],
+            'tipo' => 'promesas',
+            'estado' => 'confirmada'
+        ]);
+        
+        $competicion->conjuntos()->sync([$data['conjunto_id']]);
+        
+        return response()->json($competicion, 201);
     }
 }

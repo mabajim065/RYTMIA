@@ -68,16 +68,19 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
+        $user->loadMissing(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto']);
 
         return response()->json([
-            'id'       => $user->id,
-            'nombre'   => $user->nombre,
-            'apellidos'=> $user->apellidos,
-            'dni'      => $user->dni,
-            'email'    => $user->email,
-            'rol'      => $user->rol,
-            'telefono' => $user->telefono,
-            'activo'   => $user->activo,
+            'id'        => $user->id,
+            'nombre'    => $user->nombre,
+            'apellidos' => $user->apellidos,
+            'dni'       => $user->dni,
+            'email'     => $user->email,
+            'rol'       => $user->rol,
+            'telefono'  => $user->telefono,
+            'activo'    => $user->activo,
+            'entrenador'=> $user->entrenador,
+            'gimnasta'  => $user->gimnasta,
         ]);
     }
 }

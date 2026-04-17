@@ -25,7 +25,7 @@ class ConjuntoController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $conjuntos = $this->service->listar(
-            $request->only(['club_id', 'categoria_id', 'search'])
+            $request->only(['club_id', 'categoria_id', 'entrenador_id', 'search'])
         );
 
         return ConjuntoResource::collection($conjuntos);

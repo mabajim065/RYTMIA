@@ -24,19 +24,34 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me',      [AuthController::class, 'me']);
+    
+    // Competiciones (Lectura general para todos los roles)
+    Route::get('competiciones', [\App\Http\Controllers\Api\CompeticionController::class, 'index']);
 
     /*
     |----------------------------------------------------------------------
-    | Gestión de usuarios — solo administrador
+    | Gestión de usuarios
     |----------------------------------------------------------------------
     */
+    // Lectura (Admin y Entrenadora)
+    Route::middleware('role:administrador,entrenadora')->group(function () {
+        Route::get('usuarios',         [UserController::class, 'index']);
+        Route::get('usuarios/{usuario}', [UserController::class, 'show']);
+    });
+
+    // Escritura (Solo Admin)
     Route::middleware('role:administrador')->group(function () {
-
-        Route::apiResource('usuarios', UserController::class);
-
-        // Acciones extra
+        Route::post  ('usuarios',            [UserController::class, 'store']);
+        Route::put   ('usuarios/{usuario}',   [UserController::class, 'update']);
+        Route::patch ('usuarios/{usuario}',   [UserController::class, 'update']);
+        Route::delete('usuarios/{usuario}',   [UserController::class, 'destroy']);
+        
         Route::patch('usuarios/{usuario}/toggle-activo', [UserController::class, 'toggleActivo'])
              ->name('usuarios.toggle-activo');
+    });
+
+        // Competiciones (Crear)
+        Route::post('competiciones', [\App\Http\Controllers\Api\CompeticionController::class, 'store']);
 
         // CRUD conjuntos
         Route::post  ('conjuntos',            [ConjuntoController::class, 'store']);
@@ -60,9 +75,6 @@ Route::middleware('auth:sanctum')->group(function () {
         // Consulta usuarios por rol
         Route::get('usuarios-por-rol/{rol}', [UserController::class, 'porRol'])
              ->name('usuarios.por-rol');
-
-        // Competiciones
-        Route::get('competiciones', [\App\Http\Controllers\Api\CompeticionController::class, 'index']);
 
         // Categorías
         Route::get('categorias', function () {

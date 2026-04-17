@@ -32,6 +32,12 @@ class ConjuntoService
             $query->where('categoria_id', $filtros['categoria_id']);
         }
 
+        if (! empty($filtros['entrenador_id'])) {
+            $query->whereHas('entrenadores', function ($q) use ($filtros) {
+                $q->where('entrenadores.id', $filtros['entrenador_id']);
+            });
+        }
+
         if (! empty($filtros['search'])) {
             $s = '%' . $filtros['search'] . '%';
             $query->where('nombre', 'like', $s);

@@ -277,6 +277,7 @@
           <h1 class="page-title">Calendario de Competiciones</h1>
           <p class="page-subtitle">Visualiza todas las competiciones</p>
         </div>
+        <button class="btn-primary" onclick="abrirFormCompeticion()">+ Añadir Competición</button>
       </div>
       <div class="table-wrap" style="padding: 2rem;">
         <div id="calendar"></div>
@@ -467,6 +468,39 @@
       </form>
     </div>
   </div>
+    <!-- ── MODAL NUEVA COMPETICION ─────────────────────────────── -->
+  <div class="modal-overlay" id="modalCompeticion" onclick="cerrarModal('modalCompeticion', event)">
+    <div class="modal-content form-modal" onclick="event.stopPropagation()">
+      <h2 class="modal-name" style="margin-bottom:1.5rem">Nueva Competición</h2>
+      <div class="alert-banner" id="compAlert"></div>
+
+      <form id="competicionForm" onsubmit="guardarCompeticion(event)">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label" for="compNombre">Nombre de la competición *</label>
+            <input class="form-input" id="compNombre" type="text" placeholder="Ej: Torneo Nacional" required />
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="compConjunto">Grupo que asiste *</label>
+            <select class="form-select" id="compConjunto" required>
+              <option value="">Cargando grupos...</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="compFecha">Fecha / Horario *</label>
+            <input class="form-input" id="compFecha" type="date" required />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" onclick="document.getElementById('modalCompeticion').classList.remove('open')">Cancelar</button>
+          <button type="submit" class="btn-primary" id="btnSubmitComp">Guardar Competición</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
 
 </div>
 
@@ -1045,6 +1079,59 @@
 
     if (conjId && typeof conjId !== 'object') {
       selConj.value = conjId;
+    }
+  }
+
+  /* ════════════════════════════════════════════════════
+   * Modal Competiciones
+   * ════════════════════════════════════════════════════ */
+  function abrirFormCompeticion() {
+    document.getElementById('competicionForm').reset();
+    document.getElementById('compAlert').className = 'alert-banner';
+    document.getElementById('compAlert').textContent = '';
+    
+    // Rellenamos el selector de conjuntos
+    const sel = document.getElementById('compConjunto');
+    sel.innerHTML = '<option value="">Selecciona un grupo...</option>';
+    _conjuntosGlobales.forEach(c => {
+      sel.innerHTML += `<option value="${c.id}">${c.nombre} (Cat: ${c.categoria?.nombre ?? '-'})</option>`;
+    });
+
+    document.getElementById('modalCompeticion').classList.add('open');
+  }
+
+  async function guardarCompeticion(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitComp');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    const payload = {
+      nombre: document.getElementById('compNombre').value.trim(),
+      conjunto_id: document.getElementById('compConjunto').value,
+      fecha: document.getElementById('compFecha').value
+    };
+
+    try {
+      await apiFetch('/competiciones', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      document.getElementById('modalCompeticion').classList.remove('open');
+      
+      // Recargar el calendario si está visible
+      if (document.getElementById('view-calendario').classList.contains('active')) {
+        calendarInstance.destroy();
+        calendarInstance = null;
+        initCalendar();
+      }
+    } catch (err) {
+      const el = document.getElementById('compAlert');
+      el.textContent = err.message ?? 'Error al guardar la competición.';
+      el.className = 'alert-banner alert-error';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Guardar Competición';
     }
   }
 

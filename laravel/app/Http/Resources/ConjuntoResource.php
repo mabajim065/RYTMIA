@@ -47,6 +47,7 @@ class ConjuntoResource extends JsonResource
                     'fecha_nacimiento'=> $g->fecha_nacimiento?->format('Y-m-d'),
                     'anios_en_club'   => $g->anios_en_club,
                     'estado'          => $g->estado,
+                    'telefono_contacto' => $g->telefono_contacto,
                 ])
             ),
 
