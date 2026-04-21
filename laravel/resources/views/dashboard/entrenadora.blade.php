@@ -140,6 +140,18 @@
     .mobile-nav { display: none; padding: 1rem 1.5rem; background: var(--white); border-bottom: 1px solid var(--blush); align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20; }
     .mobile-nav .brand { padding: 0; border: none; font-size: 1.8rem; text-align: left; }
     .menu-btn { background: none; border: none; font-size: 1.8rem; color: var(--burgundy); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
+    .td-actions { display: flex; gap: 0.5rem; }
+
+    /* === MENSAJES === */
+    .mensaje-lista { display: flex; flex-direction: column; }
+    .mensaje-item { padding: 1.5rem; border-bottom: 1px solid var(--blush); cursor: pointer; transition: background 0.2s; position: relative; }
+    .mensaje-item:hover { background: var(--cream); }
+    .mensaje-item.active { background: var(--cream); border-left: 4px solid var(--burgundy); }
+    .mensaje-item.unread::before { content: ''; position: absolute; right: 1rem; top: 1.5rem; width: 8px; height: 8px; background: var(--rose); border-radius: 50%; }
+    .msg-emisor { font-weight: 600; font-size: 0.95rem; color: var(--text); margin-bottom: 0.25rem; display: block; }
+    .msg-asunto { font-size: 0.85rem; color: var(--burgundy); font-weight: 500; margin-bottom: 0.5rem; display: block; }
+    .msg-snippet { font-size: 0.8rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-fecha { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; display: block; text-align: right; }
 
     @media (max-width: 768px) {
       .mobile-nav { display: flex; }
@@ -166,9 +178,9 @@
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
       <button class="nav-link active" id="nav-panel"      onclick="showView('panel')">🏠 Mi Panel</button>
-      <button class="nav-link"        id="nav-equipo"     onclick="showView('equipo')">👥 Equipo Técnico</button>
       <button class="nav-link"        id="nav-grupos"     onclick="showView('grupos')">🏆 Mis Grupos</button>
-      <button class="nav-link"        id="nav-gimnastas"  onclick="showView('gimnastas')">🤸‍♀️ Gimnastas</button>
+      <button class="nav-link"        id="nav-gimnastas"  onclick="showView('gimnastas')">🤸‍♀️ Mis Gimnastas</button>
+      <button class="nav-link"        id="nav-mensajes"   onclick="showView('mensajes')">✉️ Mensajes Padres</button>
       <button class="nav-link"        id="nav-calendario" onclick="showView('calendario')">📅 Calendario</button>
     </nav>
     <div class="user-profile">
@@ -227,18 +239,43 @@
       </div>
     </div>
 
-    <!-- ── VISTA: EQUIPO TÉCNICO ───────────────────────────────── -->
-    <div id="view-equipo" class="view">
+    <!-- ── VISTA: MENSAJES ────────────────────────────────────── -->
+    <div id="view-mensajes" class="view">
       <header class="header">
         <div>
-          <h1 class="page-title">Equipo Técnico</h1>
-          <p class="page-subtitle">Compañeras del club y coordinadoras</p>
+          <h1 class="page-title">Bandeja de Entrada</h1>
+          <p class="page-subtitle">Mensajes enviados por los padres de tus gimnastas</p>
         </div>
       </header>
-      <div id="teamGrid" class="team-grid">
-        <div class="loading-state">
-          <div class="loading-spinner"></div>
-          <p>Cargando equipo…</p>
+
+      <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
+        <!-- Lista de mensajes -->
+        <div class="table-wrap" style="height: 600px; overflow-y: auto;">
+          <div id="mensajeLista" class="mensaje-lista">
+            <div class="loading-state"><div class="loading-spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Detalle del mensaje -->
+        <div id="mensajeDetalle" class="perfil-card" style="min-height: 400px; display: none;">
+          <div id="mensajeContenido">
+            <h3 id="detAsunto" style="font-family:'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--burgundy); margin-bottom: 0.5rem;">Asunto</h3>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; font-size: 0.9rem; color: var(--muted);">
+              <span id="detEmisor">De: -</span>
+              <span id="detFecha">-</span>
+            </div>
+            <div id="detTexto" style="line-height: 1.6; margin-bottom: 2rem; white-space: pre-wrap;">Contenido...</div>
+            
+            <hr style="border: none; border-top: 1px solid var(--blush); margin-bottom: 2rem;">
+            
+            <h4 style="font-size: 1rem; color: var(--burgundy); margin-bottom: 1rem;">Responder mensaje</h4>
+            <textarea id="resContenido" class="form-textarea" placeholder="Escribe tu respuesta aquí..." style="margin-bottom: 1rem;"></textarea>
+            <button class="btn-primary" onclick="enviarRespuesta()">Enviar Respuesta</button>
+          </div>
+        </div>
+        
+        <div id="mensajePlaceholder" class="perfil-card" style="height: 400px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-style: italic;">
+          Selecciona un mensaje para leerlo
         </div>
       </div>
     </div>
@@ -280,6 +317,7 @@
               <th>Categoría</th>
               <th>Grupo / Clase</th>
               <th>Teléfono Contacto</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="tbodyGimnastasTabla">
@@ -289,6 +327,28 @@
       </div>
       <div class="pagination" id="pagGimnastas" style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 0.5rem;"></div>
     </div>
+...
+  <!-- ── MODAL NUEVO MENSAJE ─────────────────────────────────── -->
+  <div class="modal-overlay" id="modalMensaje" onclick="cerrarModal('modalMensaje', event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
+      <h2 class="modal-name" style="margin-bottom: 1.5rem;">Enviar mensaje a <span id="nmDestinatario">...</span></h2>
+      
+      <div class="form-group">
+        <label class="form-label">Asunto</label>
+        <input type="text" id="nmAsunto" class="form-input" placeholder="Ej: Falta de asistencia, Equipación...">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Mensaje</label>
+        <textarea id="nmContenido" class="form-textarea" style="height: 150px;" placeholder="Escribe tu mensaje aquí..."></textarea>
+      </div>
+
+      <div class="modal-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button class="btn-outline" style="flex:1" onclick="document.getElementById('modalMensaje').classList.remove('open')">Cancelar</button>
+        <button class="btn-primary" style="flex:1" onclick="enviarMensajeNuevo()">Enviar Mensaje</button>
+      </div>
+    </div>
+  </div>
 
     <!-- ── VISTA: CALENDARIO ───────────────────────────────────── -->
     <div id="view-calendario" class="view">
@@ -321,7 +381,8 @@
             <tr>
               <th>Gimnasta</th>
               <th>Licencia</th>
-              <th>Teléfono Contacto</th>
+              <th>Teléfono</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="tbodyGimnastasModal">
@@ -403,40 +464,10 @@
     document.getElementById('view-' + name).classList.add('active');
     document.getElementById('nav-' + name).classList.add('active');
     
-    if (name === 'equipo') cargarEquipo();
     if (name === 'grupos') cargarGrupos();
     if (name === 'gimnastas') cargarGimnastas();
+    if (name === 'mensajes') cargarMensajes();
     if (name === 'calendario') initCalendar();
-  }
-
-  async function cargarEquipo() {
-    const grid = document.getElementById('teamGrid');
-    grid.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Cargando equipo…</p></div>`;
-    try {
-      const res = await fetch(`${API}/usuarios-por-rol/entrenadora`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-      });
-      const data = await res.json();
-      const lista = data.data ?? data;
-
-      grid.innerHTML = lista.map(u => `
-        <div class="team-card">
-          <div class="card-avatar">${(u.nombre?.[0] ?? '?').toUpperCase()}</div>
-          <div class="card-name">${u.nombre} ${u.apellidos ?? ''}</div>
-          <div class="card-role">${u.entrenador?.titulacion ?? 'Entrenadora'}</div>
-          <div class="card-stats">
-            <div class="stat">
-              <span class="stat-val">${u.entrenador?.anios_experiencia ?? 0}</span>
-              <span class="stat-label">Años exp.</span>
-            </div>
-          </div>
-          <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem;">${u.email ?? ''}</div>
-          <div style="font-size: 0.85rem; color: var(--burgundy); font-weight: 600;">${u.telefono ?? ''}</div>
-        </div>
-      `).join('');
-    } catch (e) {
-      grid.innerHTML = `<p style="color:red; text-align:center">Error al cargar equipo.</p>`;
-    }
   }
 
   async function cargarGrupos() {
@@ -478,7 +509,7 @@
 
   async function verGimnastasDelGrupo(id) {
     const tbody = document.getElementById('tbodyGimnastasModal');
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Cargando...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Cargando...</td></tr>';
     document.getElementById('modalGimnastasG').classList.add('open');
 
     try {
@@ -493,29 +524,33 @@
 
       const gimnastas = conjunto.gimnastas ?? [];
       if (gimnastas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">No hay gimnastas en este grupo.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">No hay gimnastas en este grupo.</td></tr>';
       } else {
         tbody.innerHTML = gimnastas.map(g => `
           <tr>
             <td><strong>${g.nombre} ${g.apellidos ?? ''}</strong></td>
             <td>${g.numero_licencia ?? '–'}</td>
             <td><a href="tel:${g.telefono_contacto ?? ''}" style="color:var(--burgundy); font-weight:600; text-decoration:none">${g.telefono_contacto ?? 'Sin teléfono'}</a></td>
+            <td>
+               <button class="btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${g.user?.id}, '${g.nombre} ${g.apellidos ?? ''}')">✉️ Mensaje</button>
+            </td>
           </tr>
         `).join('');
       }
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red">Error al cargar datos.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red">Error al cargar datos.</td></tr>';
     }
   }
 
   async function cargarGimnastas(pagina = 1) {
     const tbody = document.getElementById('tbodyGimnastasTabla');
     const search = document.getElementById('searchGimnastas').value;
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Cargando...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Cargando...</td></tr>';
 
     try {
       let url = `${API}/usuarios?rol=gimnasta&page=${pagina}`;
       if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (entrenadorId) url += `&entrenador_id=${entrenadorId}`;
 
       const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
@@ -524,7 +559,7 @@
       const lista = data.data ?? [];
 
       if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay gimnastas registradas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No tienes gimnastas asignadas.</td></tr>';
       } else {
         tbody.innerHTML = lista.map(u => `
           <tr>
@@ -533,6 +568,9 @@
             <td><span class="badge" style="background:var(--cream); color:var(--burgundy); border:1px solid var(--blush); padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem;">${u.gimnasta?.categoria?.nombre ?? '–'}</span></td>
             <td>${u.gimnasta?.conjunto?.nombre ?? '<small style="color:var(--muted)">Sin Asignar</small>'}</td>
             <td><a href="tel:${u.gimnasta?.telefono_contacto ?? ''}" style="color:var(--burgundy); font-weight:600; text-decoration:none">${u.gimnasta?.telefono_contacto ?? 'Sin teléfono'}</a></td>
+            <td>
+              <button class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${u.id}, '${u.nombre} ${u.apellidos ?? ''}')">✉️ Mensaje</button>
+            </td>
           </tr>
         `).join('');
       }
@@ -555,7 +593,136 @@
         }
       }
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red">Error al cargar gimnastas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red">Error al cargar gimnastas.</td></tr>';
+    }
+  }
+
+  let nmDestinatarioId = null;
+  function abrirModalMensaje(id, nombre) {
+    nmDestinatarioId = id;
+    document.getElementById('nmDestinatario').textContent = nombre;
+    document.getElementById('nmAsunto').value = '';
+    document.getElementById('nmContenido').value = '';
+    document.getElementById('modalMensaje').classList.add('open');
+  }
+
+  async function enviarMensajeNuevo() {
+    const asunto = document.getElementById('nmAsunto').value.trim();
+    const contenido = document.getElementById('nmContenido').value.trim();
+    
+    if (!contenido || !nmDestinatarioId) {
+      alert('Por favor, escribe el contenido del mensaje.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/mensajes`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`, 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          receptor_id: nmDestinatarioId,
+          asunto: asunto || 'Sin asunto',
+          contenido: contenido
+        })
+      });
+
+      if (res.ok) {
+        alert('Mensaje enviado con éxito');
+        document.getElementById('modalMensaje').classList.remove('open');
+      } else {
+        alert('Error al enviar el mensaje');
+      }
+    } catch (e) {
+      alert('Error de conexión');
+    }
+  }
+
+  let selectedMsg = null;
+  async function cargarMensajes() {
+    const lista = document.getElementById('mensajeLista');
+    lista.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div></div>';
+    try {
+      const res = await fetch(`${API}/mensajes`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      
+      if (!data.length) {
+        lista.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--muted)">No tienes mensajes nuevos</div>';
+        return;
+      }
+
+      lista.innerHTML = data.map(m => `
+        <div class="mensaje-item ${m.leido_at ? '' : 'unread'} ${selectedMsg?.id === m.id ? 'active' : ''}" onclick='verMensaje(${JSON.stringify(m)})'>
+          <span class="msg-emisor">${m.emisor?.nombre} ${m.emisor?.apellidos ?? ''}</span>
+          <span class="msg-asunto">${m.asunto}</span>
+          <span class="msg-snippet">${m.contenido}</span>
+          <span class="msg-fecha">${new Date(m.created_at).toLocaleDateString()}</span>
+        </div>
+      `).join('');
+    } catch (e) {
+      lista.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--error)">Error al cargar mensajes</div>';
+    }
+  }
+
+  function verMensaje(m) {
+    selectedMsg = m;
+    document.getElementById('mensajePlaceholder').style.display = 'none';
+    document.getElementById('mensajeDetalle').style.display = 'block';
+    
+    document.getElementById('detAsunto').textContent = m.asunto;
+    document.getElementById('detEmisor').textContent = `De: ${m.emisor?.nombre} ${m.emisor?.apellidos ?? ''}`;
+    document.getElementById('detFecha').textContent = new Date(m.created_at).toLocaleString();
+    document.getElementById('detTexto').textContent = m.contenido;
+    document.getElementById('resContenido').value = '';
+
+    // Actualizar lista para marcar como activo
+    document.querySelectorAll('.mensaje-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    // Marcar como leído si no lo está
+    if (!m.leido_at) {
+      fetch(`${API}/mensajes/${m.id}/marcar-leido`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      }).then(() => {
+        m.leido_at = new Date();
+        cargarMensajes();
+      });
+    }
+  }
+
+  async function enviarRespuesta() {
+    const contenido = document.getElementById('resContenido').value.trim();
+    if (!contenido || !selectedMsg) return;
+
+    try {
+      const res = await fetch(`${API}/mensajes`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`, 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          receptor_id: selectedMsg.emisor_id,
+          asunto: `RE: ${selectedMsg.asunto}`,
+          contenido: contenido
+        })
+      });
+
+      if (res.ok) {
+        alert('Respuesta enviada con éxito');
+        document.getElementById('resContenido').value = '';
+      } else {
+        alert('Error al enviar la respuesta');
+      }
+    } catch (e) {
+      alert('Error de conexión');
     }
   }
 

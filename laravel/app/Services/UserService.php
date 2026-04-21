@@ -36,6 +36,12 @@ class UserService
             });
         }
 
+        if (! empty($filtros['entrenador_id'])) {
+            $query->whereHas('gimnasta.conjunto.entrenadores', function ($q) use ($filtros) {
+                $q->where('entrenadores.id', $filtros['entrenador_id']);
+            });
+        }
+
         return $query->paginate(15);
     }
 

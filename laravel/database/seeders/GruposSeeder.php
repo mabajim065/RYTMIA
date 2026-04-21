@@ -125,43 +125,40 @@ class GruposSeeder extends Seeder
         $conjObjs['Grupo Base']->entrenadores()->syncWithoutDetaching([$entrenadoras['Carmen']->id]);
         $conjObjs['Grupo Absoluto']->entrenadores()->syncWithoutDetaching([$entrenadoras['Carmen']->id]);
 
-        // ── 6. Gimnastas de ejemplo ───────────────────────────────
-        $gimnastasData = [
-            ['dni' => '20000001A', 'nombre' => 'Sofia',    'apellidos' => 'Martín',   'cat' => 'Escuela',   'conj' => 'Etapa Infantil', 'nacimiento' => '2018-03-10', 'licencia' => 'LIC-001'],
-            ['dni' => '20000002B', 'nombre' => 'Lucía',    'apellidos' => 'Fernández','cat' => 'Escuela',   'conj' => 'Escuela',        'nacimiento' => '2016-06-22', 'licencia' => 'LIC-002'],
-            ['dni' => '20000003C', 'nombre' => 'Valeria',  'apellidos' => 'Sanz',     'cat' => 'Escuela',   'conj' => 'Primaria 1',     'nacimiento' => '2015-11-05', 'licencia' => 'LIC-003'],
-            ['dni' => '20000004D', 'nombre' => 'Andrea',   'apellidos' => 'Moreno',   'cat' => 'Diputación','conj' => 'Diputación',     'nacimiento' => '2014-09-14', 'licencia' => 'LIC-004'],
-            ['dni' => '20000005E', 'nombre' => 'Paula',    'apellidos' => 'Jiménez',  'cat' => 'Promesa',   'conj' => 'Promesas',       'nacimiento' => '2013-02-28', 'licencia' => 'LIC-005'],
-            ['dni' => '20000006F', 'nombre' => 'Carla',    'apellidos' => 'Romero',   'cat' => 'Precopa',   'conj' => 'Individuales Precopa','nacimiento' => '2012-07-01', 'licencia' => 'LIC-006'],
-            ['dni' => '20000007G', 'nombre' => 'Elena',    'apellidos' => 'González', 'cat' => 'Copa',      'conj' => 'Conjuntos Copa', 'nacimiento' => '2010-04-18', 'licencia' => 'LIC-007'],
-            ['dni' => '20000008H', 'nombre' => 'Martina',  'apellidos' => 'Pérez',    'cat' => 'Base',      'conj' => 'Grupo Base',     'nacimiento' => '2009-08-10', 'licencia' => 'LIC-008'],
-            ['dni' => '20000009I', 'nombre' => 'Daniela',  'apellidos' => 'López',    'cat' => 'Absoluto',  'conj' => 'Grupo Absoluto', 'nacimiento' => '2007-01-20', 'licencia' => 'LIC-009'],
-        ];
+        // ── 6. Generación Masiva de Gimnastas (20 por clase) ──────
+        $this->command->info('Generando 20 gimnastas por clase...');
+        
+        foreach ($conjObjs as $nombreConjunto => $conjunto) {
+            for ($i = 1; $i <= 20; $i++) {
+                // DNI único basado en ID de conjunto e índice
+                $dniNum = 20000000 + ($conjunto->id * 100) + $i;
+                $dni = $dniNum . "X";
+                
+                $user = User::firstOrCreate(
+                    ['dni' => $dni],
+                    [
+                        'nombre'    => "Gimnasta " . $i,
+                        'apellidos' => "de " . $nombreConjunto,
+                        'email'     => "gimnasta" . $conjunto->id . "_" . $i . "@rytmia.test",
+                        'password'  => Hash::make('Gimnasta1234'),
+                        'rol'       => 'gimnasta',
+                        'activo'    => true,
+                        'telefono'  => '600000000' // Teléfono general del usuario
+                    ]
+                );
 
-        foreach ($gimnastasData as $g) {
-            $user = User::firstOrCreate(
-                ['dni' => $g['dni']],
-                [
-                    'nombre'    => $g['nombre'],
-                    'apellidos' => $g['apellidos'],
-                    'email'     => strtolower($g['nombre']) . '@rytmia.test',
-                    'password'  => Hash::make('Gimnasta1234'),
-                    'rol'       => 'gimnasta',
-                    'activo'    => true,
-                ]
-            );
-
-            if (! $user->gimnasta) {
-                $conjId = $g['conj'] ? $conjObjs[$g['conj']]->id : null;
-                $user->gimnasta()->create([
-                    'club_id'          => $club->id,
-                    'categoria_id'     => $catObjs[$g['cat']]->id,
-                    'conjunto_id'      => $conjId,
-                    'numero_licencia'  => $g['licencia'],
-                    'fecha_nacimiento' => $g['nacimiento'],
-                    'anios_en_club'    => rand(1, 5),
-                    'estado'           => 'activa',
-                ]);
+                if (! $user->gimnasta) {
+                    $user->gimnasta()->create([
+                        'club_id'          => $club->id,
+                        'categoria_id'     => $conjunto->categoria_id,
+                        'conjunto_id'      => $conjunto->id,
+                        'numero_licencia'  => "LIC-" . str_pad($conjunto->id, 2, '0', STR_PAD_LEFT) . "-" . str_pad($i, 2, '0', STR_PAD_LEFT),
+                        'fecha_nacimiento' => now()->subYears(rand(6, 16))->format('Y-m-d'),
+                        'anios_en_club'    => rand(1, 4),
+                        'estado'           => 'activa',
+                        'telefono_contacto'=> '6' . str_pad(rand(0, 99999999), 8, '0', STR_PAD_LEFT)
+                    ]);
+                }
             }
         }
 

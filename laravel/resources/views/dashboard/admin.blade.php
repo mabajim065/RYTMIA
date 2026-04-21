@@ -135,6 +135,18 @@
     tr:hover td { background: var(--off-white); }
     .td-actions { display: flex; gap: 0.5rem; }
 
+    /* === MENSAJES === */
+    .mensaje-lista { display: flex; flex-direction: column; }
+    .mensaje-item { padding: 1.5rem; border-bottom: 1px solid var(--blush); cursor: pointer; transition: background 0.2s; position: relative; }
+    .mensaje-item:hover { background: var(--cream); }
+    .mensaje-item.active { background: var(--cream); border-left: 4px solid var(--burgundy); }
+    .mensaje-item.unread::before { content: ''; position: absolute; right: 1rem; top: 1.5rem; width: 8px; height: 8px; background: var(--rose); border-radius: 50%; }
+    .msg-emisor { font-weight: 600; font-size: 0.95rem; color: var(--text); margin-bottom: 0.25rem; display: block; }
+    .msg-asunto { font-size: 0.85rem; color: var(--burgundy); font-weight: 500; margin-bottom: 0.5rem; display: block; }
+    .msg-snippet { font-size: 0.8rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-fecha { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; display: block; text-align: right; }
+    .msg-badge { font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: var(--blush); color: var(--rose); margin-left: 0.5rem; font-weight: 600; }
+
     /* === PAGINATION === */
     .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
     .page-btn { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--blush); background: var(--white); color: var(--text); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
@@ -174,6 +186,7 @@
       <button class="nav-link active" id="nav-equipo"    onclick="showView('equipo')">👥 Equipo Técnico</button>
       <button class="nav-link"        id="nav-grupos"    onclick="showView('grupos')">🏆 Grupos / Clases</button>
       <button class="nav-link"        id="nav-gimnastas" onclick="showView('gimnastas')">🤸‍♀️ Gimnastas</button>
+      <button class="nav-link"        id="nav-mensajes"  onclick="showView('mensajes')">✉️ Historial Mensajes</button>
       <button class="nav-link"        id="nav-admins"    onclick="showView('admins')">⚙️ Administradores</button>
       <button class="nav-link"        id="nav-calendario"onclick="showView('calendario')">📅 Calendario</button>
     </nav>
@@ -281,6 +294,45 @@
       </div>
       <div class="table-wrap" style="padding: 2rem;">
         <div id="calendar"></div>
+      </div>
+    </div>
+
+
+    <!-- ── VISTA: MENSAJES ────────────────────────────────────── -->
+    <div id="view-mensajes" class="view">
+      <header class="header">
+        <div>
+          <h1 class="page-title">Supervisión de Mensajes</h1>
+          <p class="page-subtitle">Historial completo de comunicaciones del club</p>
+        </div>
+      </header>
+
+      <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
+        <!-- Lista de mensajes -->
+        <div class="table-wrap" style="height: 600px; overflow-y: auto;">
+          <div id="mensajeLista" class="mensaje-lista">
+            <div class="loading-state"><div class="loading-spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Detalle del mensaje -->
+        <div id="mensajeDetalle" class="perfil-card" style="min-height: 400px; padding: 2.5rem; display: none; background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--blush); box-shadow: var(--shadow-soft);">
+          <div id="mensajeContenido">
+            <h3 id="detAsunto" style="font-family:'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--burgundy); margin-bottom: 0.5rem;">Asunto</h3>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; font-size: 0.9rem; color: var(--muted); border-bottom: 1px solid var(--blush); padding-bottom: 1rem;">
+              <div>
+                <span id="detEmisor" style="display: block;"></span>
+                <span id="detReceptor" style="display: block;"></span>
+              </div>
+              <span id="detFecha"></span>
+            </div>
+            <div id="detTexto" style="line-height: 1.6; white-space: pre-wrap; color: var(--text);"></div>
+          </div>
+        </div>
+        
+        <div id="mensajePlaceholder" class="perfil-card" style="height: 400px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-style: italic; background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--blush);">
+          Selecciona un mensaje del historial para verlo detalladamente
+        </div>
       </div>
     </div>
 
@@ -548,8 +600,53 @@
     if (name === 'equipo')    cargarEntrenadoras();
     if (name === 'grupos')    cargarGrupos();
     if (name === 'gimnastas') cargarTablaUsuarios('gimnasta', 1);
+    if (name === 'mensajes')  cargarMensajes();
     if (name === 'admins')    cargarTablaUsuarios('administrador', 1);
     if (name === 'calendario') initCalendar();
+  }
+
+  /* ════════════════════════════════════════════════════
+   * Mensajería (Supervisión)
+   * ════════════════════════════════════════════════════ */
+  async function cargarMensajes() {
+    const lista = document.getElementById('mensajeLista');
+    lista.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Cargando historial...</p></div>';
+    try {
+      const data = await apiFetch('/mensajes');
+      if (!data || !data.length) {
+        lista.innerHTML = '<div class="empty-state"><p class="empty-desc">No se han registrado mensajes en el sistema.</p></div>';
+        return;
+      }
+
+      lista.innerHTML = data.map(m => `
+        <div class="mensaje-item" onclick='verMensaje(${JSON.stringify(m)})'>
+          <span class="msg-emisor">De: ${m.emisor?.nombre} ${m.emisor?.apellidos ?? ''} 
+            <span class="msg-badge">${m.emisor?.rol === 'entrenadora' ? 'Entrenadora' : 'Padre/Tut'}</span>
+          </span>
+          <span class="msg-asunto">${m.asunto || 'Sin asunto'}</span>
+          <span class="msg-snippet">${m.contenido}</span>
+          <span class="msg-fecha">${new Date(m.created_at).toLocaleString()}</span>
+        </div>
+      `).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="loading-state"><p style="color:var(--error)">Error al cargar el historial.</p></div>';
+    }
+  }
+
+  function verMensaje(m) {
+    document.getElementById('mensajePlaceholder').style.display = 'none';
+    const detail = document.getElementById('mensajeDetalle');
+    detail.style.display = 'block';
+
+    document.getElementById('detAsunto').textContent = m.asunto || 'Sin asunto';
+    document.getElementById('detEmisor').innerHTML = `<strong>Emisor:</strong> ${m.emisor?.nombre} ${m.emisor?.apellidos ?? ''} (${m.emisor?.rol})`;
+    document.getElementById('detReceptor').innerHTML = `<strong>Receptor:</strong> ${m.receptor?.nombre} ${m.receptor?.apellidos ?? ''} (${m.receptor?.rol})`;
+    document.getElementById('detFecha').textContent = new Date(m.created_at).toLocaleString();
+    document.getElementById('detTexto').textContent = m.contenido;
+
+    // Resaltar en la lista
+    document.querySelectorAll('.mensaje-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
   }
 
   /* ════════════════════════════════════════════════════

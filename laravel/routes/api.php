@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ConjuntoController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\MensajeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -89,5 +90,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post  ('conjuntos/{conjunto}/gimnastas',              [ConjuntoController::class, 'asignarGimnasta']);
         Route::delete('conjuntos/{conjunto}/gimnastas/{gimnastaId}', [ConjuntoController::class, 'desasignarGimnasta']);
         Route::put   ('conjuntos/{conjunto}/gimnastas/sync',         [ConjuntoController::class, 'sincronizarGimnastas']);
+
+        // Mensajería
+        Route::get('mensajes',                [MensajeController::class, 'index']);
+        Route::post('mensajes',               [MensajeController::class, 'store']);
+        Route::patch('mensajes/{mensaje}/marcar-leido', [MensajeController::class, 'marcarLeido']);
     });
 });
