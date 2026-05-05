@@ -62,4 +62,9 @@ class Gimnasta extends Model
     {
         return $query->where('categoria_id', $categoriaId);
     }
+
+    public function competiciones()
+    {
+        return $this->belongsToMany(Competicion::class, 'competicion_gimnasta');
+    }
 }

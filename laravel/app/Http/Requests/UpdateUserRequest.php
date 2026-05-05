@@ -31,7 +31,7 @@ class UpdateUserRequest extends FormRequest
             'nombre'    => ['sometimes', 'string', 'max:255'],
             'apellidos' => ['sometimes', 'string', 'max:255'],
             'dni'       => ['sometimes', 'string', 'size:9', 'regex:/^\d{8}[A-Za-z]$/', "unique:users,dni,{$usuarioId}"],
-            'email'     => ['sometimes', 'nullable', 'email', "unique:users,email,{$usuarioId}"],
+            'email'     => ['sometimes', 'required', 'email', "unique:users,email,{$usuarioId}"],
             'password'  => ['sometimes', 'nullable', Password::min(8)->mixedCase()->numbers()],
             'telefono'  => ['sometimes', 'nullable', 'string', 'max:15'],
 

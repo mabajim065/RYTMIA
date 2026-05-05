@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}"></script>
+
   <style>
     :root {
       --burgundy: #6B1A3A;
@@ -73,6 +75,12 @@
     .badge-activa { background-color: #e8f5e9; color: #2e7d32; }
     .badge-inactiva { background-color: #fff8e1; color: #f57f17; }
     .badge-baja { background-color: #ffebee; color: #c62828; }
+
+    /* === MAP === */
+    #map { height: 350px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
+    .competition-detail { margin-top: 1.5rem; display: none; padding: 1.5rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
+    .competition-detail.visible { display: block; }
+
     @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; padding: 1.5rem; } }
   </style>
 </head>
@@ -170,6 +178,12 @@
       <div class="perfil-card" style="padding: 1rem;">
         <div id="calendar"></div>
       </div>
+
+      <div id="competition-detail" class="competition-detail">
+        <h2 class="perfil-title" id="comp-title">Nombre Competición</h2>
+        <p id="comp-info" style="color: var(--muted); margin-bottom: 1rem;">Lugar y Fecha</p>
+        <div id="map"></div>
+      </div>
     </div>
   </main>
 
@@ -241,12 +255,43 @@
       calendarInstance = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'es',
-        events: events
+        events: events,
+        eventClick: function(info) {
+          const comp = data.find(c => c.nombre + ' (' + c.tipo + ')' === info.event.title);
+          showCompetitionDetail(comp);
+        }
       });
       calendarInstance.render();
     }).catch(() => {
       calendarEl.innerHTML = '<p style="color:red">Error cargando calendario.</p>';
     });
+  }
+
+  function showCompetitionDetail(comp) {
+    if (!comp) return;
+    document.getElementById('competition-detail').classList.add('visible');
+    document.getElementById('comp-title').textContent = comp.nombre;
+    document.getElementById('comp-info').textContent = `${comp.fecha} · ${comp.direccion ?? comp.lugar ?? 'Ubicación pendiente'}`;
+    
+    if (comp.lat && comp.lng) {
+      const pos = { lat: parseFloat(comp.lat), lng: parseFloat(comp.lng) };
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 15,
+        center: pos,
+        styles: [
+          {
+            "featureType": "all",
+            "elementType": "geometry.fill",
+            "stylers": [{"color": "#fdf6f0"}]
+          }
+        ]
+      });
+      new google.maps.Marker({ position: pos, map: map, title: comp.nombre });
+    } else {
+      document.getElementById('map').innerHTML = '<p style="padding: 2rem; text-align:center; color: var(--muted)">Ubicación no disponible en el mapa.</p>';
+    }
+    
+    document.getElementById('competition-detail').scrollIntoView({ behavior: 'smooth' });
   }
 
   function logout() {

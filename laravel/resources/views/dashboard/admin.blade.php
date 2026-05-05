@@ -24,6 +24,34 @@
       --shadow-soft: 0 10px 30px rgba(107,26,58,.08);
       --radius-lg: 20px;
       --radius-md: 14px;
+      --badge-activa-bg: #e8f5e9;
+      --badge-activa-text: #2e7d32;
+      --badge-inactiva-bg: #fff8e1;
+      --badge-inactiva-text: #f57f17;
+      --badge-baja-bg: #ffebee;
+      --badge-baja-text: #c62828;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --burgundy: #EFA6C0;
+        --rose:     #D87D9C;
+        --blush:    #4A2B38;
+        --cream:    #1F1318;
+        --off-white: #140C10;
+        --text:     #FDF6F0;
+        --muted:    #A88894;
+        --white:    #1E1216;
+        --error:    #EF6E6E;
+        --success:  #66BB6A;
+        --shadow-soft: 0 10px 30px rgba(0,0,0,0.5);
+        --badge-activa-bg: #1B3320;
+        --badge-activa-text: #81C784;
+        --badge-inactiva-bg: #332D1B;
+        --badge-inactiva-text: #FFB74D;
+        --badge-baja-bg: #331B1B;
+        --badge-baja-text: #E57373;
+      }
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; background-color: var(--off-white); color: var(--text); display: flex; min-height: 100vh; }
@@ -75,9 +103,9 @@
 
     /* === BADGE ESTADO === */
     .badge { display: inline-block; padding: 0.2rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .badge-activa   { background-color: #e8f5e9; color: #2e7d32; }
-    .badge-inactiva { background-color: #fff8e1; color: #f57f17; }
-    .badge-baja     { background-color: #ffebee; color: #c62828; }
+    .badge-activa   { background-color: var(--badge-activa-bg); color: var(--badge-activa-text); }
+    .badge-inactiva { background-color: var(--badge-inactiva-bg); color: var(--badge-inactiva-text); }
+    .badge-baja     { background-color: var(--badge-baja-bg); color: var(--badge-baja-text); }
 
     /* === LOADING / EMPTY === */
     .loading-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
@@ -533,10 +561,18 @@
             <input class="form-input" id="compNombre" type="text" placeholder="Ej: Torneo Nacional" required />
           </div>
           <div class="form-group full">
-            <label class="form-label" for="compConjunto">Grupo que asiste *</label>
-            <select class="form-select" id="compConjunto" required>
-              <option value="">Cargando grupos...</option>
+            <label class="form-label" for="compEntrenadoras">Entrenadoras asignadas</label>
+            <select class="form-select" id="compEntrenadoras" multiple style="height: 100px;">
+              <option value="">Cargando entrenadoras...</option>
             </select>
+            <small style="color:var(--muted)">Mantén Ctrl (Windows) o Cmd (Mac) para seleccionar varias.</small>
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="compGimnastas">Gimnastas asignadas</label>
+            <select class="form-select" id="compGimnastas" multiple style="height: 150px;">
+              <option value="">Cargando gimnastas...</option>
+            </select>
+            <small style="color:var(--muted)">Mantén Ctrl (Windows) o Cmd (Mac) para seleccionar varias.</small>
           </div>
           <div class="form-group full">
             <label class="form-label" for="compFecha">Fecha / Horario *</label>
@@ -1182,19 +1218,38 @@
   /* ════════════════════════════════════════════════════
    * Modal Competiciones
    * ════════════════════════════════════════════════════ */
-  function abrirFormCompeticion() {
+  async function abrirFormCompeticion() {
     document.getElementById('competicionForm').reset();
     document.getElementById('compAlert').className = 'alert-banner';
     document.getElementById('compAlert').textContent = '';
     
-    // Rellenamos el selector de conjuntos
-    const sel = document.getElementById('compConjunto');
-    sel.innerHTML = '<option value="">Selecciona un grupo...</option>';
-    _conjuntosGlobales.forEach(c => {
-      sel.innerHTML += `<option value="${c.id}">${c.nombre} (Cat: ${c.categoria?.nombre ?? '-'})</option>`;
-    });
-
     document.getElementById('modalCompeticion').classList.add('open');
+
+    const selEnt = document.getElementById('compEntrenadoras');
+    const selGim = document.getElementById('compGimnastas');
+    
+    selEnt.innerHTML = '<option value="">Cargando entrenadoras...</option>';
+    selGim.innerHTML = '<option value="">Cargando gimnastas...</option>';
+
+    try {
+      const [resEnt, resGim] = await Promise.all([
+        apiFetch('/usuarios?rol=entrenadora&per_page=1000'),
+        apiFetch('/usuarios?rol=gimnasta&per_page=1000')
+      ]);
+
+      selEnt.innerHTML = '';
+      (resEnt.data || []).forEach(u => {
+        selEnt.innerHTML += `<option value="${u.entrenador?.id || u.id}">${u.nombre} ${u.apellidos ?? ''}</option>`;
+      });
+
+      selGim.innerHTML = '';
+      (resGim.data || []).forEach(u => {
+        selGim.innerHTML += `<option value="${u.gimnasta?.id || u.id}">${u.nombre} ${u.apellidos ?? ''} (Cat: ${u.gimnasta?.categoria?.nombre ?? '-'})</option>`;
+      });
+    } catch (err) {
+      selEnt.innerHTML = '<option value="">Error cargando entrenadoras</option>';
+      selGim.innerHTML = '<option value="">Error cargando gimnastas</option>';
+    }
   }
 
   async function guardarCompeticion(e) {
@@ -1203,10 +1258,17 @@
     btn.disabled = true;
     btn.textContent = 'Guardando...';
 
+    const selectEntrenadoras = document.getElementById('compEntrenadoras');
+    const entrenadoras = Array.from(selectEntrenadoras.selectedOptions).map(o => parseInt(o.value));
+    
+    const selectGimnastas = document.getElementById('compGimnastas');
+    const gimnastas = Array.from(selectGimnastas.selectedOptions).map(o => parseInt(o.value));
+
     const payload = {
       nombre: document.getElementById('compNombre').value.trim(),
-      conjunto_id: document.getElementById('compConjunto').value,
-      fecha: document.getElementById('compFecha').value
+      fecha: document.getElementById('compFecha').value,
+      entrenadoras: entrenadoras,
+      gimnastas: gimnastas
     };
 
     try {

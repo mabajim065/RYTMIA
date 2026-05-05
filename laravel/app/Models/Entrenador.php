@@ -54,4 +54,9 @@ class Entrenador extends Model
     {
         return $this->belongsToMany(Conjunto::class, 'conjunto_entrenador');
     }
+
+    public function competiciones()
+    {
+        return $this->belongsToMany(Competicion::class, 'competicion_entrenador');
+    }
 }

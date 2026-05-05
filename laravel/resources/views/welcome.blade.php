@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
-    /* ── Variables ──────────────────────────────────────────────── */
     :root {
       --burgundy:   #6B1A3A;
       --rose:       #C45C7E;
@@ -19,6 +18,33 @@
       --error:      #D94F4F;
       --radius:     14px;
       --shadow:     0 8px 40px rgba(107,26,58,.13);
+      --card-bg:    #ffffff;
+      --input-bg:   var(--cream);
+      --input-focus:#ffffff;
+      --google-bg:  #ffffff;
+      --google-text:#3c4043;
+      --google-border:#dadce0;
+      --google-hover:#f8f9fa;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --burgundy:   #EFA6C0;
+        --rose:       #D87D9C;
+        --blush:      #4A2B38;
+        --cream:      #1F1318;
+        --text:       #FDF6F0;
+        --muted:      #A88894;
+        --error:      #EF6E6E;
+        --shadow:     0 8px 40px rgba(0,0,0,0.5);
+        --card-bg:    #1E1216;
+        --input-bg:   #140C10;
+        --input-focus:#2A1A21;
+        --google-bg:  #2A1A21;
+        --google-text:#FDF6F0;
+        --google-border:#4A2B38;
+        --google-hover:#3A222C;
+      }
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,7 +65,7 @@
 
     /* ── Card ───────────────────────────────────────────────────── */
     .card {
-      background: #fff;
+      background: var(--card-bg);
       border-radius: 24px;
       box-shadow: var(--shadow);
       width: 100%;
@@ -110,7 +136,7 @@
       font-family: 'DM Sans', sans-serif;
       font-size: .95rem;
       color: var(--text);
-      background: var(--cream);
+      background: var(--input-bg);
       transition: border-color .2s, box-shadow .2s;
       outline: none;
     }
@@ -119,7 +145,7 @@
 
     input:focus {
       border-color: var(--rose);
-      background: #fff;
+      background: var(--input-focus);
       box-shadow: 0 0 0 3px rgba(196,92,126,.15);
     }
 
@@ -191,7 +217,7 @@
       width: 100%;
       padding: .85rem;
       background: linear-gradient(135deg, var(--burgundy) 0%, var(--rose) 100%);
-      color: #fff;
+      color: var(--cream);
       font-family: 'DM Sans', sans-serif;
       font-size: .95rem;
       font-weight: 500;
@@ -228,6 +254,42 @@
     .btn-login.loading .btn-text { opacity: 0; }
 
     @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+    
+    .btn-google {
+      width: 100%;
+      padding: .85rem;
+      background: var(--google-bg);
+      color: var(--google-text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 500;
+      border: 1.5px solid var(--google-border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+      transition: background .2s, box-shadow .2s;
+      text-decoration: none;
+      margin-bottom: 2rem;
+    }
+    .btn-google:hover { background: var(--google-hover); border-color: var(--blush); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .btn-google img { width: 18px; height: 18px; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: var(--muted);
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--blush); }
+    .divider:not(:empty)::before { margin-right: .75rem; }
+    .divider:not(:empty)::after { margin-left: .75rem; }
 
     /* ── Footer ─────────────────────────────────────────────────── */
     .card-footer {
@@ -256,6 +318,14 @@
 
   <!-- Alert de error global -->
   <div id="alert" class="alert" role="alert" aria-live="polite"></div>
+
+  <!-- Google Login -->
+  <a href="/api/auth/google" class="btn-google">
+    <img src="https://lh3.googleusercontent.com/COxitq9yg9z1wcnbtW9ZHUqzVupqKi8hW9vN9o9mD8yu24Vf59k8C6i1C2O3z6V2J4K4=s18" alt="Google">
+    Continuar con Google
+  </a>
+
+  <div class="divider">Acceso con credenciales</div>
 
   <!-- Formulario -->
   <form id="loginForm" novalidate>

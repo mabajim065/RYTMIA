@@ -12,6 +12,9 @@ class Competicion extends Model
     protected $fillable = [
         'nombre',
         'fecha',
+        'direccion',
+        'lat',
+        'lng',
         'lugar',
         'tipo',
         'estado'
@@ -32,5 +35,15 @@ class Competicion extends Model
     public function conjuntos()
     {
         return $this->belongsToMany(Conjunto::class, 'competicion_conjunto');
+    }
+
+    public function entrenadoras()
+    {
+        return $this->belongsToMany(Entrenador::class, 'competicion_entrenador');
+    }
+
+    public function gimnastas()
+    {
+        return $this->belongsToMany(Gimnasta::class, 'competicion_gimnasta');
     }
 }
