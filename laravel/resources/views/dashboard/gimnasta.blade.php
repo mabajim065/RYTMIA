@@ -91,6 +91,8 @@
     <nav class="nav-links">
       <a class="nav-link active" id="nav-panel" onclick="showView('panel')">🏠 Mi Panel</a>
       <a class="nav-link" id="nav-calendario" onclick="showView('calendario')">📅 Calendario</a>
+      <a class="nav-link" id="nav-entrenadora" onclick="showView('entrenadora')">👩‍🏫 Mi Entrenadora</a>
+      <a class="nav-link" id="nav-mensajes" onclick="showView('mensajes')">💬 Mensajes</a>
     </nav>
     <div class="user-profile">
       <div class="avatar" id="sidebarAvatar">G</div>
@@ -185,6 +187,54 @@
         <div id="map"></div>
       </div>
     </div>
+
+    <div id="view-entrenadora" class="view">
+      <header class="header">
+        <h1 class="page-title">Mi Entrenadora</h1>
+        <p class="page-subtitle">Información sobre el equipo técnico de mi conjunto</p>
+      </header>
+      <div id="entrenadoras-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="perfil-card">
+          <p style="color: var(--muted);">Cargando entrenadora...</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-mensajes" class="view">
+      <header class="header">
+        <h1 class="page-title">Mensajes</h1>
+        <p class="page-subtitle">Comunícate con tu entrenadora o administración</p>
+      </header>
+
+      <div class="perfil-card" style="margin-bottom: 2rem;">
+        <h2 class="perfil-title" style="margin-bottom: 1rem; font-size: 1.2rem;">Nuevo Mensaje</h2>
+        <form id="formMensaje" onsubmit="enviarMensaje(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div>
+            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Destinatario</label>
+            <select id="mensajeReceptor" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit;">
+              <option value="">Cargando destinatarios...</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Asunto</label>
+            <input type="text" id="mensajeAsunto" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit;" />
+          </div>
+          <div>
+            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Mensaje</label>
+            <textarea id="mensajeContenido" required rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit; resize: vertical;"></textarea>
+          </div>
+          <button type="submit" id="btnEnviarMensaje" style="align-self: flex-start; padding: 0.75rem 1.5rem; background-color: var(--burgundy); color: var(--white); border: none; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; font-weight: 500;">Enviar Mensaje</button>
+        </form>
+        <p id="mensajeFeedback" style="margin-top: 1rem; font-size: 0.9rem;"></p>
+      </div>
+
+      <div class="perfil-card">
+        <h2 class="perfil-title" style="margin-bottom: 1rem; font-size: 1.2rem;">Bandeja de Entrada</h2>
+        <div id="lista-mensajes" style="display: flex; flex-direction: column; gap: 1rem;">
+           <p style="color: var(--muted);">Cargando mensajes...</p>
+        </div>
+      </div>
+    </div>
   </main>
 
 <script>
@@ -227,6 +277,42 @@
 
       const estadoEl = document.getElementById('perfilEstado');
       estadoEl.innerHTML = `<span class="badge badge-${g.estado ?? 'activa'}">${g.estado ?? '–'}</span>`;
+
+      // Cargar entrenadoras en la vista correspondiente
+      if (g.conjunto && g.conjunto.entrenadores && g.conjunto.entrenadores.length > 0) {
+        const container = document.getElementById('entrenadoras-container');
+        const selectReceptor = document.getElementById('mensajeReceptor');
+        
+        container.innerHTML = '';
+        g.conjunto.entrenadores.forEach(entrenador => {
+          const u = entrenador.user;
+          if (u) {
+            // Añadir a la vista
+            container.innerHTML += `
+              <div class="perfil-card">
+                <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+                  <div class="avatar" style="width: 60px; height: 60px; font-size: 1.5rem;">${u.nombre[0].toUpperCase()}</div>
+                  <div>
+                    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--burgundy);">${u.nombre} ${u.apellidos}</h3>
+                    <p style="color: var(--muted);">${entrenador.titulacion ?? 'Entrenadora'}</p>
+                  </div>
+                </div>
+                <div class="perfil-row"><span class="perfil-label">Email</span><span class="perfil-value">${u.email}</span></div>
+                <div class="perfil-row"><span class="perfil-label">Teléfono</span><span class="perfil-value">${u.telefono ?? '–'}</span></div>
+                <div class="perfil-row"><span class="perfil-label">Biografía</span><span class="perfil-value">${entrenador.biografia ?? 'Sin biografía disponible.'}</span></div>
+              </div>
+            `;
+            // Añadir al select de mensajes
+            selectReceptor.innerHTML += `<option value="${u.id}">Entrenadora: ${u.nombre} ${u.apellidos}</option>`;
+          }
+        });
+      } else {
+        document.getElementById('entrenadoras-container').innerHTML = `
+          <div class="perfil-card">
+            <p style="color: var(--muted);">Aún no tienes entrenadoras asignadas a tu conjunto.</p>
+          </div>
+        `;
+      }
     }
   })
   .catch(() => {});
@@ -238,6 +324,109 @@
     document.getElementById('nav-' + name).classList.add('active');
     
     if (name === 'calendario') initCalendar();
+    if (name === 'mensajes') cargarMensajes();
+  }
+
+  // Cargar administradores para el desplegable de mensajes
+  fetch(`${API}/usuarios-por-rol/administrador`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+  })
+  .then(r => r.json())
+  .then(admins => {
+    const select = document.getElementById('mensajeReceptor');
+    // Limpiamos solo la opción inicial de cargando, si existe
+    if (select.querySelector('option[value=""]')) {
+      select.querySelector('option[value=""]').textContent = 'Selecciona un destinatario...';
+    }
+    if (Array.isArray(admins)) {
+      admins.forEach(admin => {
+        select.innerHTML += `<option value="${admin.id}">Admin: ${admin.nombre} ${admin.apellidos}</option>`;
+      });
+    }
+  })
+  .catch(() => {});
+
+  function cargarMensajes() {
+    fetch(`${API}/mensajes`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(mensajes => {
+      const lista = document.getElementById('lista-mensajes');
+      if (mensajes.length === 0) {
+        lista.innerHTML = '<p style="color: var(--muted);">No tienes mensajes en tu bandeja de entrada.</p>';
+        return;
+      }
+      lista.innerHTML = '';
+      mensajes.forEach(m => {
+        const remitente = m.emisor ? `${m.emisor.nombre} ${m.emisor.apellidos}` : 'Usuario desconocido';
+        const leidoStyle = m.leido_at ? 'opacity: 0.7;' : 'font-weight: bold; border-left: 4px solid var(--rose);';
+        const fecha = new Date(m.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        
+        lista.innerHTML += `
+          <div style="padding: 1rem; border: 1px solid var(--blush); border-radius: var(--radius-md); background: var(--white); ${leidoStyle}">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="color: var(--burgundy); font-size: 0.9rem;">De: ${remitente}</span>
+              <span style="color: var(--muted); font-size: 0.8rem;">${fecha}</span>
+            </div>
+            <div style="font-size: 1rem; color: var(--text); margin-bottom: 0.5rem;">${m.asunto}</div>
+            <div style="color: var(--text); font-size: 0.9rem; white-space: pre-wrap;">${m.contenido}</div>
+          </div>
+        `;
+      });
+    })
+    .catch(() => {
+      document.getElementById('lista-mensajes').innerHTML = '<p style="color:red">Error cargando mensajes.</p>';
+    });
+  }
+
+  function enviarMensaje(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnEnviarMensaje');
+    const feedback = document.getElementById('mensajeFeedback');
+    
+    const payload = {
+      receptor_id: document.getElementById('mensajeReceptor').value,
+      asunto: document.getElementById('mensajeAsunto').value,
+      contenido: document.getElementById('mensajeContenido').value
+    };
+
+    if (!payload.receptor_id) {
+      feedback.textContent = 'Por favor, selecciona un destinatario.';
+      feedback.style.color = '#D94F4F';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    
+    fetch(`${API}/mensajes`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`, 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(r => {
+      if (r.ok) {
+        feedback.textContent = '¡Mensaje enviado correctamente!';
+        feedback.style.color = '#2e7d32';
+        document.getElementById('formMensaje').reset();
+      } else {
+        throw new Error('Error al enviar');
+      }
+    })
+    .catch(() => {
+      feedback.textContent = 'Hubo un error al enviar el mensaje.';
+      feedback.style.color = '#D94F4F';
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.textContent = 'Enviar Mensaje';
+      setTimeout(() => feedback.textContent = '', 4000);
+    });
   }
 
   let calendarInstance = null;
