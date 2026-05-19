@@ -33,6 +33,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Competiciones (Lectura general para todos los roles)
     Route::get('competiciones', [\App\Http\Controllers\Api\CompeticionController::class, 'index']);
 
+    // Mensajería (General para todos los roles)
+    Route::get('mensajes',                [MensajeController::class, 'index']);
+    Route::post('mensajes',               [MensajeController::class, 'store']);
+    Route::patch('mensajes/{mensaje}/marcar-leido', [MensajeController::class, 'marcarLeido']);
+
+    // Consulta usuarios por rol (Útil para buscar destinatarios)
+    Route::get('usuarios-por-rol/{rol}', [UserController::class, 'porRol'])
+         ->name('usuarios.por-rol');
+
     /*
     |----------------------------------------------------------------------
     | Gestión de usuarios
@@ -76,10 +85,6 @@ Route::middleware('auth:sanctum')->group(function () {
     */
     Route::middleware('role:administrador,entrenadora')->group(function () {
 
-        // Consulta usuarios por rol
-        Route::get('usuarios-por-rol/{rol}', [UserController::class, 'porRol'])
-             ->name('usuarios.por-rol');
-
         // Categorías
         Route::get('categorias', function () {
             return response()->json(\App\Models\Categoria::orderBy('nombre')->get());
@@ -94,10 +99,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post  ('conjuntos/{conjunto}/gimnastas',              [ConjuntoController::class, 'asignarGimnasta']);
         Route::delete('conjuntos/{conjunto}/gimnastas/{gimnastaId}', [ConjuntoController::class, 'desasignarGimnasta']);
         Route::put   ('conjuntos/{conjunto}/gimnastas/sync',         [ConjuntoController::class, 'sincronizarGimnastas']);
-
-        // Mensajería
-        Route::get('mensajes',                [MensajeController::class, 'index']);
-        Route::post('mensajes',               [MensajeController::class, 'store']);
-        Route::patch('mensajes/{mensaje}/marcar-leido', [MensajeController::class, 'marcarLeido']);
     });
 });

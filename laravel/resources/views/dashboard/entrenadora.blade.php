@@ -246,6 +246,7 @@
           <h1 class="page-title">Bandeja de Entrada</h1>
           <p class="page-subtitle">Mensajes enviados por los padres de tus gimnastas</p>
         </div>
+        <button class="btn-primary" onclick="abrirModalMensajeAdmin()">✉️ Contactar Administración</button>
       </header>
 
       <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
@@ -606,6 +607,23 @@
     document.getElementById('modalMensaje').classList.add('open');
   }
 
+  async function abrirModalMensajeAdmin() {
+    try {
+      const res = await fetch(`${API}/usuarios-por-rol/administrador`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      const admins = await res.json();
+      if (admins && admins.length > 0) {
+        const admin = admins[0]; // Seleccionamos el primer administrador disponible
+        abrirModalMensaje(admin.id, `Administración (${admin.nombre})`);
+      } else {
+        alert('No hay administradores disponibles en este momento.');
+      }
+    } catch (e) {
+      alert('Error al obtener la información de administración.');
+    }
+  }
+
   async function enviarMensajeNuevo() {
     const asunto = document.getElementById('nmAsunto').value.trim();
     const contenido = document.getElementById('nmContenido').value.trim();
@@ -745,7 +763,7 @@
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
     }).then(r => r.json()).then(data => {
       const events = data.map(c => ({
-        title: c.nombre + ' (' + c.conjunto?.nombre + ')',
+        title: c.nombre + (c.conjuntos && c.conjuntos.length > 0 ? ' (' + c.conjuntos.map(cj => cj.nombre).join(', ') + ')' : ''),
         start: c.fecha,
         color: 'var(--burgundy)'
       }));

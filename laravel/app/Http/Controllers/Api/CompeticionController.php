@@ -138,7 +138,14 @@ class CompeticionController extends Controller
             $q->whereIn('conjunto_id', $conjuntoIds);
         })->whereNotNull('email')->pluck('email')->toArray();
 
-        $emailsInvitados = array_merge($userGimnastasEmails, $userEntrenadorasEmails, $conjuntoGimnastasEmails);
+        // Obtener emails de las entrenadoras asociadas a los conjuntos asignados
+        $conjuntoEntrenadorasEmails = User::whereHas('entrenador', function($q) use ($conjuntoIds) {
+            $q->whereHas('conjuntos', function($q2) use ($conjuntoIds) {
+                $q2->whereIn('conjuntos.id', $conjuntoIds);
+            });
+        })->whereNotNull('email')->pluck('email')->toArray();
+
+        $emailsInvitados = array_merge($userGimnastasEmails, $userEntrenadorasEmails, $conjuntoGimnastasEmails, $conjuntoEntrenadorasEmails);
         $emailsInvitados = array_unique($emailsInvitados);
 
         // Crear el evento y añadir asistentes

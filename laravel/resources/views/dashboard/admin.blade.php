@@ -355,6 +355,12 @@
               <span id="detFecha"></span>
             </div>
             <div id="detTexto" style="line-height: 1.6; white-space: pre-wrap; color: var(--text);"></div>
+            
+            <hr style="border: none; border-top: 1px solid var(--blush); margin-top: 2rem; margin-bottom: 2rem;">
+            
+            <h4 style="font-size: 1rem; color: var(--burgundy); margin-bottom: 1rem;">Responder mensaje</h4>
+            <textarea id="resContenido" class="form-textarea" placeholder="Escribe tu respuesta aquí..." style="margin-bottom: 1rem;"></textarea>
+            <button class="btn-primary" onclick="enviarRespuesta()">Enviar Respuesta</button>
           </div>
         </div>
         
@@ -669,7 +675,9 @@
     }
   }
 
+  let selectedMsg = null;
   function verMensaje(m) {
+    selectedMsg = m;
     document.getElementById('mensajePlaceholder').style.display = 'none';
     const detail = document.getElementById('mensajeDetalle');
     detail.style.display = 'block';
@@ -679,10 +687,42 @@
     document.getElementById('detReceptor').innerHTML = `<strong>Receptor:</strong> ${m.receptor?.nombre} ${m.receptor?.apellidos ?? ''} (${m.receptor?.rol})`;
     document.getElementById('detFecha').textContent = new Date(m.created_at).toLocaleString();
     document.getElementById('detTexto').textContent = m.contenido;
+    document.getElementById('resContenido').value = '';
 
     // Resaltar en la lista
     document.querySelectorAll('.mensaje-item').forEach(el => el.classList.remove('active'));
     event.currentTarget.classList.add('active');
+  }
+
+  async function enviarRespuesta() {
+    const contenido = document.getElementById('resContenido').value.trim();
+    if (!contenido || !selectedMsg) return;
+
+    try {
+      const res = await fetch(`${API}/mensajes`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`, 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          // El admin responde al emisor original
+          receptor_id: selectedMsg.emisor_id,
+          asunto: `RE: ${selectedMsg.asunto || 'Mensaje'}`,
+          contenido: contenido
+        })
+      });
+
+      if (res.ok) {
+        alert('Respuesta enviada con éxito');
+        document.getElementById('resContenido').value = '';
+      } else {
+        alert('Error al enviar la respuesta');
+      }
+    } catch (e) {
+      alert('Error de conexión');
+    }
   }
 
   /* ════════════════════════════════════════════════════
