@@ -7,6 +7,9 @@ use App\Models\Competicion;
 use App\Services\GoogleCalendarService;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\CompeticionCreadaMail;
 
 
 class CompeticionController extends Controller
@@ -102,6 +105,52 @@ class CompeticionController extends Controller
 
         // Sincronizar con Google Calendar de los usuarios involucrados
         $this->syncWithGoogleCalendar($competicion, $request);
+
+        // Enviar correo de notificación a todas las gimnastas y entrenadoras seleccionadas (directamente o por conjuntos)
+        try {
+            // 1. Gimnastas asignadas directamente
+            $directGimnastasUsers = User::whereHas('gimnasta', function($q) use ($competicion) {
+                $q->whereIn('gimnastas.id', $competicion->gimnastas()->pluck('gimnastas.id'));
+            })->whereNotNull('email')->get();
+
+            // 2. Entrenadoras asignadas directamente
+            $directEntrenadorasUsers = User::whereHas('entrenador', function($q) use ($competicion) {
+                $q->whereIn('entrenadores.id', $competicion->entrenadoras()->pluck('entrenadores.id'));
+            })->whereNotNull('email')->get();
+
+            // 3. Gimnastas y entrenadoras a través de los conjuntos asignados
+            $conjuntoIds = $competicion->conjuntos()->pluck('conjuntos.id');
+            $conjuntoGimnastasUsers = collect();
+            $conjuntoEntrenadorasUsers = collect();
+
+            if ($conjuntoIds->isNotEmpty()) {
+                $conjuntoGimnastasUsers = User::whereHas('gimnasta', function($q) use ($conjuntoIds) {
+                    $q->whereIn('conjunto_id', $conjuntoIds);
+                })->whereNotNull('email')->get();
+
+                $conjuntoEntrenadorasUsers = User::whereHas('entrenador', function($q) use ($conjuntoIds) {
+                    $q->whereHas('conjuntos', function($q2) use ($conjuntoIds) {
+                        $q2->whereIn('conjuntos.id', $conjuntoIds);
+                    });
+                })->whereNotNull('email')->get();
+            }
+
+            // Combinar todos los usuarios y evitar duplicados por ID de usuario
+            $recipients = $directGimnastasUsers
+                ->merge($directEntrenadorasUsers)
+                ->merge($conjuntoGimnastasUsers)
+                ->merge($conjuntoEntrenadorasUsers)
+                ->unique('id');
+
+            foreach ($recipients as $user) {
+                Mail::to($user->email)->send(new CompeticionCreadaMail($competicion, $user));
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al enviar correos de competición creada a las gimnastas y entrenadoras convocadas: ' . $e->getMessage(), [
+                'competicion_id' => $competicion->id,
+                'exception' => $e
+            ]);
+        }
         
         return response()->json($competicion->load(['conjuntos', 'entrenadoras', 'gimnastas']), 201);
     }
