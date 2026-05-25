@@ -7,7 +7,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Dashboard admin → vista Blade con el equipo técnico
+// Dashboard admin
 Route::get('/dashboard/admin', function () {
     return view('dashboard.admin');
 });
@@ -20,4 +20,12 @@ Route::get('/dashboard/entrenadora', function () {
 // Dashboard gimnasta
 Route::get('/dashboard/gimnasta', function () {
     return view('dashboard.gimnasta');
+});
+
+// Recuperar contraseña
+Route::get('/recuperar-password', function (Illuminate\Http\Request $request) {
+    return view('recuperar-password', [
+        'token' => $request->query('token'),
+        'email' => $request->query('email')
+    ]);
 });

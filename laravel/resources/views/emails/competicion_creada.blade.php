@@ -130,7 +130,7 @@
                 <td>
                     <!-- Header -->
                     <div class="header">
-                        <img src="{{ url('/logo.jpg') }}" alt="Logo Rytmia" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 8px;">
+                        <img src="{{ $message->embed(public_path('logo.jpg')) }}" alt="Logo Rytmia" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 8px;">
                         <h1>Rytmia</h1>
                         <p>Nueva convocatoria para competición</p>
                     </div>

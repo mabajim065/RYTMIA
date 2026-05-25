@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Competicion;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -10,19 +9,19 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class CompeticionCreadaMail extends Mailable
+class RecuperarPasswordMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $competicion;
+    public $resetUrl;
     public $user;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Competicion $competicion, User $user)
+    public function __construct(string $resetUrl, User $user)
     {
-        $this->competicion = $competicion;
+        $this->resetUrl = $resetUrl;
         $this->user = $user;
     }
 
@@ -31,12 +30,8 @@ class CompeticionCreadaMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        $subject = $this->user->esEntrenadora()
-            ? 'Convocatoria como entrenadora para la competición: ' . $this->competicion->nombre
-            : 'Has sido seleccionada para una nueva competición: ' . $this->competicion->nombre;
-
         return new Envelope(
-            subject: $subject,
+            subject: 'Restablecer contraseña · Rytmia',
         );
     }
 
@@ -46,7 +41,7 @@ class CompeticionCreadaMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.competicion_creada',
+            view: 'emails.recuperar_password',
         );
     }
 

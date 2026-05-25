@@ -205,6 +205,11 @@
     }
 
     .alert.visible { display: block; }
+    .alert.alert-success {
+      background: #e8f5e9;
+      color: var(--success, #2e7d32);
+      border-color: #c8e6c9;
+    }
 
     @keyframes shake {
       0%,100% { transform: translateX(0); }
@@ -320,12 +325,12 @@
   <div id="alert" class="alert" role="alert" aria-live="polite"></div>
 
   <!-- Google Login -->
-  <a href="/api/auth/google" class="btn-google">
+  <a href="/api/auth/google" class="btn-google" id="googleBtn">
     <img src="https://lh3.googleusercontent.com/COxitq9yg9z1wcnbtW9ZHUqzVupqKi8hW9vN9o9mD8yu24Vf59k8C6i1C2O3z6V2J4K4=s18" alt="Google">
     Continuar con Google
   </a>
 
-  <div class="divider">Acceso con credenciales</div>
+  <div class="divider" id="credentialsDivider">Acceso con credenciales</div>
 
   <!-- Formulario -->
   <form id="loginForm" novalidate>
@@ -370,6 +375,9 @@
         </button>
       </div>
       <span class="error-msg" id="pw-error">La contraseña no puede estar vacía.</span>
+      <div style="text-align: right; margin-top: 0.5rem;">
+        <a href="#" id="forgotPwLink" style="font-size: 0.8rem; color: var(--burgundy); text-decoration: none; font-weight: 500;">¿Olvidaste tu contraseña?</a>
+      </div>
     </div>
 
     <!-- Botón -->
@@ -378,6 +386,30 @@
       <span class="spinner" aria-hidden="true"></span>
     </button>
 
+  </form>
+
+  <!-- Formulario de Recuperación -->
+  <form id="forgotForm" novalidate style="display:none">
+    <div class="field">
+      <label for="recoveryEmail">Correo electrónico registrado</label>
+      <input
+        type="email"
+        id="recoveryEmail"
+        name="email"
+        placeholder="ejemplo@correo.com"
+        required
+      />
+      <span class="error-msg" id="recoveryEmail-error">Introduce un correo electrónico válido.</span>
+    </div>
+
+    <button type="submit" class="btn-login" id="btnForgot">
+      <span class="btn-text">Enviar enlace de recuperación</span>
+      <span class="spinner" aria-hidden="true"></span>
+    </button>
+
+    <div style="text-align: center; margin-top: 1.2rem;">
+      <a href="#" id="backToLoginLink" style="font-size: 0.8rem; color: var(--burgundy); text-decoration: none; font-weight: 500;">Volver a iniciar sesión</a>
+    </div>
   </form>
 
   <div class="card-footer">
@@ -402,10 +434,13 @@
     msgEl.classList.toggle('visible', show);
   }
 
-  function showAlert(msg) {
+  function showAlert(msg, type = 'error') {
     const el = $('alert');
     el.textContent = msg;
-    el.classList.add('visible');
+    el.className = 'alert visible';
+    if (type === 'success') {
+      el.classList.add('alert-success');
+    }
   }
 
   function hideAlert() {
@@ -472,6 +507,68 @@
 
       window.location.href = redirects[data.user.rol] ?? '/dashboard';
 
+    } catch (err) {
+      showAlert('No se pudo conectar con el servidor. Inténtalo más tarde.');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+    }
+  });
+
+  // Toggle forgot/login forms
+  $('forgotPwLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    hideAlert();
+    $('loginForm').style.display = 'none';
+    $('googleBtn').style.display = 'none';
+    $('credentialsDivider').style.display = 'none';
+    $('forgotForm').style.display = 'block';
+  });
+
+  $('backToLoginLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    hideAlert();
+    $('forgotForm').style.display = 'none';
+    $('loginForm').style.display = 'block';
+    $('googleBtn').style.display = 'flex';
+    $('credentialsDivider').style.display = 'block';
+  });
+
+  // Forgot form submit
+  $('forgotForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+
+    const emailVal = $('recoveryEmail').value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailVal || !emailRegex.test(emailVal)) {
+      setError($('recoveryEmail'), $('recoveryEmail-error'), true);
+      return;
+    } else {
+      setError($('recoveryEmail'), $('recoveryEmail-error'), false);
+    }
+
+    const btn = $('btnForgot');
+    btn.disabled = true;
+    btn.classList.add('loading');
+
+    try {
+      const res = await fetch('/api/password/forgot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email: emailVal })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showAlert(data.message ?? 'No se pudo enviar el enlace de recuperación.');
+        return;
+      }
+
+      showAlert(data.message, 'success');
+      $('recoveryEmail').value = '';
     } catch (err) {
       showAlert('No se pudo conectar con el servidor. Inténtalo más tarde.');
     } finally {

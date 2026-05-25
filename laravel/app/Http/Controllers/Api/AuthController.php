@@ -87,6 +87,86 @@ class AuthController extends Controller
     }
 
     /**
+     * Enviar enlace de restablecimiento de contraseña.
+     */
+    public function sendResetLinkEmail(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => ['required', 'email', 'exists:users,email'],
+        ], [
+            'email.exists' => 'El correo electrónico no está registrado en Rytmia.',
+        ]);
+
+        $user = User::where('email', $request->email)->firstOrFail();
+
+        // Generar un token único
+        $token = \Illuminate\Support\Str::random(60);
+
+        // Guardar en la tabla password_reset_tokens
+        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => Hash::make($token),
+                'created_at' => now()
+            ]
+        );
+
+        // Construir la URL de restablecimiento
+        $resetUrl = url('/recuperar-password?token=' . $token . '&email=' . urlencode($user->email));
+
+        // Enviar el correo
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\RecuperarPasswordMail($resetUrl, $user));
+
+        return response()->json([
+            'message' => 'Te hemos enviado por correo el enlace para restablecer tu contraseña.'
+        ]);
+    }
+
+    /**
+     * Restablecer la contraseña usando el token.
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email', 'exists:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (! $record || ! Hash::check($request->token, $record->token)) {
+            return response()->json(['message' => 'El enlace de recuperación es inválido o no existe.'], 422);
+        }
+
+        // Validar expiración (ej. 60 minutos)
+        $createdAt = \Carbon\Carbon::parse($record->created_at);
+        if ($createdAt->addMinutes(60)->isPast()) {
+            \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+                ->where('email', $request->email)
+                ->delete();
+            return response()->json(['message' => 'El enlace de recuperación ha expirado.'], 422);
+        }
+
+        // Actualizar contraseña del usuario
+        $user = User::where('email', $request->email)->firstOrFail();
+        $user->password = Hash::make($request->password);
+        $user->password_temporal = $request->password;
+        $user->save();
+
+        // Borrar el token de restablecimiento
+        \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Tu contraseña ha sido restablecida correctamente.'
+        ]);
+    }
+
+    /**
      * Redirige a Google para autenticación.
      */
     public function redirectToGoogle()

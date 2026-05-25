@@ -1,27 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rytmia · Iniciar sesión</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet" />
   <style>
-    /* ── Variables ──────────────────────────────────────────────── */
+    /*variables*/
     :root {
-      --burgundy:   #6B1A3A;
-      --rose:       #C45C7E;
-      --blush:      #F2D5DF;
-      --cream:      #FDF6F0;
-      --text:       #2A1520;
-      --muted:      #9B7080;
-      --error:      #D94F4F;
-      --radius:     14px;
-      --shadow:     0 8px 40px rgba(107,26,58,.13);
+      --burgundy: #6B1A3A;
+      --rose: #C45C7E;
+      --blush: #F2D5DF;
+      --cream: #FDF6F0;
+      --text: #2A1520;
+      --muted: #9B7080;
+      --error: #D94F4F;
+      --radius: 14px;
+      --shadow: 0 8px 40px rgba(107, 26, 58, .13);
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'DM Sans', sans-serif;
@@ -31,13 +40,13 @@
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
-      /* Subtle patterned background */
+      /*fondo*/
       background-image:
-        radial-gradient(ellipse 80% 60% at 70% 10%, rgba(196,92,126,.12) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 10% 90%, rgba(107,26,58,.08) 0%, transparent 55%);
+        radial-gradient(ellipse 80% 60% at 70% 10%, rgba(196, 92, 126, .12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 10% 90%, rgba(107, 26, 58, .08) 0%, transparent 55%);
     }
 
-    /* ── Card ───────────────────────────────────────────────────── */
+    /*card*/
     .card {
       background: #fff;
       border-radius: 24px;
@@ -49,11 +58,18 @@
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(22px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    /* ── Logo ───────────────────────────────────────────────────── */
+    /*logo*/
     .logo-wrap {
       display: flex;
       flex-direction: column;
@@ -88,7 +104,7 @@
       text-transform: uppercase;
     }
 
-    /* ── Form ───────────────────────────────────────────────────── */
+    /*formulario*/
     .field {
       margin-bottom: 1.2rem;
     }
@@ -115,28 +131,35 @@
       outline: none;
     }
 
-    input::placeholder { color: var(--muted); }
+    input::placeholder {
+      color: var(--muted);
+    }
 
     input:focus {
       border-color: var(--rose);
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(196,92,126,.15);
+      box-shadow: 0 0 0 3px rgba(196, 92, 126, .15);
     }
 
     input.error-input {
       border-color: var(--error);
-      box-shadow: 0 0 0 3px rgba(217,79,79,.12);
+      box-shadow: 0 0 0 3px rgba(217, 79, 79, .12);
     }
 
-    /* DNI uppercase */
-    #dni { text-transform: uppercase; letter-spacing: .06em; }
+    /*dni*/
+    #dni {
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
 
-    /* ── Password toggle ────────────────────────────────────────── */
+    /*contraseña*/
     .password-wrap {
       position: relative;
     }
 
-    .password-wrap input { padding-right: 2.8rem; }
+    .password-wrap input {
+      padding-right: 2.8rem;
+    }
 
     .toggle-pw {
       position: absolute;
@@ -153,9 +176,11 @@
       transition: color .2s;
     }
 
-    .toggle-pw:hover { color: var(--rose); }
+    .toggle-pw:hover {
+      color: var(--rose);
+    }
 
-    /* ── Error message ──────────────────────────────────────────── */
+    /*mensaje de error*/
     .error-msg {
       display: none;
       font-size: .8rem;
@@ -163,13 +188,15 @@
       margin-top: .35rem;
     }
 
-    .error-msg.visible { display: block; }
+    .error-msg.visible {
+      display: block;
+    }
 
-    /* ── Alert banner ───────────────────────────────────────────── */
+    /*Alerta*/
     .alert {
       display: none;
       background: #FEF0F0;
-      border: 1px solid rgba(217,79,79,.3);
+      border: 1px solid rgba(217, 79, 79, .3);
       border-radius: 10px;
       padding: .75rem 1rem;
       font-size: .85rem;
@@ -178,15 +205,33 @@
       animation: shake .35s ease;
     }
 
-    .alert.visible { display: block; }
-
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      25%      { transform: translateX(-6px); }
-      75%      { transform: translateX(6px); }
+    .alert.visible {
+      display: block;
     }
 
-    /* ── Submit button ──────────────────────────────────────────── */
+    .alert.alert-success {
+      background: #e8f5e9;
+      color: var(--success, #2e7d32);
+      border-color: #c8e6c9;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-6px);
+      }
+
+      75% {
+        transform: translateX(6px);
+      }
+    }
+
+    /*Boton iniciar sesion*/
     .btn-login {
       width: 100%;
       padding: .85rem;
@@ -205,16 +250,27 @@
       overflow: hidden;
     }
 
-    .btn-login:hover  { opacity: .9; transform: translateY(-1px); }
-    .btn-login:active { transform: translateY(0); }
+    .btn-login:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
 
-    .btn-login:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+    .btn-login:active {
+      transform: translateY(0);
+    }
 
-    /* Spinner inside button */
+    .btn-login:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /*Cargando */
     .spinner {
       display: none;
-      width: 18px; height: 18px;
-      border: 2.5px solid rgba(255,255,255,.4);
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255, 255, 255, .4);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin .7s linear infinite;
@@ -224,12 +280,21 @@
       transform: translateY(-50%);
     }
 
-    .btn-login.loading .spinner { display: block; }
-    .btn-login.loading .btn-text { opacity: 0; }
+    .btn-login.loading .spinner {
+      display: block;
+    }
 
-    @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+    .btn-login.loading .btn-text {
+      opacity: 0;
+    }
 
-    /* ── Footer ─────────────────────────────────────────────────── */
+    @keyframes spin {
+      to {
+        transform: translateY(-50%) rotate(360deg);
+      }
+    }
+
+    /*Footer*/
     .card-footer {
       text-align: center;
       margin-top: 1.6rem;
@@ -237,179 +302,261 @@
       color: var(--muted);
     }
 
-    /* ── Responsive ─────────────────────────────────────────────── */
+    /*Responsive*/
     @media (max-width: 480px) {
-      .card { padding: 2rem 1.5rem; }
+      .card {
+        padding: 2rem 1.5rem;
+      }
     }
   </style>
 </head>
+
 <body>
 
-<div class="card" role="main">
+  <div class="card" role="main">
 
-  <!-- Logo -->
-  <div class="logo-wrap">
-    <img src="/logo.jpg" alt="Rytmia Logo" class="logo-img" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; box-shadow: 0 4px 12px rgba(107,26,58,0.15); margin-bottom: 0.5rem;">
-    <span class="logo-name">Rytmia</span>
-    <span class="logo-sub">Inicia sesión en tu espacio de entrenamiento</span>
-  </div>
-
-  <!-- Alert de error global -->
-  <div id="alert" class="alert" role="alert" aria-live="polite"></div>
-
-  <!-- Formulario -->
-  <form id="loginForm" novalidate>
-
-    <!-- Username -->
-    <div class="field">
-      <label for="username">Nombre de usuario</label>
-      <input
-        type="text"
-        id="username"
-        name="username"
-        placeholder="nombre.apellido"
-        autocomplete="username"
-        inputmode="text"
-        required
-      />
-      <span class="error-msg" id="username-error">El nombre de usuario no puede estar vacío.</span>
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <img src="/logo.jpg" alt="Rytmia Logo" class="logo-img"
+        style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; box-shadow: 0 4px 12px rgba(107,26,58,0.15); margin-bottom: 0.5rem;">
+      <span class="logo-name">Rytmia</span>
+      <span class="logo-sub">Inicia sesión en tu espacio de entrenamiento</span>
     </div>
 
-    <!-- Contraseña -->
-    <div class="field">
-      <label for="password">Contraseña</label>
-      <div class="password-wrap">
+    <!-- Alert de error global -->
+    <div id="alert" class="alert" role="alert" aria-live="polite"></div>
+
+    <!-- Formulario -->
+    <form id="loginForm" novalidate>
+
+      <!-- Username -->
+      <div class="field">
+        <label for="username">Nombre de usuario</label>
+        <input type="text" id="username" name="username" placeholder="nombre.apellido" autocomplete="username"
+          inputmode="text" required />
+        <span class="error-msg" id="username-error">El nombre de usuario no puede estar vacío.</span>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <div class="password-wrap">
+          <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password"
+            required />
+          <button type="button" class="toggle-pw" aria-label="Mostrar contraseña" id="togglePw">
+            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor" stroke-width="1.8">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="display:none">
+              <path
+                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+          </button>
+        </div>
+        <span class="error-msg" id="pw-error">La contraseña no puede estar vacía.</span>
+        <div style="text-align: right; margin-top: 0.5rem;">
+          <a href="#" id="forgotPwLink" style="font-size: 0.8rem; color: var(--burgundy); text-decoration: none; font-weight: 500;">¿Olvidaste tu contraseña?</a>
+        </div>
+      </div>
+
+      <!-- Botón -->
+      <button type="submit" class="btn-login" id="btnLogin">
+        <span class="btn-text">Iniciar sesión</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+
+    </form>
+
+    <!-- Formulario de Recuperación -->
+    <form id="forgotForm" novalidate style="display:none">
+      <div class="field">
+        <label for="recoveryEmail">Correo electrónico registrado</label>
         <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="••••••••"
-          autocomplete="current-password"
+          type="email"
+          id="recoveryEmail"
+          name="email"
+          placeholder="ejemplo@correo.com"
           required
         />
-        <button type="button" class="toggle-pw" aria-label="Mostrar contraseña" id="togglePw">
-          <!-- Eye icon -->
-          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-          <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="display:none">
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-            <line x1="1" y1="1" x2="23" y2="23"/>
-          </svg>
-        </button>
+        <span class="error-msg" id="recoveryEmail-error">Introduce un correo electrónico válido.</span>
       </div>
-      <span class="error-msg" id="pw-error">La contraseña no puede estar vacía.</span>
+
+      <button type="submit" class="btn-login" id="btnForgot">
+        <span class="btn-text">Enviar enlace de recuperación</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+
+      <div style="text-align: center; margin-top: 1.2rem;">
+        <a href="#" id="backToLoginLink" style="font-size: 0.8rem; color: var(--burgundy); text-decoration: none; font-weight: 500;">Volver a iniciar sesión</a>
+      </div>
+    </form>
+
+    <div class="card-footer">
+      ¿Problemas para acceder? Contacta con tu administrador de club.
     </div>
 
-    <!-- Botón -->
-    <button type="submit" class="btn-login" id="btnLogin">
-      <span class="btn-text">Iniciar sesión</span>
-      <span class="spinner" aria-hidden="true"></span>
-    </button>
-
-  </form>
-
-  <div class="card-footer">
-    ¿Problemas para acceder? Contacta con tu administrador de club.
   </div>
 
-</div>
+  <script>
+    /* Configuración */
+    const API_BASE = '/api';
 
-<script>
-  /* ── Config ──────────────────────────────────────────────────────────── */
-  const API_BASE = '/api'; // Cambia a tu URL si es necesario
+    /* Funciones */
+    const $ = id => document.getElementById(id);
 
-  /* ── Helpers ─────────────────────────────────────────────────────────── */
-  const $ = id => document.getElementById(id);
+    function validateDni(value) {
+      return /^[0-9]{8}[A-Za-z]$/.test(value.trim());
+    }
 
-  function validateDni(value) {
-    return /^[0-9]{8}[A-Za-z]$/.test(value.trim());
-  }
+    function setError(inputEl, msgEl, show) {
+      inputEl.classList.toggle('error-input', show);
+      msgEl.classList.toggle('visible', show);
+    }
 
-  function setError(inputEl, msgEl, show) {
-    inputEl.classList.toggle('error-input', show);
-    msgEl.classList.toggle('visible', show);
-  }
+    function showAlert(msg, type = 'error') {
+      const el = $('alert');
+      el.textContent = msg;
+      el.className = 'alert visible';
+      if (type === 'success') {
+        el.classList.add('alert-success');
+      }
+    }
 
-  function showAlert(msg) {
-    const el = $('alert');
-    el.textContent = msg;
-    el.classList.add('visible');
-  }
+    function hideAlert() {
+      $('alert').classList.remove('visible');
+    }
 
-  function hideAlert() {
-    $('alert').classList.remove('visible');
-  }
 
-  /* ── Toggle password visibility ──────────────────────────────────────── */
-  $('togglePw').addEventListener('click', () => {
-    const inp = $('password');
-    const isText = inp.type === 'text';
-    inp.type = isText ? 'password' : 'text';
-    $('eyeOpen').style.display  = isText ? 'block' : 'none';
-    $('eyeClosed').style.display = isText ? 'none'  : 'block';
-  });
+    $('togglePw').addEventListener('click', () => {
+      const inp = $('password');
+      const isText = inp.type === 'text';
+      inp.type = isText ? 'password' : 'text';
+      $('eyeOpen').style.display = isText ? 'block' : 'none';
+      $('eyeClosed').style.display = isText ? 'none' : 'block';
+    });
 
-  /* ── Form submit ─────────────────────────────────────────────────────── */
-  $('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideAlert();
+    /* formulario*/
+    $('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
 
-    const usernameVal = $('username').value.trim();
-    const pwVal       = $('password').value;
+      const usernameVal = $('username').value.trim();
+      const pwVal = $('password').value;
 
-    // Validación front
-    let valid = true;
-    if (!usernameVal) { setError($('username'), $('username-error'), true);  valid = false; }
-    else              { setError($('username'), $('username-error'), false); }
-    if (!pwVal)       { setError($('password'), $('pw-error'), true);  valid = false; }
-    else              { setError($('password'), $('pw-error'), false); }
+      // Validación front
+      let valid = true;
+      if (!usernameVal) { setError($('username'), $('username-error'), true); valid = false; }
+      else { setError($('username'), $('username-error'), false); }
+      if (!pwVal) { setError($('password'), $('pw-error'), true); valid = false; }
+      else { setError($('password'), $('pw-error'), false); }
 
-    if (!valid) return;
+      if (!valid) return;
 
-    // Loading state
-    const btn = $('btnLogin');
-    btn.disabled = true;
-    btn.classList.add('loading');
+      // Loading state
+      const btn = $('btnLogin');
+      btn.disabled = true;
+      btn.classList.add('loading');
 
-    try {
-      const res = await fetch(`${API_BASE}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ username: usernameVal, password: pwVal }),
-      });
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ username: usernameVal, password: pwVal }),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        // 422 de Laravel Validation
-        const msg = data.errors?.username?.[0] ?? data.message ?? 'Credenciales incorrectas.';
-        showAlert(msg);
+        if (!res.ok) {
+          // 422 de Laravel Validation
+          const msg = data.errors?.username?.[0] ?? data.message ?? 'Credenciales incorrectas.';
+          showAlert(msg);
+          return;
+        }
+
+        // Guardar token
+        localStorage.setItem('rytmia_token', data.token);
+        localStorage.setItem('rytmia_user', JSON.stringify(data.user));
+
+        // Redirigir según rol
+        const redirects = {
+          administrador: '/dashboard/admin',
+          entrenadora: '/dashboard/entrenadora',
+          gimnasta: '/dashboard/gimnasta',
+        };
+
+        window.location.href = redirects[data.user.rol] ?? '/dashboard';
+
+      } catch (err) {
+        showAlert('No se pudo conectar con el servidor. Inténtalo más tarde.');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    });
+
+    // Toggle forgot/login forms
+    $('forgotPwLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      hideAlert();
+      $('loginForm').style.display = 'none';
+      $('forgotForm').style.display = 'block';
+    });
+
+    $('backToLoginLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      hideAlert();
+      $('forgotForm').style.display = 'none';
+      $('loginForm').style.display = 'block';
+    });
+
+    // Forgot form submit
+    $('forgotForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const emailVal = $('recoveryEmail').value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailVal || !emailRegex.test(emailVal)) {
+        setError($('recoveryEmail'), $('recoveryEmail-error'), true);
         return;
+      } else {
+        setError($('recoveryEmail'), $('recoveryEmail-error'), false);
       }
 
-      // Guardar token
-      localStorage.setItem('rytmia_token', data.token);
-      localStorage.setItem('rytmia_user',  JSON.stringify(data.user));
+      const btn = $('btnForgot');
+      btn.disabled = true;
+      btn.classList.add('loading');
 
-      // Redirigir según rol
-      const redirects = {
-        administrador: '/dashboard/admin',
-        entrenadora:   '/dashboard/entrenadora',
-        gimnasta:      '/dashboard/gimnasta',
-      };
+      try {
+        const res = await fetch('/api/password/forgot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ email: emailVal })
+        });
 
-      window.location.href = redirects[data.user.rol] ?? '/dashboard';
+        const data = await res.json();
 
-    } catch (err) {
-      showAlert('No se pudo conectar con el servidor. Inténtalo más tarde.');
-    } finally {
-      btn.disabled = false;
-      btn.classList.remove('loading');
-    }
-  });
-</script>
+        if (!res.ok) {
+          showAlert(data.message ?? 'No se pudo enviar el enlace de recuperación.');
+          return;
+        }
+
+        showAlert(data.message, 'success');
+        $('recoveryEmail').value = '';
+      } catch (err) {
+        showAlert('No se pudo conectar con el servidor. Inténtalo más tarde.');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    });
+  </script>
 
 </body>
+
 </html>

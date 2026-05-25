@@ -211,12 +211,12 @@
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
-      <button class="nav-link active" id="nav-equipo"    onclick="showView('equipo')">👥 Equipo Técnico</button>
-      <button class="nav-link"        id="nav-grupos"    onclick="showView('grupos')">🏆 Grupos / Clases</button>
-      <button class="nav-link"        id="nav-gimnastas" onclick="showView('gimnastas')">🤸‍♀️ Gimnastas</button>
-      <button class="nav-link"        id="nav-mensajes"  onclick="showView('mensajes')">✉️ Historial Mensajes</button>
-      <button class="nav-link"        id="nav-admins"    onclick="showView('admins')">⚙️ Administradores</button>
-      <button class="nav-link"        id="nav-calendario"onclick="showView('calendario')">📅 Calendario</button>
+      <button class="nav-link active" id="nav-equipo"    onclick="showView('equipo')">Equipo Técnico</button>
+      <button class="nav-link"        id="nav-grupos"    onclick="showView('grupos')">Grupos / Clases</button>
+      <button class="nav-link"        id="nav-gimnastas" onclick="showView('gimnastas')">Gimnastas</button>
+      <button class="nav-link"        id="nav-mensajes"  onclick="showView('mensajes')">Historial Mensajes</button>
+      <button class="nav-link"        id="nav-admins"    onclick="showView('admins')">Administradores</button>
+      <button class="nav-link"        id="nav-calendario"onclick="showView('calendario')">Calendario</button>
     </nav>
     <div class="user-profile">
       <div class="avatar" id="sidebarAvatar">A</div>
@@ -224,7 +224,7 @@
         <div class="user-name" id="sidebarName">Admin</div>
         <div class="user-role">Administrador</div>
       </div>
-      <button class="logout-btn" onclick="logout()" title="Cerrar sesión">🚪</button>
+      <button class="logout-btn" onclick="logout()" title="Cerrar sesión" style="font-size: 0.9rem; font-weight: 500;">Salir</button>
     </div>
   </aside>
 
@@ -787,8 +787,8 @@
           </div>
           <div class="card-actions">
             <button class="btn-outline" style="flex:1" onclick='abrirPerfilEntrenadora(${JSON.stringify(u)})'>Ver perfil</button>
-            <button class="btn-outline" onclick='abrirFormEditar(${JSON.stringify(u)})'>✏️</button>
-            <button class="btn-danger"  onclick='eliminarUsuario(${u.id}, "la entrenadora")'>🗑️</button>
+            <button class="btn-outline" onclick='abrirFormEditar(${JSON.stringify(u)})'>Editar</button>
+            <button class="btn-danger"  onclick='eliminarUsuario(${u.id}, "la entrenadora")'>Eliminar</button>
           </div>
         </div>
       `).join('');
@@ -870,8 +870,8 @@
             <td><span class="badge ${u.activo ? 'badge-activa' : 'badge-inactiva'}">${u.activo ? 'Activo' : 'Inactivo'}</span></td>
             <td>
               <div class="td-actions">
-                <button class="btn-outline" onclick='abrirFormEditar(${JSON.stringify(u)})'>✏️ Editar</button>
-                <button class="btn-danger"  onclick='eliminarUsuario(${u.id}, "el usuario")'>🗑️</button>
+                <button class="btn-outline" onclick='abrirFormEditar(${JSON.stringify(u)})'>Editar</button>
+                <button class="btn-danger"  onclick='eliminarUsuario(${u.id}, "el usuario")'>Eliminar</button>
               </div>
             </td>`;
           return `<tr>${cols}</tr>`;
@@ -1106,13 +1106,13 @@
       const lista = data.data ?? [];
 
       if (!lista.length) {
-        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-title">Sin Grupos</div><div class="empty-desc">Aún no hay grupos creados.</div></div>`;
+        grid.innerHTML = `<div class="empty-state"><div class="empty-title">Sin Grupos</div><div class="empty-desc">Aún no hay grupos creados.</div></div>`;
         return;
       }
 
       grid.innerHTML = lista.map(g => `
         <div class="team-card">
-          <div class="card-avatar" style="font-size:1.5rem">🏆</div>
+          <div class="card-avatar" style="font-size:1.5rem">G</div>
           <div class="card-name">${g.nombre}</div>
           <div class="card-role">${g.categoria?.nombre ?? 'Sin categoría'}</div>
           <div class="card-club">${g.horario ?? 'Sin horario definido'}</div>
