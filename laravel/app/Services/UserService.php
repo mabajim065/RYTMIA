@@ -52,7 +52,7 @@ class UserService
     public function crear(array $datos): User
     {
         return DB::transaction(function () use ($datos) {
-            $passwordTemporal = empty($datos['password']) ? $this->generarPasswordTemporal() : $datos['password'];
+            $passwordTemporal = $this->generarPasswordTemporal($datos['nombre'], $datos['apellidos'], $datos['dni']);
             $username = empty($datos['username']) ? $this->generarUsername($datos['nombre'], $datos['apellidos']) : $datos['username'];
 
             $usuario = User::create([
@@ -62,6 +62,7 @@ class UserService
                 'dni'       => strtoupper($datos['dni']),
                 'email'     => $datos['email'] ?? null,
                 'password'  => Hash::make($passwordTemporal),
+                'password_temporal' => $passwordTemporal,
                 'rol'       => $datos['rol'],
                 'telefono'  => $datos['telefono'] ?? null,
                 'activo'    => $datos['activo'] ?? true,
@@ -96,6 +97,7 @@ class UserService
 
             if (! empty($datos['password'])) {
                 $camposUser['password'] = Hash::make($datos['password']);
+                $camposUser['password_temporal'] = $datos['password'];
             }
 
             $usuario->update($camposUser);
@@ -137,11 +139,21 @@ class UserService
     }
 
     /**
-     * Generar una contraseña temporal segura de 9 caracteres.
+     * Generar una contraseña temporal basada en nombre, apellidos y DNI.
      */
-    public function generarPasswordTemporal(): string
+    public function generarPasswordTemporal(string $nombre, string $apellidos, string $dni): string
     {
-        return Str::random(6) . rand(10, 99) . strtoupper(Str::random(1));
+        $cleanNombre = \Illuminate\Support\Str::ascii(str_replace(' ', '', trim($nombre)));
+        $twoNombre = mb_strtolower(mb_substr($cleanNombre, 0, 2));
+
+        $cleanApellidos = \Illuminate\Support\Str::ascii(str_replace(' ', '', trim($apellidos)));
+        $twoApellidos = mb_strtolower(mb_substr($cleanApellidos, 0, 2));
+
+        $onlyDigits = preg_replace('/[^0-9]/', '', $dni);
+        $lastThreeDigits = substr($onlyDigits, -3);
+        $lastThreeDigits = str_pad($lastThreeDigits, 3, '0', STR_PAD_LEFT);
+
+        return $twoNombre . $twoApellidos . $lastThreeDigits;
     }
 
     // ── Helpers de perfil ────────────────────────────────────────────

@@ -100,11 +100,12 @@ class AutogenerarUsernameTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJsonPath('data.username', 'paula.sanchez');
+        $this->assertEquals('pasa333', $response->json('data.password_temporal'));
 
         // Verificar en BD que existe y se ha guardado con contraseña encriptada
         $usuarioCreado = User::where('email', 'paula@example.com')->firstOrFail();
         $this->assertNotEmpty($usuarioCreado->password);
-        $this->assertNotEquals('password', $usuarioCreado->password);
+        $this->assertEquals('pasa333', $usuarioCreado->password_temporal);
     }
 
     public function test_login_con_username_y_password_correcto(): void

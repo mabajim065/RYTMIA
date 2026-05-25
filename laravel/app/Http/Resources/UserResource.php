@@ -19,6 +19,7 @@ class UserResource extends JsonResource
             'rol'       => $this->rol,
             'telefono'  => $this->telefono,
             'activo'    => $this->activo,
+            'password_temporal' => $this->password_temporal,
 
             // Perfil entrenadora (solo si existe y está cargado)
             'entrenador' => $this->when(

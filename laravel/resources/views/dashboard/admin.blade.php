@@ -284,7 +284,7 @@
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Nombre</th><th>DNI</th><th>Categoría</th><th>Grupo / Clase</th><th>Teléfono</th><th>Estado</th><th>Acciones</th>
+            <th>Nombre</th><th>Usuario</th><th>Contraseña</th><th>DNI</th><th>Categoría</th><th>Grupo / Clase</th><th>Teléfono</th><th>Estado</th><th>Acciones</th>
           </tr></thead>
           <tbody id="tbodyGimnastas"></tbody>
         </table>
@@ -385,6 +385,8 @@
 
       <div class="modal-section">
         <div class="modal-section-title">Información de contacto</div>
+        <div class="modal-row"><span class="modal-label">Usuario</span><span class="modal-value" id="mpUsername">–</span></div>
+        <div class="modal-row"><span class="modal-label">Contraseña</span><span class="modal-value" id="mpPasswordTemporal">–</span></div>
         <div class="modal-row"><span class="modal-label">Email</span><span class="modal-value" id="mpEmail">–</span></div>
         <div class="modal-row"><span class="modal-label">Teléfono</span><span class="modal-value" id="mpTelefono">–</span></div>
         <div class="modal-row"><span class="modal-label">DNI</span><span class="modal-value" id="mpDni">–</span></div>
@@ -484,9 +486,13 @@
             <label class="form-label" for="formTelefono">Teléfono</label>
             <input class="form-input" id="formTelefono" type="text" maxlength="15" />
           </div>
-          <div class="form-group">
+          <div class="form-group" style="display:none">
             <label class="form-label" for="formPassword">Contraseña <span id="pwRequired">*</span></label>
             <input class="form-input" id="formPassword" type="password" placeholder="Mín. 8 car., mayús. y números" />
+          </div>
+          <div class="form-group" id="tempPasswordGroup" style="display:none">
+            <label class="form-label">Contraseña autogenerada / temporal</label>
+            <input class="form-input" id="formTempPassword" type="text" readonly style="background:var(--cream); cursor:not-allowed;" />
           </div>
 
           <!-- Campos entrenadora -->
@@ -765,6 +771,10 @@
           <div class="card-name">${u.nombre} ${u.apellidos ?? ''}</div>
           <div class="card-role">${u.entrenador?.titulacion ?? 'Entrenadora'}</div>
           <div class="card-club">${u.entrenador?.club?.nombre ?? '–'}</div>
+          <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; border-top: 1px solid var(--blush); border-bottom: 1px solid var(--blush); padding: 0.5rem 0; width: 100%;">
+            <div>Usuario: <code>${u.username ?? '–'}</code></div>
+            <div>Contraseña: <code>${u.password_temporal ?? '–'}</code></div>
+          </div>
           <div class="card-stats">
             <div class="stat">
               <span class="stat-val">${u.entrenador?.anios_experiencia ?? 0}</span>
@@ -792,6 +802,8 @@
     document.getElementById('mpAvatar').textContent   = (u.nombre?.[0] ?? '?').toUpperCase();
     document.getElementById('mpName').textContent     = `${u.nombre} ${u.apellidos ?? ''}`;
     document.getElementById('mpTitulacion').textContent = u.entrenador?.titulacion ?? 'Entrenadora';
+    document.getElementById('mpUsername').textContent = u.username ?? '–';
+    document.getElementById('mpPasswordTemporal').textContent = u.password_temporal ?? '–';
     document.getElementById('mpEmail').textContent    = u.email ?? '–';
     document.getElementById('mpTelefono').textContent = u.telefono ?? '–';
     document.getElementById('mpDni').textContent      = u.dni ?? '–';
@@ -840,14 +852,18 @@
       } else {
         tbody.innerHTML = lista.map(u => {
           let cols = `
-            <td><strong>${u.nombre} ${u.apellidos ?? ''}</strong></td>
-            <td>${u.dni ?? '–'}</td>`;
+            <td><strong>${u.nombre} ${u.apellidos ?? ''}</strong></td>`;
           if (rol === 'gimnasta') {
             cols += `
+            <td><code>${u.username ?? '–'}</code></td>
+            <td><code>${u.password_temporal ?? '–'}</code></td>
+            <td>${u.dni ?? '–'}</td>
             <td><span class="badge" style="background:var(--cream); color:var(--burgundy); border:1px solid var(--blush)">${u.gimnasta?.categoria?.nombre ?? 'Sin calc'}</span></td>
             <td>${u.gimnasta?.conjunto?.nombre ?? '<small style="color:var(--muted)">Sin Asignar</small>'}</td>`;
           } else {
-            cols += `<td>${u.email ?? '–'}</td>`;
+            cols += `
+            <td>${u.dni ?? '–'}</td>
+            <td>${u.email ?? '–'}</td>`;
           }
           cols += `
             <td>${u.telefono ?? '–'}</td>
@@ -894,9 +910,10 @@
     document.getElementById('formUserId').value = '';
     document.getElementById('formRol').value    = rol;
     document.getElementById('formTitle').textContent = `Nueva ${rol === 'entrenadora' ? 'Entrenadora' : rol === 'gimnasta' ? 'Gimnasta' : 'Administradora'}`;
-    document.getElementById('pwRequired').style.display = 'inline';
-    document.getElementById('formPassword').required = true;
+    document.getElementById('pwRequired').style.display = 'none';
+    document.getElementById('formPassword').required = false;
     document.getElementById('activoField').style.display = 'none';
+    document.getElementById('tempPasswordGroup').style.display = 'none';
     
     document.getElementById('fieldsEntrenadora').style.display = rol === 'entrenadora' ? 'contents' : 'none';
     document.getElementById('fieldsGimnasta').style.display = rol === 'gimnasta' ? 'contents' : 'none';
@@ -926,6 +943,13 @@
     document.getElementById('pwRequired').style.display = 'none';
     document.getElementById('activoField').style.display = 'block';
     document.getElementById('formActivo').value   = u.activo ? '1' : '0';
+
+    if (u.password_temporal) {
+      document.getElementById('tempPasswordGroup').style.display = 'block';
+      document.getElementById('formTempPassword').value = u.password_temporal;
+    } else {
+      document.getElementById('tempPasswordGroup').style.display = 'none';
+    }
 
     const esEntrenadora = u.rol === 'entrenadora';
     const esGimnasta = u.rol === 'gimnasta';
