@@ -20,17 +20,17 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $request->validate([
-            'dni'      => ['required', 'string', 'size:9'],
+            'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('dni', strtoupper($request->dni))
+        $user = User::where('username', $request->username)
                     ->where('activo', true)
                     ->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'dni' => ['Las credenciales no son correctas.'],
+                'username' => ['Las credenciales no son correctas.'],
             ]);
         }
 
@@ -45,6 +45,7 @@ class AuthController extends Controller
                 'id'       => $user->id,
                 'nombre'   => $user->nombre,
                 'apellidos'=> $user->apellidos,
+                'username' => $user->username,
                 'dni'      => $user->dni,
                 'email'    => $user->email,
                 'rol'      => $user->rol,

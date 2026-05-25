@@ -249,7 +249,7 @@
 
   <!-- Logo -->
   <div class="logo-wrap">
-    <div class="logo-icon">🎀</div>
+    <img src="/logo.jpg" alt="Rytmia Logo" class="logo-img" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; box-shadow: 0 4px 12px rgba(107,26,58,0.15); margin-bottom: 0.5rem;">
     <span class="logo-name">Rytmia</span>
     <span class="logo-sub">Inicia sesión en tu espacio de entrenamiento</span>
   </div>
@@ -260,20 +260,19 @@
   <!-- Formulario -->
   <form id="loginForm" novalidate>
 
-    <!-- DNI -->
+    <!-- Username -->
     <div class="field">
-      <label for="dni">DNI</label>
+      <label for="username">Nombre de usuario</label>
       <input
         type="text"
-        id="dni"
-        name="dni"
-        placeholder="12345678A"
-        maxlength="9"
+        id="username"
+        name="username"
+        placeholder="nombre.apellido"
         autocomplete="username"
         inputmode="text"
         required
       />
-      <span class="error-msg" id="dni-error">Introduce un DNI válido (8 números + letra).</span>
+      <span class="error-msg" id="username-error">El nombre de usuario no puede estar vacío.</span>
     </div>
 
     <!-- Contraseña -->
@@ -357,15 +356,15 @@
     e.preventDefault();
     hideAlert();
 
-    const dniVal = $('dni').value.trim().toUpperCase();
-    const pwVal  = $('password').value;
+    const usernameVal = $('username').value.trim();
+    const pwVal       = $('password').value;
 
     // Validación front
     let valid = true;
-    if (!validateDni(dniVal)) { setError($('dni'), $('dni-error'), true);  valid = false; }
-    else                       { setError($('dni'), $('dni-error'), false); }
-    if (!pwVal)                { setError($('password'), $('pw-error'), true);  valid = false; }
-    else                       { setError($('password'), $('pw-error'), false); }
+    if (!usernameVal) { setError($('username'), $('username-error'), true);  valid = false; }
+    else              { setError($('username'), $('username-error'), false); }
+    if (!pwVal)       { setError($('password'), $('pw-error'), true);  valid = false; }
+    else              { setError($('password'), $('pw-error'), false); }
 
     if (!valid) return;
 
@@ -378,14 +377,14 @@
       const res = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ dni: dniVal, password: pwVal }),
+        body: JSON.stringify({ username: usernameVal, password: pwVal }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         // 422 de Laravel Validation
-        const msg = data.errors?.dni?.[0] ?? data.message ?? 'Credenciales incorrectas.';
+        const msg = data.errors?.username?.[0] ?? data.message ?? 'Credenciales incorrectas.';
         showAlert(msg);
         return;
       }
@@ -409,13 +408,6 @@
       btn.disabled = false;
       btn.classList.remove('loading');
     }
-  });
-
-  /* ── Auto-uppercase DNI ──────────────────────────────────────────────── */
-  $('dni').addEventListener('input', function () {
-    const pos = this.selectionStart;
-    this.value = this.value.toUpperCase();
-    this.setSelectionRange(pos, pos);
   });
 </script>
 

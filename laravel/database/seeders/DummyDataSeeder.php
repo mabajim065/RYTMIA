@@ -29,7 +29,7 @@ class DummyDataSeeder extends Seeder
             'direccion' => 'Pabellón Municipal, Sevilla',
             'lat' => 37.3891,
             'lng' => -5.9845,
-            'tipo' => 'base',
+            'tipo' => 'nacional_base',
             'estado' => 'confirmada',
         ]);
 

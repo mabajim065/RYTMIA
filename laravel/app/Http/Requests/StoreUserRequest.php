@@ -20,7 +20,7 @@ class StoreUserRequest extends FormRequest
             'apellidos' => ['required', 'string', 'max:255'],
             'dni'       => ['required', 'string', 'size:9', 'regex:/^\d{8}[A-Za-z]$/', 'unique:users,dni'],
             'email'     => ['required', 'email', 'unique:users,email'],
-            'password'  => ['required', Password::min(8)->mixedCase()->numbers()],
+            'password'  => ['nullable', Password::min(8)->mixedCase()->numbers()],
             'rol'       => ['required', 'in:administrador,entrenadora,gimnasta'],
             'telefono'  => ['nullable', 'string', 'max:15'],
             'activo'    => ['boolean'],

@@ -17,6 +17,7 @@ class User extends Authenticatable
     protected $fillable = [
         'nombre',
         'apellidos',
+        'username',
         'dni',
         'email',
         'password',
@@ -42,6 +43,29 @@ class User extends Authenticatable
             'password' => 'hashed',
             'activo'   => 'boolean',
         ];
+    }
+
+    /**
+     * Boot del modelo para autogenerar username en creación si no está establecido.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function ($user) {
+            if (empty($user->username)) {
+                $firstApellido = explode(' ', trim($user->apellidos))[0];
+                $baseUsername = \Illuminate\Support\Str::slug($user->nombre . '.' . $firstApellido, '.');
+                
+                $username = $baseUsername;
+                $counter = 1;
+
+                while (static::where('username', $username)->exists()) {
+                    $username = $baseUsername . $counter;
+                    $counter++;
+                }
+
+                $user->username = $username;
+            }
+        });
     }
 
     // ── Relaciones ──────────────────────────────────────────────

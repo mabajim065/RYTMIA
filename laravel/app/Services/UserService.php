@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserService
 {
@@ -51,16 +52,23 @@ class UserService
     public function crear(array $datos): User
     {
         return DB::transaction(function () use ($datos) {
+            $passwordTemporal = empty($datos['password']) ? $this->generarPasswordTemporal() : $datos['password'];
+            $username = empty($datos['username']) ? $this->generarUsername($datos['nombre'], $datos['apellidos']) : $datos['username'];
+
             $usuario = User::create([
                 'nombre'    => $datos['nombre'],
                 'apellidos' => $datos['apellidos'],
+                'username'  => $username,
                 'dni'       => strtoupper($datos['dni']),
                 'email'     => $datos['email'] ?? null,
-                'password'  => Hash::make($datos['password']),
+                'password'  => Hash::make($passwordTemporal),
                 'rol'       => $datos['rol'],
                 'telefono'  => $datos['telefono'] ?? null,
                 'activo'    => $datos['activo'] ?? true,
             ]);
+
+            // Almacenar contraseña temporal en el objeto retornado en texto plano
+            $usuario->password_temporal = $passwordTemporal;
 
             $this->crearPerfil($usuario, $datos);
 
@@ -107,6 +115,33 @@ class UserService
         } else {
             $usuario->update(['activo' => false]);
         }
+    }
+
+    /**
+     * Generar un username único a partir del nombre y apellidos.
+     */
+    public function generarUsername(string $nombre, string $apellidos): string
+    {
+        $firstApellido = explode(' ', trim($apellidos))[0];
+        $baseUsername = Str::slug($nombre . '.' . $firstApellido, '.');
+        
+        $username = $baseUsername;
+        $counter = 1;
+
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername . $counter;
+            $counter++;
+        }
+
+        return $username;
+    }
+
+    /**
+     * Generar una contraseña temporal segura de 9 caracteres.
+     */
+    public function generarPasswordTemporal(): string
+    {
+        return Str::random(6) . rand(10, 99) . strtoupper(Str::random(1));
     }
 
     // ── Helpers de perfil ────────────────────────────────────────────
