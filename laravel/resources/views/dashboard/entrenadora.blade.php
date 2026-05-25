@@ -76,7 +76,7 @@
       overflow: hidden;
     }
     .welcome-card::after {
-      content: '🎀';
+      content: '';
       position: absolute;
       right: 2rem;
       top: 50%;
@@ -177,11 +177,11 @@
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
-      <button class="nav-link active" id="nav-panel"      onclick="showView('panel')">🏠 Mi Panel</button>
-      <button class="nav-link"        id="nav-grupos"     onclick="showView('grupos')">🏆 Mis Grupos</button>
-      <button class="nav-link"        id="nav-gimnastas"  onclick="showView('gimnastas')">🤸‍♀️ Mis Gimnastas</button>
-      <button class="nav-link"        id="nav-mensajes"   onclick="showView('mensajes')">✉️ Mensajes Padres</button>
-      <button class="nav-link"        id="nav-calendario" onclick="showView('calendario')">📅 Calendario</button>
+      <button class="nav-link active" id="nav-panel"      onclick="showView('panel')">Mi Panel</button>
+      <button class="nav-link"        id="nav-grupos"     onclick="showView('grupos')">Mis Grupos</button>
+      <button class="nav-link"        id="nav-gimnastas"  onclick="showView('gimnastas')">Mis Gimnastas</button>
+      <button class="nav-link"        id="nav-mensajes"   onclick="showView('mensajes')">Mensajes Padres</button>
+      <button class="nav-link"        id="nav-calendario" onclick="showView('calendario')">Calendario</button>
     </nav>
     <div class="user-profile">
       <div class="avatar" id="sidebarAvatar">E</div>
@@ -189,7 +189,7 @@
         <div class="user-name" id="sidebarName">Entrenadora</div>
         <div class="user-role">Entrenadora</div>
       </div>
-      <button class="logout-btn" onclick="logout()" title="Cerrar sesión">🚪</button>
+      <button class="logout-btn" onclick="logout()" title="Cerrar sesión" style="font-size: 0.9rem; font-weight: 500;">Salir</button>
     </div>
   </aside>
 
@@ -206,7 +206,7 @@
       </header>
 
       <div class="welcome-card">
-        <div class="welcome-title">¡Hola, <span id="welcomeName">entrenadora</span>! 👋</div>
+        <div class="welcome-title">¡Hola, <span id="welcomeName">entrenadora</span>!</div>
         <div class="welcome-sub">Aquí puedes consultar tu información de perfil y acceder a tus grupos asignados.</div>
       </div>
 
@@ -246,7 +246,7 @@
           <h1 class="page-title">Bandeja de Entrada</h1>
           <p class="page-subtitle">Mensajes enviados por los padres de tus gimnastas</p>
         </div>
-        <button class="btn-primary" onclick="abrirModalMensajeAdmin()">✉️ Contactar Administración</button>
+        <button class="btn-primary" onclick="abrirModalMensajeAdmin()">Contactar Administración</button>
       </header>
 
       <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
@@ -491,7 +491,7 @@
 
       grid.innerHTML = lista.map(g => `
         <div class="team-card">
-          <div class="card-avatar">🏆</div>
+          <div class="card-avatar">${(g.nombre?.[0] ?? 'C').toUpperCase()}</div>
           <div class="card-name">${g.nombre}</div>
           <div class="card-role">${g.categoria?.nombre ?? 'Sin categoría'}</div>
           <div class="card-stats">
@@ -533,7 +533,7 @@
             <td>${g.numero_licencia ?? '–'}</td>
             <td><a href="tel:${g.telefono_contacto ?? ''}" style="color:var(--burgundy); font-weight:600; text-decoration:none">${g.telefono_contacto ?? 'Sin teléfono'}</a></td>
             <td>
-               <button class="btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${g.user?.id}, '${g.nombre} ${g.apellidos ?? ''}')">✉️ Mensaje</button>
+               <button class="btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${g.user?.id}, '${g.nombre} ${g.apellidos ?? ''}')">Mensaje</button>
             </td>
           </tr>
         `).join('');
@@ -570,7 +570,7 @@
             <td>${u.gimnasta?.conjunto?.nombre ?? '<small style="color:var(--muted)">Sin Asignar</small>'}</td>
             <td><a href="tel:${u.gimnasta?.telefono_contacto ?? ''}" style="color:var(--burgundy); font-weight:600; text-decoration:none">${u.gimnasta?.telefono_contacto ?? 'Sin teléfono'}</a></td>
             <td>
-              <button class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${u.id}, '${u.nombre} ${u.apellidos ?? ''}')">✉️ Mensaje</button>
+              <button class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${u.id}, '${u.nombre} ${u.apellidos ?? ''}')">Mensaje</button>
             </td>
           </tr>
         `).join('');

@@ -56,7 +56,7 @@
       position: relative;
       overflow: hidden;
     }
-    .welcome-card::after { content: '🤸‍♀️'; position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); font-size: 5rem; opacity: 0.2; }
+    .welcome-card::after { content: ''; position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); font-size: 5rem; opacity: 0.2; }
     .welcome-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; margin-bottom: 0.5rem; }
     .welcome-sub { opacity: 0.8; font-size: 0.95rem; }
     /* === STATS === */
@@ -89,10 +89,10 @@
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
-      <a class="nav-link active" id="nav-panel" onclick="showView('panel')">🏠 Mi Panel</a>
-      <a class="nav-link" id="nav-calendario" onclick="showView('calendario')">📅 Calendario</a>
-      <a class="nav-link" id="nav-entrenadora" onclick="showView('entrenadora')">👩‍🏫 Mi Entrenadora</a>
-      <a class="nav-link" id="nav-mensajes" onclick="showView('mensajes')">💬 Mensajes</a>
+      <a class="nav-link active" id="nav-panel" onclick="showView('panel')">Mi Panel</a>
+      <a class="nav-link" id="nav-calendario" onclick="showView('calendario')">Calendario</a>
+      <a class="nav-link" id="nav-entrenadora" onclick="showView('entrenadora')">Mi Entrenadora</a>
+      <a class="nav-link" id="nav-mensajes" onclick="showView('mensajes')">Mensajes</a>
     </nav>
     <div class="user-profile">
       <div class="avatar" id="sidebarAvatar">G</div>
@@ -100,7 +100,7 @@
         <div class="user-name" id="sidebarName">Gimnasta</div>
         <div class="user-role">Gimnasta</div>
       </div>
-      <button class="logout-btn" onclick="logout()" title="Cerrar sesión">🚪</button>
+      <button class="logout-btn" onclick="logout()" title="Cerrar sesión" style="font-size: 0.9rem; font-weight: 500;">Salir</button>
     </div>
   </aside>
 
@@ -112,7 +112,7 @@
       </header>
 
       <div class="welcome-card">
-        <div class="welcome-title">¡Hola, <span id="welcomeName">gimnasta</span>! 🎀</div>
+        <div class="welcome-title">¡Hola, <span id="welcomeName">gimnasta</span>!</div>
         <div class="welcome-sub">Consulta aquí tu información personal y la de tu conjunto.</div>
       </div>
 
