@@ -70,6 +70,7 @@ class CompeticionController extends Controller
         $data = $request->validate([
             'nombre'    => 'required|string',
             'fecha'     => 'required|date',
+            'hora'      => 'nullable|date_format:H:i',
             'direccion' => 'nullable|string',
             'lat'       => 'nullable|numeric',
             'lng'       => 'nullable|numeric',
@@ -86,6 +87,7 @@ class CompeticionController extends Controller
         $competicion = Competicion::create([
             'nombre'    => $data['nombre'],
             'fecha'     => $data['fecha'],
+            'hora'      => $data['hora'] ?? null,
             'direccion' => $data['direccion'] ?? null,
             'lat'       => $data['lat'] ?? null,
             'lng'       => $data['lng'] ?? null,

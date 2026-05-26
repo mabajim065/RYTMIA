@@ -560,7 +560,7 @@
       </form>
     </div>
   </div>
-    <!-- ── MODAL NUEVA COMPETICION ─────────────────────────────── -->
+  <!-- ── MODAL NUEVA COMPETICION ─────────────────────────────── -->
   <div class="modal-overlay" id="modalCompeticion" onclick="cerrarModal('modalCompeticion', event)">
     <div class="modal-content form-modal" onclick="event.stopPropagation()">
       <h2 class="modal-name" style="margin-bottom:1.5rem">Nueva Competición</h2>
@@ -572,6 +572,14 @@
             <label class="form-label" for="compNombre">Nombre de la competición *</label>
             <input class="form-input" id="compNombre" type="text" placeholder="Ej: Torneo Nacional" required />
           </div>
+          <div class="form-group">
+            <label class="form-label" for="compFecha">Fecha *</label>
+            <input class="form-input" id="compFecha" type="date" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="compHora">Hora</label>
+            <input class="form-input" id="compHora" type="time" />
+          </div>
           <div class="form-group full">
             <label class="form-label" for="compEntrenadoras">Entrenadoras asignadas</label>
             <select class="form-select" id="compEntrenadoras" multiple style="height: 100px;">
@@ -580,15 +588,18 @@
             <small style="color:var(--muted)">Mantén Ctrl (Windows) o Cmd (Mac) para seleccionar varias.</small>
           </div>
           <div class="form-group full">
+            <label class="form-label" for="compConjuntos">Grupos / Conjuntos asignados</label>
+            <select class="form-select" id="compConjuntos" multiple style="height: 100px;">
+              <option value="">Cargando grupos...</option>
+            </select>
+            <small style="color:var(--muted)">Mantén Ctrl (Windows) o Cmd (Mac) para seleccionar varios.</small>
+          </div>
+          <div class="form-group full">
             <label class="form-label" for="compGimnastas">Gimnastas asignadas</label>
-            <select class="form-select" id="compGimnastas" multiple style="height: 150px;">
+            <select class="form-select" id="compGimnastas" multiple style="height: 100px;">
               <option value="">Cargando gimnastas...</option>
             </select>
             <small style="color:var(--muted)">Mantén Ctrl (Windows) o Cmd (Mac) para seleccionar varias.</small>
-          </div>
-          <div class="form-group full">
-            <label class="form-label" for="compFecha">Fecha / Horario *</label>
-            <input class="form-input" id="compFecha" type="date" required />
           </div>
         </div>
 
@@ -1290,20 +1301,28 @@
     document.getElementById('modalCompeticion').classList.add('open');
 
     const selEnt = document.getElementById('compEntrenadoras');
+    const selConj = document.getElementById('compConjuntos');
     const selGim = document.getElementById('compGimnastas');
     
     selEnt.innerHTML = '<option value="">Cargando entrenadoras...</option>';
+    selConj.innerHTML = '<option value="">Cargando grupos...</option>';
     selGim.innerHTML = '<option value="">Cargando gimnastas...</option>';
 
     try {
-      const [resEnt, resGim] = await Promise.all([
+      const [resEnt, resGim, resConj] = await Promise.all([
         apiFetch('/usuarios?rol=entrenadora&per_page=1000'),
-        apiFetch('/usuarios?rol=gimnasta&per_page=1000')
+        apiFetch('/usuarios?rol=gimnasta&per_page=1000'),
+        apiFetch('/conjuntos')
       ]);
 
       selEnt.innerHTML = '';
       (resEnt.data || []).forEach(u => {
         selEnt.innerHTML += `<option value="${u.entrenador?.id || u.id}">${u.nombre} ${u.apellidos ?? ''}</option>`;
+      });
+
+      selConj.innerHTML = '';
+      (resConj.data || resConj || []).forEach(c => {
+        selConj.innerHTML += `<option value="${c.id}">${c.nombre} (${c.categoria?.nombre ?? '-'})</option>`;
       });
 
       selGim.innerHTML = '';
@@ -1312,6 +1331,7 @@
       });
     } catch (err) {
       selEnt.innerHTML = '<option value="">Error cargando entrenadoras</option>';
+      selConj.innerHTML = '<option value="">Error cargando grupos</option>';
       selGim.innerHTML = '<option value="">Error cargando gimnastas</option>';
     }
   }
@@ -1323,15 +1343,20 @@
     btn.textContent = 'Guardando...';
 
     const selectEntrenadoras = document.getElementById('compEntrenadoras');
-    const entrenadoras = Array.from(selectEntrenadoras.selectedOptions).map(o => parseInt(o.value));
+    const entrenadoras = Array.from(selectEntrenadoras.selectedOptions).map(o => parseInt(o.value)).filter(v => !isNaN(v));
     
+    const selectConjuntos = document.getElementById('compConjuntos');
+    const conjuntos = Array.from(selectConjuntos.selectedOptions).map(o => parseInt(o.value)).filter(v => !isNaN(v));
+
     const selectGimnastas = document.getElementById('compGimnastas');
-    const gimnastas = Array.from(selectGimnastas.selectedOptions).map(o => parseInt(o.value));
+    const gimnastas = Array.from(selectGimnastas.selectedOptions).map(o => parseInt(o.value)).filter(v => !isNaN(v));
 
     const payload = {
       nombre: document.getElementById('compNombre').value.trim(),
       fecha: document.getElementById('compFecha').value,
+      hora: document.getElementById('compHora').value || null,
       entrenadoras: entrenadoras,
+      conjuntos: conjuntos,
       gimnastas: gimnastas
     };
 
