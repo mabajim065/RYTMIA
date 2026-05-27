@@ -17,18 +17,14 @@ class CompeticionCreadaMail extends Mailable
     public $competicion;
     public $user;
 
-    /**
-     * Create a new message instance.
-     */
+    // Recibe la competición y el usuario al que se le envía el correo
     public function __construct(Competicion $competicion, User $user)
     {
         $this->competicion = $competicion;
         $this->user = $user;
     }
 
-    /**
-     * Get the message envelope.
-     */
+    // Asunto del correo según el rol del usuario
     public function envelope(): Envelope
     {
         $subject = $this->user->esEntrenadora()
@@ -40,21 +36,19 @@ class CompeticionCreadaMail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
+    // Vista del correo y datos que necesita
     public function content(): Content
     {
         return new Content(
             view: 'emails.competicion_creada',
+            with: [
+                'competicion' => $this->competicion,
+                'user' => $this->user,
+            ],
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
+    // Sin archivos adjuntos
     public function attachments(): array
     {
         return [];

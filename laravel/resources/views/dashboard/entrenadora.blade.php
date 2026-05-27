@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  @if(env('GOOGLE_MAPS_API_KEY') && env('GOOGLE_MAPS_API_KEY') !== 'vuestra_maps_key_aca')
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places" async defer></script>
+  @endif
   <style>
     :root {
       --burgundy: #6B1A3A;
@@ -117,6 +120,17 @@
     .perfil-row:last-child { border-bottom: none; }
     .perfil-label { color: var(--muted); font-size: 0.85rem; min-width: 160px; }
     .perfil-value { color: var(--text); font-weight: 500; }
+
+    /* === MAP & COMPETITION DETAIL === */
+    #map-ent { height: 300px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
+    .competition-detail { margin-top: 1.5rem; display: none; padding: 2rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
+    .competition-detail.visible { display: block; }
+    .comp-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+    .comp-meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
+    .comp-meta-item strong { color: var(--text); }
+    .comp-location-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--rose); text-decoration: none; font-size: 0.85rem; font-weight: 500; margin-top: 0.5rem; transition: color 0.2s; }
+    .comp-location-link:hover { color: var(--burgundy); }
+    .map-unavailable { display: flex; align-items: center; justify-content: center; height: 100px; background: var(--cream); border-radius: var(--radius-md); border: 1px dashed var(--blush); color: var(--muted); font-size: 0.9rem; margin-top: 1rem; }
 
     /* === TABLE === */
     .table-wrap { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); overflow: hidden; }
@@ -372,6 +386,20 @@
       </header>
       <div class="perfil-card" style="padding: 1rem;">
         <div id="calendar"></div>
+      </div>
+
+      <!-- Detalle de competición -->
+      <div id="comp-detail-ent" class="competition-detail">
+        <h2 class="perfil-title" id="comp-title-ent">Nombre Competición</h2>
+        <div class="comp-meta">
+          <div class="comp-meta-item">📅 <span id="comp-fecha-ent">–</span></div>
+          <div class="comp-meta-item" id="comp-hora-wrap-ent" style="display:none">🕐 <strong id="comp-hora-ent">–</strong></div>
+          <div class="comp-meta-item" id="comp-dir-wrap-ent" style="display:none">📍 <span id="comp-dir-ent">–</span></div>
+        </div>
+        <a id="comp-maps-link-ent" href="#" target="_blank" rel="noopener" class="comp-location-link" style="display:none">
+          🗺️ Abrir en Google Maps
+        </a>
+        <div id="map-ent"></div>
       </div>
     </div>
 
@@ -768,13 +796,16 @@
   }
 
   let calendarInstance = null;
+  let _compDataEnt = [];
   function initCalendar() {
     if (calendarInstance) return;
     const calendarEl = document.getElementById('calendar');
     fetch(`${API}/competiciones`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
     }).then(r => r.json()).then(data => {
+      _compDataEnt = data;
       const events = data.map(c => ({
+        id: c.id,
         title: c.nombre + (c.conjuntos && c.conjuntos.length > 0 ? ' (' + c.conjuntos.map(cj => cj.nombre).join(', ') + ')' : ''),
         start: c.fecha,
         color: 'var(--burgundy)'
@@ -782,12 +813,86 @@
       calendarInstance = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'es',
-        events: events
+        events: events,
+        eventClick: function(info) {
+          const comp = _compDataEnt.find(c => c.id == info.event.id);
+          showCompetitionDetailEnt(comp);
+        }
       });
       calendarInstance.render();
     }).catch(() => {
       calendarEl.innerHTML = '<p style="color:red">Error cargando calendario.</p>';
     });
+  }
+
+  function showCompetitionDetailEnt(comp) {
+    if (!comp) return;
+    const detail = document.getElementById('comp-detail-ent');
+    detail.classList.add('visible');
+    document.getElementById('comp-title-ent').textContent = comp.nombre;
+
+    // Fecha formateada
+    const fecha = comp.fecha ? new Date(comp.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : '–';
+    document.getElementById('comp-fecha-ent').textContent = fecha;
+
+    // Hora
+    const horaWrap = document.getElementById('comp-hora-wrap-ent');
+    if (comp.hora) {
+      document.getElementById('comp-hora-ent').textContent = comp.hora.substring(0, 5) + ' h';
+      horaWrap.style.display = 'flex';
+    } else {
+      horaWrap.style.display = 'none';
+    }
+
+    // Dirección
+    const dir = comp.direccion ?? comp.lugar ?? null;
+    const dirWrap = document.getElementById('comp-dir-wrap-ent');
+    if (dir) {
+      document.getElementById('comp-dir-ent').textContent = dir;
+      dirWrap.style.display = 'flex';
+    } else {
+      dirWrap.style.display = 'none';
+    }
+
+    // Enlace a Google Maps
+    const mapsLink = document.getElementById('comp-maps-link-ent');
+    if (comp.lat && comp.lng) {
+      mapsLink.href = `https://www.google.com/maps?q=${comp.lat},${comp.lng}`;
+      mapsLink.style.display = 'inline-flex';
+    } else if (dir) {
+      mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir)}`;
+      mapsLink.style.display = 'inline-flex';
+    } else {
+      mapsLink.style.display = 'none';
+    }
+
+    // Mapa
+    const mapEl = document.getElementById('map-ent');
+    mapEl.innerHTML = '';
+    if (comp.lat && comp.lng && typeof google !== 'undefined') {
+      const pos = { lat: parseFloat(comp.lat), lng: parseFloat(comp.lng) };
+      const map = new google.maps.Map(mapEl, {
+        zoom: 15,
+        center: pos,
+        mapTypeControl: false,
+        streetViewControl: false,
+        styles: [
+          { featureType:'poi', elementType:'labels', stylers:[{visibility:'off'}] }
+        ]
+      });
+      new google.maps.Marker({
+        position: pos,
+        map: map,
+        title: comp.nombre,
+        animation: google.maps.Animation.DROP
+      });
+    } else if (dir) {
+      mapEl.innerHTML = `<div class="map-unavailable">📍 ${dir}</div>`;
+    } else {
+      mapEl.innerHTML = '<div class="map-unavailable">Ubicación no disponible</div>';
+    }
+
+    detail.scrollIntoView({ behavior: 'smooth' });
   }
 
   function logout() {

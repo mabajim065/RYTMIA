@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}"></script>
+  @if(env('GOOGLE_MAPS_API_KEY') && env('GOOGLE_MAPS_API_KEY') !== 'vuestra_maps_key_aca')
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places" async defer></script>
+  @endif
 
   <style>
     :root {
@@ -77,9 +79,15 @@
     .badge-baja { background-color: #ffebee; color: #c62828; }
 
     /* === MAP === */
-    #map { height: 350px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
-    .competition-detail { margin-top: 1.5rem; display: none; padding: 1.5rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
+    #map { height: 320px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
+    .competition-detail { margin-top: 1.5rem; display: none; padding: 2rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .competition-detail.visible { display: block; }
+    .comp-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+    .comp-meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
+    .comp-meta-item strong { color: var(--text); }
+    .comp-location-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--rose); text-decoration: none; font-size: 0.85rem; font-weight: 500; margin-top: 0.5rem; transition: color 0.2s; }
+    .comp-location-link:hover { color: var(--burgundy); }
+    .map-unavailable { display: flex; align-items: center; justify-content: center; height: 120px; background: var(--cream); border-radius: var(--radius-md); border: 1px dashed var(--blush); color: var(--muted); font-size: 0.9rem; margin-top: 1rem; }
 
     /* === FORM FIELDS === */
     .form-group { margin-bottom: 1rem; }
@@ -193,7 +201,14 @@
 
       <div id="competition-detail" class="competition-detail">
         <h2 class="perfil-title" id="comp-title">Nombre Competición</h2>
-        <p id="comp-info" style="color: var(--muted); margin-bottom: 1rem;">Lugar y Fecha</p>
+        <div class="comp-meta">
+          <div class="comp-meta-item">📅 <span id="comp-fecha">–</span></div>
+          <div class="comp-meta-item" id="comp-hora-wrap" style="display:none">🕐 <strong id="comp-hora">–</strong></div>
+          <div class="comp-meta-item" id="comp-dir-wrap" style="display:none">📍 <span id="comp-dir">–</span></div>
+        </div>
+        <a id="comp-maps-link" href="#" target="_blank" rel="noopener" class="comp-location-link" style="display:none">
+          🗺️ Abrir en Google Maps
+        </a>
         <div id="map"></div>
       </div>
     </div>
@@ -469,28 +484,71 @@
 
   function showCompetitionDetail(comp) {
     if (!comp) return;
+
     document.getElementById('competition-detail').classList.add('visible');
     document.getElementById('comp-title').textContent = comp.nombre;
-    document.getElementById('comp-info').textContent = `${comp.fecha} · ${comp.direccion ?? comp.lugar ?? 'Ubicación pendiente'}`;
-    
+
+    // Fecha formateada
+    const fecha = comp.fecha ? new Date(comp.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : '–';
+    document.getElementById('comp-fecha').textContent = fecha;
+
+    // Hora
+    const horaWrap = document.getElementById('comp-hora-wrap');
+    if (comp.hora) {
+      document.getElementById('comp-hora').textContent = comp.hora.substring(0, 5) + ' h';
+      horaWrap.style.display = 'flex';
+    } else {
+      horaWrap.style.display = 'none';
+    }
+
+    // Dirección texto
+    const dir = comp.direccion ?? comp.lugar ?? null;
+    const dirWrap = document.getElementById('comp-dir-wrap');
+    if (dir) {
+      document.getElementById('comp-dir').textContent = dir;
+      dirWrap.style.display = 'flex';
+    } else {
+      dirWrap.style.display = 'none';
+    }
+
+    // Enlace a Google Maps
+    const mapsLink = document.getElementById('comp-maps-link');
     if (comp.lat && comp.lng) {
+      mapsLink.href = `https://www.google.com/maps?q=${comp.lat},${comp.lng}`;
+      mapsLink.style.display = 'inline-flex';
+    } else if (dir) {
+      mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir)}`;
+      mapsLink.style.display = 'inline-flex';
+    } else {
+      mapsLink.style.display = 'none';
+    }
+
+    // Mapa interactivo
+    const mapEl = document.getElementById('map');
+    mapEl.innerHTML = '';
+    if (comp.lat && comp.lng && typeof google !== 'undefined') {
       const pos = { lat: parseFloat(comp.lat), lng: parseFloat(comp.lng) };
-      const map = new google.maps.Map(document.getElementById("map"), {
+      const map = new google.maps.Map(mapEl, {
         zoom: 15,
         center: pos,
+        mapTypeControl: false,
+        streetViewControl: false,
         styles: [
-          {
-            "featureType": "all",
-            "elementType": "geometry.fill",
-            "stylers": [{"color": "#fdf6f0"}]
-          }
+          { featureType:'poi', elementType:'labels', stylers:[{visibility:'off'}] }
         ]
       });
-      new google.maps.Marker({ position: pos, map: map, title: comp.nombre });
+      new google.maps.Marker({
+        position: pos,
+        map: map,
+        title: comp.nombre,
+        animation: google.maps.Animation.DROP
+      });
+    } else if (dir) {
+      mapEl.innerHTML = `<div class="map-unavailable">📍 ${dir}</div>`;
     } else {
-      document.getElementById('map').innerHTML = '<p style="padding: 2rem; text-align:center; color: var(--muted)">Ubicación no disponible en el mapa.</p>';
+      mapEl.innerHTML = '<div class="map-unavailable">Ubicación no disponible</div>';
     }
-    
+
     document.getElementById('competition-detail').scrollIntoView({ behavior: 'smooth' });
   }
 
