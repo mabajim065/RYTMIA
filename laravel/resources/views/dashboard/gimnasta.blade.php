@@ -81,6 +81,16 @@
     .competition-detail { margin-top: 1.5rem; display: none; padding: 1.5rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .competition-detail.visible { display: block; }
 
+    /* === FORM FIELDS === */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid var(--blush); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--cream); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--rose); background: var(--white); box-shadow: 0 0 0 3px rgba(196,92,126,.12); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+
+    .btn-primary { background: linear-gradient(135deg, var(--burgundy), var(--rose)); color: var(--white); padding: 0.8rem 1.5rem; border-radius: var(--radius-md); border: none; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: opacity 0.3s, transform 0.2s; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
     @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; padding: 1.5rem; } }
   </style>
 </head>
@@ -208,22 +218,22 @@
 
       <div class="perfil-card" style="margin-bottom: 2rem;">
         <h2 class="perfil-title" style="margin-bottom: 1rem; font-size: 1.2rem;">Nuevo Mensaje</h2>
-        <form id="formMensaje" onsubmit="enviarMensaje(event)" style="display: flex; flex-direction: column; gap: 1rem;">
-          <div>
-            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Destinatario</label>
-            <select id="mensajeReceptor" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit;">
+        <form id="formMensaje" onsubmit="enviarMensaje(event)">
+          <div class="form-group">
+            <label class="form-label" for="mensajeReceptor">Destinatario</label>
+            <select id="mensajeReceptor" class="form-select" required>
               <option value="">Cargando destinatarios...</option>
             </select>
           </div>
-          <div>
-            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Asunto</label>
-            <input type="text" id="mensajeAsunto" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit;" />
+          <div class="form-group">
+            <label class="form-label" for="mensajeAsunto">Asunto</label>
+            <input type="text" id="mensajeAsunto" class="form-input" required />
           </div>
-          <div>
-            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Mensaje</label>
-            <textarea id="mensajeContenido" required rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit; resize: vertical;"></textarea>
+          <div class="form-group">
+            <label class="form-label" for="mensajeContenido">Mensaje</label>
+            <textarea id="mensajeContenido" class="form-textarea" required rows="4"></textarea>
           </div>
-          <button type="submit" id="btnEnviarMensaje" style="align-self: flex-start; padding: 0.75rem 1.5rem; background-color: var(--burgundy); color: var(--white); border: none; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; font-weight: 500;">Enviar Mensaje</button>
+          <button type="submit" id="btnEnviarMensaje" class="btn-primary" style="align-self: flex-start;">Enviar Mensaje</button>
         </form>
         <p id="mensajeFeedback" style="margin-top: 1rem; font-size: 0.9rem;"></p>
       </div>
@@ -338,8 +348,9 @@
     if (select.querySelector('option[value=""]')) {
       select.querySelector('option[value=""]').textContent = 'Selecciona un destinatario...';
     }
-    if (Array.isArray(admins)) {
-      admins.forEach(admin => {
+    const listAdmins = admins.data ?? admins;
+    if (Array.isArray(listAdmins)) {
+      listAdmins.forEach(admin => {
         select.innerHTML += `<option value="${admin.id}">Admin: ${admin.nombre} ${admin.apellidos}</option>`;
       });
     }

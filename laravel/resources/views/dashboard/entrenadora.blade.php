@@ -104,6 +104,9 @@
     .stat { display: flex; flex-direction: column; align-items: center; }
     .stat-val { font-weight: 700; color: var(--burgundy); font-size: 1.3rem; font-family: 'Cormorant Garamond', serif; }
     .stat-label { font-size: 0.75rem; color: var(--muted); }
+    .btn-primary { background: linear-gradient(135deg, var(--burgundy), var(--rose)); color: var(--white); padding: 0.8rem 1.5rem; border-radius: var(--radius-md); border: none; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: opacity 0.3s, transform 0.2s; display: inline-block; text-align: center; text-decoration: none; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
     .btn-outline { background: transparent; border: 1.5px solid var(--blush); color: var(--text); padding: 0.6rem 1.2rem; border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 100%; }
     .btn-outline:hover { border-color: var(--burgundy); color: var(--burgundy); background-color: var(--cream); }
 
@@ -152,6 +155,14 @@
     .msg-asunto { font-size: 0.85rem; color: var(--burgundy); font-weight: 500; margin-bottom: 0.5rem; display: block; }
     .msg-snippet { font-size: 0.8rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .msg-fecha { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; display: block; text-align: right; }
+
+    /* === FORM FIELDS === */
+    .form-group { margin-bottom: 1rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid var(--blush); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--cream); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--rose); background: var(--white); box-shadow: 0 0 0 3px rgba(196,92,126,.12); }
+    .form-textarea { resize: vertical; min-height: 100px; }
 
     @media (max-width: 768px) {
       .mobile-nav { display: flex; }
@@ -613,8 +624,9 @@
         headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
       });
       const admins = await res.json();
-      if (admins && admins.length > 0) {
-        const admin = admins[0]; // Seleccionamos el primer administrador disponible
+      const listAdmins = admins.data ?? admins;
+      if (listAdmins && listAdmins.length > 0) {
+        const admin = listAdmins[0]; // Seleccionamos el primer administrador disponible
         abrirModalMensaje(admin.id, `Administración (${admin.nombre})`);
       } else {
         alert('No hay administradores disponibles en este momento.');
