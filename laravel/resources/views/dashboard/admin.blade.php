@@ -11,7 +11,7 @@
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
     rel="stylesheet" />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
-  @if(env('GOOGLE_MAPS_API_KEY') && env('GOOGLE_MAPS_API_KEY') !== 'vuestra_maps_key_aca')
+  @if(config('services.google_maps.key') && config('services.google_maps.key') !== 'vuestra_maps_key_aca')
     <script>
       // Indica si Google Maps ya terminó de cargar
       window._googleMapsReady = false;
@@ -30,7 +30,7 @@
       }
     </script>
     <script
-      src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=onGoogleMapsLoaded"
+      src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&callback=onGoogleMapsLoaded"
       async defer></script>
   @endif
 
@@ -1425,7 +1425,7 @@
                 placeholder="Escribe la dirección del recinto..." />
               <input type="hidden" id="compLat" />
               <input type="hidden" id="compLng" />
-              @if(env('GOOGLE_MAPS_API_KEY') && env('GOOGLE_MAPS_API_KEY') !== 'vuestra_maps_key_aca')
+              @if(config('services.google_maps.key') && config('services.google_maps.key') !== 'vuestra_maps_key_aca')
                 <small style="color: #2e7d32;">✅ Autocompletar de Google Places activo. Selecciona una sugerencia para
                   guardar coordenadas precisas.</small>
               @else
@@ -2172,11 +2172,9 @@
     }
 
     /* ════════════════════════════════════════════════════
-     * Inicialización
+     * Selectores dependientes (Gimnastas)
      * ════════════════════════════════════════════════════ */
-    /* ════════════════════════════════════════════════════
-     * Selecters dependent (Gimnastas)
-     * ════════════════════════════════════════════════════ */
+
     function prepararFormGimnasta(catId = null, conjId = null) {
       const selCat = document.getElementById('formGimnastaCat');
       selCat.innerHTML = '<option value="">Selecciona una categoría...</option>';
