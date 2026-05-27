@@ -95,7 +95,8 @@ class AutogenerarUsernameTest extends TestCase
             'rol' => 'gimnasta',
             'activo' => true,
             'club_id' => $this->club->id,
-            'categoria_id' => $this->categoria->id
+            'categoria_id' => $this->categoria->id,
+            'fecha_nacimiento' => '2000-01-01'
         ]);
 
         $response->assertStatus(201);
