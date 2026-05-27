@@ -324,13 +324,6 @@
   <!-- Alert de error global -->
   <div id="alert" class="alert" role="alert" aria-live="polite"></div>
 
-  <!-- Google Login -->
-  <a href="/api/auth/google" class="btn-google" id="googleBtn">
-    <img src="https://lh3.googleusercontent.com/COxitq9yg9z1wcnbtW9ZHUqzVupqKi8hW9vN9o9mD8yu24Vf59k8C6i1C2O3z6V2J4K4=s18" alt="Google">
-    Continuar con Google
-  </a>
-
-  <div class="divider" id="credentialsDivider">Acceso con credenciales</div>
 
   <!-- Formulario -->
   <form id="loginForm" novalidate>
@@ -520,8 +513,6 @@
     e.preventDefault();
     hideAlert();
     $('loginForm').style.display = 'none';
-    $('googleBtn').style.display = 'none';
-    $('credentialsDivider').style.display = 'none';
     $('forgotForm').style.display = 'block';
   });
 
@@ -530,8 +521,6 @@
     hideAlert();
     $('forgotForm').style.display = 'none';
     $('loginForm').style.display = 'block';
-    $('googleBtn').style.display = 'flex';
-    $('credentialsDivider').style.display = 'block';
   });
 
   // Forgot form submit
