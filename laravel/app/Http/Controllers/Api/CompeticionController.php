@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Competicion;
-use App\Services\GoogleCalendarService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -105,9 +104,6 @@ class CompeticionController extends Controller
             $competicion->gimnastas()->sync($data['gimnastas']);
         }
 
-        // Sincronizar con Google Calendar de los usuarios involucrados
-        $this->syncWithGoogleCalendar($competicion, $request);
-
         // Enviar correo de notificación a todas las gimnastas y entrenadoras seleccionadas (directamente o por conjuntos)
         try {
             // 1. Gimnastas asignadas directamente
@@ -157,51 +153,4 @@ class CompeticionController extends Controller
         return response()->json($competicion->load(['conjuntos', 'entrenadoras', 'gimnastas']), 201);
     }
 
-    /**
-     * Sincroniza la competición con el calendario de Google de todos los usuarios
-     * (gimnastas y entrenadoras) asociados a los conjuntos de la competición.
-     */
-    protected function syncWithGoogleCalendar(Competicion $competicion, Request $request)
-    {
-        $calendarService = new GoogleCalendarService();
-        $admin = auth()->user();
-        
-        // Si el admin no tiene token de Google, no podemos crear el evento en su calendario
-        if (!$admin || !$admin->google_token) {
-            return;
-        }
-
-        $emailsInvitados = [];
-
-        // Obtener emails de las gimnastas asignadas directamente
-        $userGimnastasEmails = User::whereHas('gimnasta', function($q) use ($competicion) {
-            $q->whereIn('gimnastas.id', $competicion->gimnastas()->pluck('gimnastas.id'));
-        })->whereNotNull('email')->pluck('email')->toArray();
-
-        // Obtener emails de las entrenadoras asignadas directamente
-        $userEntrenadorasEmails = User::whereHas('entrenador', function($q) use ($competicion) {
-            $q->whereIn('entrenadores.id', $competicion->entrenadoras()->pluck('entrenadores.id'));
-        })->whereNotNull('email')->pluck('email')->toArray();
-        
-        // Mantener compatibilidad si hubiese conjuntos asignados
-        $conjuntoIds = $competicion->conjuntos()->pluck('conjuntos.id');
-        $conjuntoGimnastasEmails = User::whereHas('gimnasta', function($q) use ($conjuntoIds) {
-            $q->whereIn('conjunto_id', $conjuntoIds);
-        })->whereNotNull('email')->pluck('email')->toArray();
-
-        // Obtener emails de las entrenadoras asociadas a los conjuntos asignados
-        $conjuntoEntrenadorasEmails = User::whereHas('entrenador', function($q) use ($conjuntoIds) {
-            $q->whereHas('conjuntos', function($q2) use ($conjuntoIds) {
-                $q2->whereIn('conjuntos.id', $conjuntoIds);
-            });
-        })->whereNotNull('email')->pluck('email')->toArray();
-
-        $emailsInvitados = array_merge($userGimnastasEmails, $userEntrenadorasEmails, $conjuntoGimnastasEmails, $conjuntoEntrenadorasEmails);
-        $emailsInvitados = array_unique($emailsInvitados);
-
-        // Crear el evento y añadir asistentes
-        if (!empty($emailsInvitados)) {
-            $calendarService->createEventWithAttendees($admin, $competicion, $emailsInvitados);
-        }
-    }
 }

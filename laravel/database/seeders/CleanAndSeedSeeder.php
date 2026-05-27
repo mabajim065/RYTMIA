@@ -64,9 +64,6 @@ class CleanAndSeedSeeder extends Seeder
                     'rol' => $admin->rol,
                     'telefono' => $admin->telefono,
                     'activo' => $admin->activo,
-                    'google_id' => $admin->google_id,
-                    'google_token' => $admin->google_token,
-                    'google_refresh_token' => $admin->google_refresh_token,
                 ]);
             }
         }

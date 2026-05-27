@@ -25,9 +25,6 @@ class User extends Authenticatable
         'rol',
         'telefono',
         'activo',
-        'google_id',
-        'google_token',
-        'google_refresh_token',
     ];
 
     /**

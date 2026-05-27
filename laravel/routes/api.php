@@ -17,9 +17,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/password/forgot', [AuthController::class, 'sendResetLinkEmail']);
 Route::post('/password/reset',  [AuthController::class, 'resetPassword']);
 
-// Google Auth
-Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
-Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
 
 /*
 |--------------------------------------------------------------------------
