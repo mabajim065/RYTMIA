@@ -538,8 +538,33 @@
               </select>
             </div>
             <div class="form-group">
+              <label class="form-label" for="formGimnastaNacimiento">Fecha de Nacimiento *</label>
+              <input class="form-input" id="formGimnastaNacimiento" type="date" onchange="checkGimnastaAge()" />
+            </div>
+            <div class="form-group">
               <label class="form-label" for="formTelefonoContacto">Teléfono de Contacto (Gimnasta)</label>
               <input class="form-input" id="formTelefonoContacto" type="text" maxlength="20" placeholder="Teléfono de contacto" />
+            </div>
+
+            <!-- Tutor legal (sección condicional) -->
+            <div id="sectionTutorLegal" style="display:none" class="form-section-title full">Datos del Tutor Legal</div>
+            <div id="fieldsTutorLegal" style="display:none; contents">
+              <div class="form-group">
+                <label class="form-label" for="formTutorNombre">Nombre del Tutor *</label>
+                <input class="form-input" id="formTutorNombre" type="text" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="formTutorApellidos">Apellidos del Tutor *</label>
+                <input class="form-input" id="formTutorApellidos" type="text" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="formTutorEmail">Email del Tutor *</label>
+                <input class="form-input" id="formTutorEmail" type="email" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="formTutorRelacion">Relación / Parentesco *</label>
+                <input class="form-input" id="formTutorRelacion" type="text" placeholder="Ej. Madre, Padre, Tutor legal" />
+              </div>
             </div>
           </div>
 
@@ -915,6 +940,54 @@
   /* ════════════════════════════════════════════════════
    * CRUD — Formulario crear / editar
    * ════════════════════════════════════════════════════ */
+  function checkGimnastaAge() {
+    const dobInput = document.getElementById('formGimnastaNacimiento');
+    const secTutorTitle = document.getElementById('sectionTutorLegal');
+    const secTutorFields = document.getElementById('fieldsTutorLegal');
+    
+    const tNombre = document.getElementById('formTutorNombre');
+    const tApellidos = document.getElementById('formTutorApellidos');
+    const tEmail = document.getElementById('formTutorEmail');
+    const tRelacion = document.getElementById('formTutorRelacion');
+
+    if (!dobInput || !dobInput.value) {
+      if (secTutorTitle) secTutorTitle.style.display = 'none';
+      if (secTutorFields) secTutorFields.style.display = 'none';
+      if (tNombre) tNombre.required = false;
+      if (tApellidos) tApellidos.required = false;
+      if (tEmail) tEmail.required = false;
+      if (tRelacion) tRelacion.required = false;
+      return;
+    }
+
+    const birthDate = new Date(dobInput.value);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    if (age < 18) {
+      if (secTutorTitle) secTutorTitle.style.display = 'block';
+      if (secTutorFields) secTutorFields.style.display = 'contents';
+      if (tNombre) tNombre.required = true;
+      if (tApellidos) tApellidos.required = true;
+      if (tEmail) tEmail.required = true;
+      if (tRelacion) tRelacion.required = true;
+    } else {
+      if (secTutorTitle) secTutorTitle.style.display = 'none';
+      if (secTutorFields) secTutorFields.style.display = 'none';
+      if (tNombre) { tNombre.required = false; tNombre.value = ''; }
+      if (tApellidos) { tApellidos.required = false; tApellidos.value = ''; }
+      if (tEmail) { tEmail.required = false; tEmail.value = ''; }
+      if (tRelacion) { tRelacion.required = false; tRelacion.value = ''; }
+    }
+  }
+
+  /* ════════════════════════════════════════════════════
+   * CRUD — Formulario crear / editar
+   * ════════════════════════════════════════════════════ */
   function abrirFormUsuario(rol) {
     document.getElementById('userForm').reset();
     document.getElementById('formMode').value   = 'crear';
@@ -930,9 +1003,12 @@
     document.getElementById('fieldsGimnasta').style.display = rol === 'gimnasta' ? 'contents' : 'none';
     if (rol === 'gimnasta') {
       document.getElementById('formGimnastaCat').required = true;
+      document.getElementById('formGimnastaNacimiento').required = true;
       prepararFormGimnasta();
+      checkGimnastaAge();
     } else {
       document.getElementById('formGimnastaCat').required = false;
+      document.getElementById('formGimnastaNacimiento').required = false;
     }
 
     limpiarAlerta();
@@ -970,8 +1046,20 @@
     document.getElementById('formGimnastaCat').required = esGimnasta;
 
     if (esGimnasta) {
+      document.getElementById('formGimnastaNacimiento').required = true;
+      document.getElementById('formGimnastaNacimiento').value = u.gimnasta?.fecha_nacimiento ? u.gimnasta.fecha_nacimiento.substring(0, 10) : '';
       prepararFormGimnasta(u.gimnasta?.categoria?.id, u.gimnasta?.conjunto?.id);
       document.getElementById('formTelefonoContacto').value = u.gimnasta?.telefono_contacto ?? '';
+      
+      checkGimnastaAge();
+      if (u.gimnasta?.tutor_legal) {
+        document.getElementById('formTutorNombre').value = u.gimnasta.tutor_legal.nombre ?? '';
+        document.getElementById('formTutorApellidos').value = u.gimnasta.tutor_legal.apellidos ?? '';
+        document.getElementById('formTutorEmail').value = u.gimnasta.tutor_legal.email ?? '';
+        document.getElementById('formTutorRelacion').value = u.gimnasta.tutor_legal.relacion ?? '';
+      }
+    } else {
+      document.getElementById('formGimnastaNacimiento').required = false;
     }
 
     if (esEntrenadora && u.entrenador) {
@@ -1024,8 +1112,26 @@
     if (rol === 'gimnasta') {
       payload.categoria_id = document.getElementById('formGimnastaCat').value;
       payload.conjunto_id  = document.getElementById('formGimnastaConj').value || null;
+      payload.fecha_nacimiento = document.getElementById('formGimnastaNacimiento').value || undefined;
       payload.telefono_contacto = document.getElementById('formTelefonoContacto').value.trim() || undefined;
       payload.club_id      = 1; // Asumimos club maestra 1
+
+      // Verificar si es menor para incluir los campos del tutor legal
+      if (payload.fecha_nacimiento) {
+        const birthDate = new Date(payload.fecha_nacimiento);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          payload.tutor_nombre = document.getElementById('formTutorNombre').value.trim();
+          payload.tutor_apellidos = document.getElementById('formTutorApellidos').value.trim();
+          payload.tutor_email = document.getElementById('formTutorEmail').value.trim();
+          payload.tutor_relacion = document.getElementById('formTutorRelacion').value.trim();
+        }
+      }
     }
 
     try {

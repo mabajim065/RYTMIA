@@ -36,6 +36,19 @@ class Gimnasta extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function tutorLegal()
+    {
+        return $this->hasOne(TutorLegal::class);
+    }
+
+    public function esMenorDeEdad(): bool
+    {
+        if (!$this->fecha_nacimiento) {
+            return false;
+        }
+        return $this->fecha_nacimiento->age < 18;
+    }
+
     public function club()
     {
         return $this->belongsTo(Club::class);

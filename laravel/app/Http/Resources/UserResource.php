@@ -73,6 +73,16 @@ class UserResource extends JsonResource
                             'nombre' => $this->gimnasta->conjunto->nombre,
                         ]
                     ),
+                    'tutor_legal'      => $this->when(
+                        $this->gimnasta->relationLoaded('tutorLegal') && $this->gimnasta->tutorLegal,
+                        fn () => [
+                            'id'        => $this->gimnasta->tutorLegal->id,
+                            'nombre'    => $this->gimnasta->tutorLegal->nombre,
+                            'apellidos' => $this->gimnasta->tutorLegal->apellidos,
+                            'email'     => $this->gimnasta->tutorLegal->email,
+                            'relacion'  => $this->gimnasta->tutorLegal->relacion,
+                        ]
+                    ),
                 ]
             ),
 

@@ -16,7 +16,7 @@ class UserService
     public function listar(array $filtros): LengthAwarePaginator
     {
         $query = User::query()
-            ->with(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto'])
+            ->with(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto', 'gimnasta.tutorLegal'])
             ->orderBy('apellidos');
 
         if (isset($filtros['rol'])) {
@@ -51,7 +51,7 @@ class UserService
      */
     public function crear(array $datos): User
     {
-        return DB::transaction(function () use ($datos) {
+        $usuario = DB::transaction(function () use ($datos) {
             $passwordTemporal = $this->generarPasswordTemporal($datos['nombre'], $datos['apellidos'], $datos['dni']);
             $username = empty($datos['username']) ? $this->generarUsername($datos['nombre'], $datos['apellidos']) : $datos['username'];
 
@@ -73,8 +73,32 @@ class UserService
 
             $this->crearPerfil($usuario, $datos);
 
-            return $usuario->load(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria']);
+            return $usuario;
         });
+
+        // Enviar email después de crear el usuario con éxito
+        if ($usuario->rol === 'gimnasta') {
+            $gimnasta = $usuario->gimnasta;
+            if ($gimnasta && $gimnasta->esMenorDeEdad() && $gimnasta->tutorLegal) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($gimnasta->tutorLegal->email)
+                        ->send(new \App\Mail\WelcomeTutorMail($usuario, $gimnasta->tutorLegal));
+                } catch (\Exception $e) {
+                    // Log or handle mail sending failure gracefully
+                }
+            } else {
+                if ($usuario->email) {
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($usuario->email)
+                            ->send(new \App\Mail\WelcomeGimnastaMayorMail($usuario));
+                    } catch (\Exception $e) {
+                        // Log or handle mail sending failure gracefully
+                    }
+                }
+            }
+        }
+
+        return $usuario->load(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.tutorLegal']);
     }
 
     /**
@@ -103,7 +127,7 @@ class UserService
             $usuario->update($camposUser);
             $this->actualizarPerfil($usuario, $datos);
 
-            return $usuario->fresh(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria']);
+            return $usuario->fresh(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.tutorLegal']);
         });
     }
 
@@ -165,15 +189,16 @@ class UserService
 
     private function crearPerfil(User $usuario, array $datos): void
     {
-        match ($usuario->rol) {
-            'entrenadora' => $usuario->entrenador()->create([
+        if ($usuario->rol === 'entrenadora') {
+            $usuario->entrenador()->create([
                 'club_id'           => $datos['club_id'],
                 'titulacion'        => $datos['titulacion']        ?? null,
                 'anios_experiencia' => $datos['anios_experiencia'] ?? 0,
                 'horas_semanales'   => $datos['horas_semanales']   ?? 0,
                 'estado'            => $datos['estado']            ?? 'activa',
-            ]),
-            'gimnasta' => $usuario->gimnasta()->create([
+            ]);
+        } elseif ($usuario->rol === 'gimnasta') {
+            $gimnasta = $usuario->gimnasta()->create([
                 'club_id'          => $datos['club_id'],
                 'conjunto_id'      => $datos['conjunto_id']      ?? null,
                 'categoria_id'     => $datos['categoria_id'],
@@ -182,22 +207,32 @@ class UserService
                 'anios_en_club'    => $datos['anios_en_club']    ?? 0,
                 'telefono_contacto'=> $datos['telefono_contacto']?? null,
                 'estado'           => $datos['estado']           ?? 'activa',
-            ]),
-            default => null,
-        };
+            ]);
+
+            if ($gimnasta->esMenorDeEdad() && !empty($datos['tutor_nombre'])) {
+                $gimnasta->tutorLegal()->create([
+                    'nombre' => $datos['tutor_nombre'],
+                    'apellidos' => $datos['tutor_apellidos'],
+                    'email' => $datos['tutor_email'],
+                    'relacion' => $datos['tutor_relacion'],
+                ]);
+            }
+        }
     }
 
     private function actualizarPerfil(User $usuario, array $datos): void
     {
-        match ($usuario->rol) {
-            'entrenadora' => $usuario->entrenador?->update(array_filter([
+        if ($usuario->rol === 'entrenadora' && $usuario->entrenador) {
+            $usuario->entrenador->update(array_filter([
                 'club_id'           => $datos['club_id']           ?? null,
                 'titulacion'        => $datos['titulacion']        ?? null,
                 'anios_experiencia' => $datos['anios_experiencia'] ?? null,
                 'horas_semanales'   => $datos['horas_semanales']   ?? null,
                 'estado'            => $datos['estado']            ?? null,
-            ], fn ($v) => ! is_null($v))),
-            'gimnasta' => $usuario->gimnasta?->update(array_filter([
+            ], fn ($v) => ! is_null($v)));
+        } elseif ($usuario->rol === 'gimnasta' && $usuario->gimnasta) {
+            $gimnasta = $usuario->gimnasta;
+            $gimnasta->update(array_filter([
                 'club_id'          => $datos['club_id']          ?? null,
                 'conjunto_id'      => $datos['conjunto_id']      ?? null,
                 'categoria_id'     => $datos['categoria_id']     ?? null,
@@ -206,8 +241,23 @@ class UserService
                 'anios_en_club'    => $datos['anios_en_club']    ?? null,
                 'telefono_contacto'=> $datos['telefono_contacto']?? null,
                 'estado'           => $datos['estado']           ?? null,
-            ], fn ($v) => ! is_null($v))),
-            default => null,
-        };
+            ], fn ($v) => ! is_null($v)));
+
+            if ($gimnasta->esMenorDeEdad()) {
+                if (!empty($datos['tutor_nombre'])) {
+                    $gimnasta->tutorLegal()->updateOrCreate(
+                        [],
+                        [
+                            'nombre' => $datos['tutor_nombre'],
+                            'apellidos' => $datos['tutor_apellidos'],
+                            'email' => $datos['tutor_email'],
+                            'relacion' => $datos['tutor_relacion'],
+                        ]
+                    );
+                }
+            } else {
+                $gimnasta->tutorLegal()?->delete();
+            }
+        }
     }
 }
