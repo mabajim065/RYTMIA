@@ -73,21 +73,25 @@ class GruposSeeder extends Seeder
         }
 
         // ── 4. Entrenadoras de ejemplo ────────────────────────────
+        $userService = new \App\Services\UserService();
+
         $usersEntrenadoras = [
-            ['dni' => '10000001A', 'nombre' => 'Laura',   'apellidos' => 'Gómez Ruiz',    'pw' => 'Laura1234',  'titulacion' => 'Nivel 1',  'anios' => 3,  'horas' => 10, 'bio' => 'Especialista en iniciación deportiva y escuela.'],
-            ['dni' => '10000002B', 'nombre' => 'Marta',   'apellidos' => 'Ruiz Sánchez',  'pw' => 'Marta1234',  'titulacion' => 'Nivel 2',  'anios' => 6,  'horas' => 20, 'bio' => 'Especialista técnica en Precopa y Copa.'],
-            ['dni' => '10000003C', 'nombre' => 'Carmen',  'apellidos' => 'López Navarro', 'pw' => 'Carmen1234', 'titulacion' => 'Nivel 3',  'anios' => 10, 'horas' => 30, 'bio' => 'Directora técnica, responsable superior de Base y Absoluto.'],
+            ['dni' => '10000001A', 'nombre' => 'Laura',   'apellidos' => 'Gómez Ruiz',    'titulacion' => 'Nivel 1',  'anios' => 3,  'horas' => 10, 'bio' => 'Especialista en iniciación deportiva y escuela.'],
+            ['dni' => '10000002B', 'nombre' => 'Marta',   'apellidos' => 'Ruiz Sánchez',  'titulacion' => 'Nivel 2',  'anios' => 6,  'horas' => 20, 'bio' => 'Especialista técnica en Precopa y Copa.'],
+            ['dni' => '10000003C', 'nombre' => 'Carmen',  'apellidos' => 'López Navarro', 'titulacion' => 'Nivel 3',  'anios' => 10, 'horas' => 30, 'bio' => 'Directora técnica, responsable superior de Base y Absoluto.'],
         ];
 
         $entrenadoras = [];
         foreach ($usersEntrenadoras as $u) {
+            $pw = $userService->generarPasswordTemporal($u['nombre'], $u['apellidos'], $u['dni']);
             $user = User::firstOrCreate(
                 ['dni' => $u['dni']],
                 [
                     'nombre'    => $u['nombre'],
                     'apellidos' => $u['apellidos'],
                     'email'     => strtolower($u['nombre']) . '@rytmia.test',
-                    'password'  => Hash::make($u['pw']),
+                    'password'  => Hash::make($pw),
+                    'password_temporal' => $pw,
                     'rol'       => 'entrenadora',
                     'activo'    => true,
                 ]
@@ -134,13 +138,15 @@ class GruposSeeder extends Seeder
                 $dniNum = 20000000 + ($conjunto->id * 100) + $i;
                 $dni = $dniNum . "X";
                 
+                $pw = $userService->generarPasswordTemporal("Gimnasta " . $i, "de " . $nombreConjunto, $dni);
                 $user = User::firstOrCreate(
                     ['dni' => $dni],
                     [
                         'nombre'    => "Gimnasta " . $i,
                         'apellidos' => "de " . $nombreConjunto,
                         'email'     => "gimnasta" . $conjunto->id . "_" . $i . "@rytmia.test",
-                        'password'  => Hash::make('Gimnasta1234'),
+                        'password'  => Hash::make($pw),
+                        'password_temporal' => $pw,
                         'rol'       => 'gimnasta',
                         'activo'    => true,
                         'telefono'  => '600000000' // Teléfono general del usuario
@@ -163,13 +169,16 @@ class GruposSeeder extends Seeder
         }
 
         // ── Admin por defecto ──────────────────────────────────────
+        $pwAdmin = $userService->generarPasswordTemporal('Admin', 'Principal', '00000001A');
         User::firstOrCreate(
             ['dni' => '00000001A'],
             [
                 'nombre'    => 'Admin',
                 'apellidos' => 'Principal',
+                'username'  => 'admin',
                 'email'     => 'admin@rytmia.test',
-                'password'  => Hash::make('Admin1234'),
+                'password'  => Hash::make($pwAdmin),
+                'password_temporal' => $pwAdmin,
                 'rol'       => 'administrador',
                 'activo'    => true,
             ]

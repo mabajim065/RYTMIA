@@ -45,13 +45,15 @@ class TestGimnastasSeeder extends Seeder
                 $dniGimnasta = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT) . chr(rand(65, 90));
 
                 // Crear usuario
+                $pw = (new \App\Services\UserService())->generarPasswordTemporal("Nombre {$i}", "Apellido {$nombreGrupo}", $dniGimnasta);
                 $user = User::firstOrCreate(
                     ['email' => $emailGimnasta],
                     [
                         'nombre' => "Nombre {$i}",
                         'apellidos' => "Apellido {$nombreGrupo}",
                         'dni' => $dniGimnasta,
-                        'password' => Hash::make('password123'),
+                        'password' => Hash::make($pw),
+                        'password_temporal' => $pw,
                         'rol' => 'gimnasta',
                         'activo' => true
                     ]

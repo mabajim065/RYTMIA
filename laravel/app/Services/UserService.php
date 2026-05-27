@@ -143,12 +143,17 @@ class UserService
      */
     public function generarPasswordTemporal(string $nombre, string $apellidos, string $dni): string
     {
-        $cleanNombre = \Illuminate\Support\Str::ascii(str_replace(' ', '', trim($nombre)));
+        // Primer nombre (sin acentos, minúsculas, primera palabra si es compuesto)
+        $firstNombre = explode(' ', trim($nombre))[0];
+        $cleanNombre = \Illuminate\Support\Str::ascii($firstNombre);
         $twoNombre = mb_strtolower(mb_substr($cleanNombre, 0, 2));
 
-        $cleanApellidos = \Illuminate\Support\Str::ascii(str_replace(' ', '', trim($apellidos)));
-        $twoApellidos = mb_strtolower(mb_substr($cleanApellidos, 0, 2));
+        // Primer apellido (sin acentos, minúsculas, primera palabra de apellidos)
+        $firstApellido = explode(' ', trim($apellidos))[0];
+        $cleanApellido = \Illuminate\Support\Str::ascii($firstApellido);
+        $twoApellidos = mb_strtolower(mb_substr($cleanApellido, 0, 2));
 
+        // Últimos 3 números del DNI
         $onlyDigits = preg_replace('/[^0-9]/', '', $dni);
         $lastThreeDigits = substr($onlyDigits, -3);
         $lastThreeDigits = str_pad($lastThreeDigits, 3, '0', STR_PAD_LEFT);
