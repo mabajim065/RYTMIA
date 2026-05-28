@@ -2,10 +2,14 @@
 
 namespace App\Services;
 
+use App\Mail\WelcomeBienvenidaMail;
+use App\Mail\WelcomeGimnastaMayorMail;
+use App\Mail\WelcomeTutorMail;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class UserService
@@ -76,24 +80,36 @@ class UserService
             return $usuario;
         });
 
-        // Enviar email después de crear el usuario con éxito
+        // Enviar email de bienvenida con credenciales según el rol
         if ($usuario->rol === 'gimnasta') {
             $gimnasta = $usuario->gimnasta;
             if ($gimnasta && $gimnasta->esMenorDeEdad() && $gimnasta->tutorLegal) {
+                // Gimnasta menor de edad → email al tutor legal
                 try {
-                    \Illuminate\Support\Facades\Mail::to($gimnasta->tutorLegal->email)
-                        ->send(new \App\Mail\WelcomeTutorMail($usuario, $gimnasta->tutorLegal));
+                    Mail::to($gimnasta->tutorLegal->email)
+                        ->send(new WelcomeTutorMail($usuario, $gimnasta->tutorLegal));
                 } catch (\Exception $e) {
-                    // Log or handle mail sending failure gracefully
+                    // Ignorar errores de envío de correo
                 }
             } else {
+                // Gimnasta mayor de edad → email a la propia gimnasta
                 if ($usuario->email) {
                     try {
-                        \Illuminate\Support\Facades\Mail::to($usuario->email)
-                            ->send(new \App\Mail\WelcomeGimnastaMayorMail($usuario));
+                        Mail::to($usuario->email)
+                            ->send(new WelcomeGimnastaMayorMail($usuario));
                     } catch (\Exception $e) {
-                        // Log or handle mail sending failure gracefully
+                        // Ignorar errores de envío de correo
                     }
+                }
+            }
+        } elseif (in_array($usuario->rol, ['entrenadora', 'administrador'])) {
+            // Entrenadora o administrador → email con credenciales directamente
+            if ($usuario->email) {
+                try {
+                    Mail::to($usuario->email)
+                        ->send(new WelcomeBienvenidaMail($usuario));
+                } catch (\Exception $e) {
+                    // Ignorar errores de envío de correo
                 }
             }
         }
