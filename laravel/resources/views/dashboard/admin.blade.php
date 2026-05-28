@@ -728,11 +728,13 @@
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-soft);
       border: 1px solid var(--blush);
-      overflow: hidden;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     table {
       width: 100%;
+      min-width: 900px;
       border-collapse: collapse;
     }
 
@@ -741,19 +743,21 @@
     }
 
     th {
-      padding: 1rem 1.5rem;
+      padding: 0.85rem 1rem;
       text-align: left;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
     td {
-      padding: 1rem 1.5rem;
-      font-size: 0.9rem;
+      padding: 0.85rem 1rem;
+      font-size: 0.85rem;
       border-top: 1px solid var(--blush);
+      white-space: nowrap;
     }
 
     tr:hover td {
