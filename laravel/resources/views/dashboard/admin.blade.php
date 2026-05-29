@@ -1200,7 +1200,8 @@
     <!--  MODAL GESTIÓN GRUPO  -->
     <div class="modal-overlay" id="modalGrupo" onclick="cerrarModal('modalGrupo', event)">
       <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 700px;">
-        <div class="modal-header" style="margin-bottom:1.5rem; justify-content: space-between; align-items: flex-start;">
+        <div class="modal-header"
+          style="margin-bottom:1.5rem; justify-content: space-between; align-items: flex-start;">
           <div>
             <h2 class="modal-name" id="mgTitle">Grupo</h2>
             <div class="modal-subtitle" id="mgCategoria">Categoría</div>
@@ -1433,10 +1434,10 @@
               <input type="hidden" id="compLat" />
               <input type="hidden" id="compLng" />
               @if(config('services.google_maps.key') && config('services.google_maps.key') !== 'vuestra_maps_key_aca')
-                <small style="color: #2e7d32;">✅ Autocompletar de Google Places activo. Selecciona una sugerencia para
+                <small style="color: #2e7d32;">Autocompletar de Google Places activo. Selecciona una sugerencia para
                   guardar coordenadas precisas.</small>
               @else
-                <small style="color: var(--muted);">ℹ️ Escribe la dirección manualmente. Para activar el autocompletar,
+                <small style="color: var(--muted);">Escribe la dirección manualmente. Para activar el autocompletar,
                   configura <code>GOOGLE_MAPS_API_KEY</code> en el <code>.env</code>.</small>
               @endif
             </div>
@@ -2393,11 +2394,11 @@
     cargarEntrenadoras();
 
     // IMPRIMIR LISTA PDF
-  async function imprimirListaConjunto(conjuntoId) {
-    if (!conjuntoId) return;
-    const url = `http://localhost:5000/pdf/conjunto/${conjuntoId}?token=${encodeURIComponent(token)}`;
-  window.open(url, '_blank');
-}
+    async function imprimirListaConjunto(conjuntoId) {
+      if (!conjuntoId) return;
+      const url = `{{ url('/pdf/conjunto') }}/${conjuntoId}?token=${encodeURIComponent(token)}`;
+      window.open(url, '_blank');
+    }
   </script>
 </body>
 
