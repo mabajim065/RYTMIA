@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}"></script>
+  @if(env('GOOGLE_MAPS_API_KEY') && env('GOOGLE_MAPS_API_KEY') !== 'vuestra_maps_key_aca')
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places" async defer></script>
+  @endif
 
   <style>
     :root {
@@ -56,7 +58,7 @@
       position: relative;
       overflow: hidden;
     }
-    .welcome-card::after { content: '🤸‍♀️'; position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); font-size: 5rem; opacity: 0.2; }
+    .welcome-card::after { content: ''; position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); font-size: 5rem; opacity: 0.2; }
     .welcome-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; margin-bottom: 0.5rem; }
     .welcome-sub { opacity: 0.8; font-size: 0.95rem; }
     /* === STATS === */
@@ -77,9 +79,25 @@
     .badge-baja { background-color: #ffebee; color: #c62828; }
 
     /* === MAP === */
-    #map { height: 350px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
-    .competition-detail { margin-top: 1.5rem; display: none; padding: 1.5rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
+    #map { height: 320px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
+    .competition-detail { margin-top: 1.5rem; display: none; padding: 2rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .competition-detail.visible { display: block; }
+    .comp-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+    .comp-meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
+    .comp-meta-item strong { color: var(--text); }
+    .comp-location-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--rose); text-decoration: none; font-size: 0.85rem; font-weight: 500; margin-top: 0.5rem; transition: color 0.2s; }
+    .comp-location-link:hover { color: var(--burgundy); }
+    .map-unavailable { display: flex; align-items: center; justify-content: center; height: 120px; background: var(--cream); border-radius: var(--radius-md); border: 1px dashed var(--blush); color: var(--muted); font-size: 0.9rem; margin-top: 1rem; }
+
+    /* === FORM FIELDS === */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid var(--blush); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--cream); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--rose); background: var(--white); box-shadow: 0 0 0 3px rgba(196,92,126,.12); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+
+    .btn-primary { background: linear-gradient(135deg, var(--burgundy), var(--rose)); color: var(--white); padding: 0.8rem 1.5rem; border-radius: var(--radius-md); border: none; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: opacity 0.3s, transform 0.2s; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
 
     @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; padding: 1.5rem; } }
   </style>
@@ -89,10 +107,10 @@
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
-      <a class="nav-link active" id="nav-panel" onclick="showView('panel')">🏠 Mi Panel</a>
-      <a class="nav-link" id="nav-calendario" onclick="showView('calendario')">📅 Calendario</a>
-      <a class="nav-link" id="nav-entrenadora" onclick="showView('entrenadora')">👩‍🏫 Mi Entrenadora</a>
-      <a class="nav-link" id="nav-mensajes" onclick="showView('mensajes')">💬 Mensajes</a>
+      <a class="nav-link active" id="nav-panel" onclick="showView('panel')">Mi Panel</a>
+      <a class="nav-link" id="nav-calendario" onclick="showView('calendario')">Calendario</a>
+      <a class="nav-link" id="nav-entrenadora" onclick="showView('entrenadora')">Mi Entrenadora</a>
+      <a class="nav-link" id="nav-mensajes" onclick="showView('mensajes')">Mensajes</a>
     </nav>
     <div class="user-profile">
       <div class="avatar" id="sidebarAvatar">G</div>
@@ -100,7 +118,7 @@
         <div class="user-name" id="sidebarName">Gimnasta</div>
         <div class="user-role">Gimnasta</div>
       </div>
-      <button class="logout-btn" onclick="logout()" title="Cerrar sesión">🚪</button>
+      <button class="logout-btn" onclick="logout()" title="Cerrar sesión" style="font-size: 0.9rem; font-weight: 500;">Salir</button>
     </div>
   </aside>
 
@@ -112,7 +130,7 @@
       </header>
 
       <div class="welcome-card">
-        <div class="welcome-title">¡Hola, <span id="welcomeName">gimnasta</span>! 🎀</div>
+        <div class="welcome-title">¡Hola, <span id="welcomeName">gimnasta</span>!</div>
         <div class="welcome-sub">Consulta aquí tu información personal y la de tu conjunto.</div>
       </div>
 
@@ -183,7 +201,14 @@
 
       <div id="competition-detail" class="competition-detail">
         <h2 class="perfil-title" id="comp-title">Nombre Competición</h2>
-        <p id="comp-info" style="color: var(--muted); margin-bottom: 1rem;">Lugar y Fecha</p>
+        <div class="comp-meta">
+          <div class="comp-meta-item">📅 <span id="comp-fecha">–</span></div>
+          <div class="comp-meta-item" id="comp-hora-wrap" style="display:none">🕐 <strong id="comp-hora">–</strong></div>
+          <div class="comp-meta-item" id="comp-dir-wrap" style="display:none">📍 <span id="comp-dir">–</span></div>
+        </div>
+        <a id="comp-maps-link" href="#" target="_blank" rel="noopener" class="comp-location-link" style="display:none">
+          🗺️ Abrir en Google Maps
+        </a>
         <div id="map"></div>
       </div>
     </div>
@@ -208,22 +233,22 @@
 
       <div class="perfil-card" style="margin-bottom: 2rem;">
         <h2 class="perfil-title" style="margin-bottom: 1rem; font-size: 1.2rem;">Nuevo Mensaje</h2>
-        <form id="formMensaje" onsubmit="enviarMensaje(event)" style="display: flex; flex-direction: column; gap: 1rem;">
-          <div>
-            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Destinatario</label>
-            <select id="mensajeReceptor" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit;">
+        <form id="formMensaje" onsubmit="enviarMensaje(event)">
+          <div class="form-group">
+            <label class="form-label" for="mensajeReceptor">Destinatario</label>
+            <select id="mensajeReceptor" class="form-select" required>
               <option value="">Cargando destinatarios...</option>
             </select>
           </div>
-          <div>
-            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Asunto</label>
-            <input type="text" id="mensajeAsunto" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit;" />
+          <div class="form-group">
+            <label class="form-label" for="mensajeAsunto">Asunto</label>
+            <input type="text" id="mensajeAsunto" class="form-input" required />
           </div>
-          <div>
-            <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Mensaje</label>
-            <textarea id="mensajeContenido" required rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--blush); border-radius: var(--radius-md); font-family: inherit; resize: vertical;"></textarea>
+          <div class="form-group">
+            <label class="form-label" for="mensajeContenido">Mensaje</label>
+            <textarea id="mensajeContenido" class="form-textarea" required rows="4"></textarea>
           </div>
-          <button type="submit" id="btnEnviarMensaje" style="align-self: flex-start; padding: 0.75rem 1.5rem; background-color: var(--burgundy); color: var(--white); border: none; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; font-weight: 500;">Enviar Mensaje</button>
+          <button type="submit" id="btnEnviarMensaje" class="btn-primary" style="align-self: flex-start;">Enviar Mensaje</button>
         </form>
         <p id="mensajeFeedback" style="margin-top: 1rem; font-size: 0.9rem;"></p>
       </div>
@@ -338,8 +363,9 @@
     if (select.querySelector('option[value=""]')) {
       select.querySelector('option[value=""]').textContent = 'Selecciona un destinatario...';
     }
-    if (Array.isArray(admins)) {
-      admins.forEach(admin => {
+    const listAdmins = admins.data ?? admins;
+    if (Array.isArray(listAdmins)) {
+      listAdmins.forEach(admin => {
         select.innerHTML += `<option value="${admin.id}">Admin: ${admin.nombre} ${admin.apellidos}</option>`;
       });
     }
@@ -458,28 +484,71 @@
 
   function showCompetitionDetail(comp) {
     if (!comp) return;
+
     document.getElementById('competition-detail').classList.add('visible');
     document.getElementById('comp-title').textContent = comp.nombre;
-    document.getElementById('comp-info').textContent = `${comp.fecha} · ${comp.direccion ?? comp.lugar ?? 'Ubicación pendiente'}`;
-    
+
+    // Fecha formateada
+    const fecha = comp.fecha ? new Date(comp.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : '–';
+    document.getElementById('comp-fecha').textContent = fecha;
+
+    // Hora
+    const horaWrap = document.getElementById('comp-hora-wrap');
+    if (comp.hora) {
+      document.getElementById('comp-hora').textContent = comp.hora.substring(0, 5) + ' h';
+      horaWrap.style.display = 'flex';
+    } else {
+      horaWrap.style.display = 'none';
+    }
+
+    // Dirección texto
+    const dir = comp.direccion ?? comp.lugar ?? null;
+    const dirWrap = document.getElementById('comp-dir-wrap');
+    if (dir) {
+      document.getElementById('comp-dir').textContent = dir;
+      dirWrap.style.display = 'flex';
+    } else {
+      dirWrap.style.display = 'none';
+    }
+
+    // Enlace a Google Maps
+    const mapsLink = document.getElementById('comp-maps-link');
     if (comp.lat && comp.lng) {
+      mapsLink.href = `https://www.google.com/maps?q=${comp.lat},${comp.lng}`;
+      mapsLink.style.display = 'inline-flex';
+    } else if (dir) {
+      mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir)}`;
+      mapsLink.style.display = 'inline-flex';
+    } else {
+      mapsLink.style.display = 'none';
+    }
+
+    // Mapa interactivo
+    const mapEl = document.getElementById('map');
+    mapEl.innerHTML = '';
+    if (comp.lat && comp.lng && typeof google !== 'undefined') {
       const pos = { lat: parseFloat(comp.lat), lng: parseFloat(comp.lng) };
-      const map = new google.maps.Map(document.getElementById("map"), {
+      const map = new google.maps.Map(mapEl, {
         zoom: 15,
         center: pos,
+        mapTypeControl: false,
+        streetViewControl: false,
         styles: [
-          {
-            "featureType": "all",
-            "elementType": "geometry.fill",
-            "stylers": [{"color": "#fdf6f0"}]
-          }
+          { featureType:'poi', elementType:'labels', stylers:[{visibility:'off'}] }
         ]
       });
-      new google.maps.Marker({ position: pos, map: map, title: comp.nombre });
+      new google.maps.Marker({
+        position: pos,
+        map: map,
+        title: comp.nombre,
+        animation: google.maps.Animation.DROP
+      });
+    } else if (dir) {
+      mapEl.innerHTML = `<div class="map-unavailable">📍 ${dir}</div>`;
     } else {
-      document.getElementById('map').innerHTML = '<p style="padding: 2rem; text-align:center; color: var(--muted)">Ubicación no disponible en el mapa.</p>';
+      mapEl.innerHTML = '<div class="map-unavailable">Ubicación no disponible</div>';
     }
-    
+
     document.getElementById('competition-detail').scrollIntoView({ behavior: 'smooth' });
   }
 

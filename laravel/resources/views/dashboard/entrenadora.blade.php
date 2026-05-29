@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  @if(env('GOOGLE_MAPS_API_KEY') && env('GOOGLE_MAPS_API_KEY') !== 'vuestra_maps_key_aca')
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places" async defer></script>
+  @endif
   <style>
     :root {
       --burgundy: #6B1A3A;
@@ -76,7 +79,7 @@
       overflow: hidden;
     }
     .welcome-card::after {
-      content: '🎀';
+      content: '';
       position: absolute;
       right: 2rem;
       top: 50%;
@@ -104,6 +107,9 @@
     .stat { display: flex; flex-direction: column; align-items: center; }
     .stat-val { font-weight: 700; color: var(--burgundy); font-size: 1.3rem; font-family: 'Cormorant Garamond', serif; }
     .stat-label { font-size: 0.75rem; color: var(--muted); }
+    .btn-primary { background: linear-gradient(135deg, var(--burgundy), var(--rose)); color: var(--white); padding: 0.8rem 1.5rem; border-radius: var(--radius-md); border: none; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: opacity 0.3s, transform 0.2s; display: inline-block; text-align: center; text-decoration: none; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
     .btn-outline { background: transparent; border: 1.5px solid var(--blush); color: var(--text); padding: 0.6rem 1.2rem; border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 100%; }
     .btn-outline:hover { border-color: var(--burgundy); color: var(--burgundy); background-color: var(--cream); }
 
@@ -115,12 +121,23 @@
     .perfil-label { color: var(--muted); font-size: 0.85rem; min-width: 160px; }
     .perfil-value { color: var(--text); font-weight: 500; }
 
+    /* === MAP & COMPETITION DETAIL === */
+    #map-ent { height: 300px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
+    .competition-detail { margin-top: 1.5rem; display: none; padding: 2rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
+    .competition-detail.visible { display: block; }
+    .comp-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+    .comp-meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
+    .comp-meta-item strong { color: var(--text); }
+    .comp-location-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--rose); text-decoration: none; font-size: 0.85rem; font-weight: 500; margin-top: 0.5rem; transition: color 0.2s; }
+    .comp-location-link:hover { color: var(--burgundy); }
+    .map-unavailable { display: flex; align-items: center; justify-content: center; height: 100px; background: var(--cream); border-radius: var(--radius-md); border: 1px dashed var(--blush); color: var(--muted); font-size: 0.9rem; margin-top: 1rem; }
+
     /* === TABLE === */
-    .table-wrap { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
+    .table-wrap { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; min-width: 750px; border-collapse: collapse; }
     thead { background: var(--cream); }
-    th { padding: 1rem 1.5rem; text-align: left; font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    td { padding: 1rem 1.5rem; font-size: 0.9rem; border-top: 1px solid var(--blush); }
+    th { padding: 0.85rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    td { padding: 0.85rem 1rem; font-size: 0.85rem; border-top: 1px solid var(--blush); white-space: nowrap; }
     tr:hover td { background: var(--off-white); }
 
     /* === MODAL === */
@@ -153,6 +170,14 @@
     .msg-snippet { font-size: 0.8rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .msg-fecha { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; display: block; text-align: right; }
 
+    /* === FORM FIELDS === */
+    .form-group { margin-bottom: 1rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid var(--blush); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--cream); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--rose); background: var(--white); box-shadow: 0 0 0 3px rgba(196,92,126,.12); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+
     @media (max-width: 768px) {
       .mobile-nav { display: flex; }
       .sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-soft); }
@@ -177,11 +202,11 @@
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
-      <button class="nav-link active" id="nav-panel"      onclick="showView('panel')">🏠 Mi Panel</button>
-      <button class="nav-link"        id="nav-grupos"     onclick="showView('grupos')">🏆 Mis Grupos</button>
-      <button class="nav-link"        id="nav-gimnastas"  onclick="showView('gimnastas')">🤸‍♀️ Mis Gimnastas</button>
-      <button class="nav-link"        id="nav-mensajes"   onclick="showView('mensajes')">✉️ Mensajes Padres</button>
-      <button class="nav-link"        id="nav-calendario" onclick="showView('calendario')">📅 Calendario</button>
+      <button class="nav-link active" id="nav-panel"      onclick="showView('panel')">Mi Panel</button>
+      <button class="nav-link"        id="nav-grupos"     onclick="showView('grupos')">Mis Grupos</button>
+      <button class="nav-link"        id="nav-gimnastas"  onclick="showView('gimnastas')">Mis Gimnastas</button>
+      <button class="nav-link"        id="nav-mensajes"   onclick="showView('mensajes')">Mensajes Padres</button>
+      <button class="nav-link"        id="nav-calendario" onclick="showView('calendario')">Calendario</button>
     </nav>
     <div class="user-profile">
       <div class="avatar" id="sidebarAvatar">E</div>
@@ -189,7 +214,7 @@
         <div class="user-name" id="sidebarName">Entrenadora</div>
         <div class="user-role">Entrenadora</div>
       </div>
-      <button class="logout-btn" onclick="logout()" title="Cerrar sesión">🚪</button>
+      <button class="logout-btn" onclick="logout()" title="Cerrar sesión" style="font-size: 0.9rem; font-weight: 500;">Salir</button>
     </div>
   </aside>
 
@@ -206,7 +231,7 @@
       </header>
 
       <div class="welcome-card">
-        <div class="welcome-title">¡Hola, <span id="welcomeName">entrenadora</span>! 👋</div>
+        <div class="welcome-title">¡Hola, <span id="welcomeName">entrenadora</span>!</div>
         <div class="welcome-sub">Aquí puedes consultar tu información de perfil y acceder a tus grupos asignados.</div>
       </div>
 
@@ -246,7 +271,7 @@
           <h1 class="page-title">Bandeja de Entrada</h1>
           <p class="page-subtitle">Mensajes enviados por los padres de tus gimnastas</p>
         </div>
-        <button class="btn-primary" onclick="abrirModalMensajeAdmin()">✉️ Contactar Administración</button>
+        <button class="btn-primary" onclick="abrirModalMensajeAdmin()">Contactar Administración</button>
       </header>
 
       <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
@@ -361,6 +386,20 @@
       </header>
       <div class="perfil-card" style="padding: 1rem;">
         <div id="calendar"></div>
+      </div>
+
+      <!-- Detalle de competición -->
+      <div id="comp-detail-ent" class="competition-detail">
+        <h2 class="perfil-title" id="comp-title-ent">Nombre Competición</h2>
+        <div class="comp-meta">
+          <div class="comp-meta-item">📅 <span id="comp-fecha-ent">–</span></div>
+          <div class="comp-meta-item" id="comp-hora-wrap-ent" style="display:none">🕐 <strong id="comp-hora-ent">–</strong></div>
+          <div class="comp-meta-item" id="comp-dir-wrap-ent" style="display:none">📍 <span id="comp-dir-ent">–</span></div>
+        </div>
+        <a id="comp-maps-link-ent" href="#" target="_blank" rel="noopener" class="comp-location-link" style="display:none">
+          🗺️ Abrir en Google Maps
+        </a>
+        <div id="map-ent"></div>
       </div>
     </div>
 
@@ -491,7 +530,7 @@
 
       grid.innerHTML = lista.map(g => `
         <div class="team-card">
-          <div class="card-avatar">🏆</div>
+          <div class="card-avatar">${(g.nombre?.[0] ?? 'C').toUpperCase()}</div>
           <div class="card-name">${g.nombre}</div>
           <div class="card-role">${g.categoria?.nombre ?? 'Sin categoría'}</div>
           <div class="card-stats">
@@ -533,7 +572,7 @@
             <td>${g.numero_licencia ?? '–'}</td>
             <td><a href="tel:${g.telefono_contacto ?? ''}" style="color:var(--burgundy); font-weight:600; text-decoration:none">${g.telefono_contacto ?? 'Sin teléfono'}</a></td>
             <td>
-               <button class="btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${g.user?.id}, '${g.nombre} ${g.apellidos ?? ''}')">✉️ Mensaje</button>
+               <button class="btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${g.user?.id}, '${g.nombre} ${g.apellidos ?? ''}')">Mensaje</button>
             </td>
           </tr>
         `).join('');
@@ -570,7 +609,7 @@
             <td>${u.gimnasta?.conjunto?.nombre ?? '<small style="color:var(--muted)">Sin Asignar</small>'}</td>
             <td><a href="tel:${u.gimnasta?.telefono_contacto ?? ''}" style="color:var(--burgundy); font-weight:600; text-decoration:none">${u.gimnasta?.telefono_contacto ?? 'Sin teléfono'}</a></td>
             <td>
-              <button class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${u.id}, '${u.nombre} ${u.apellidos ?? ''}')">✉️ Mensaje</button>
+              <button class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="abrirModalMensaje(${u.id}, '${u.nombre} ${u.apellidos ?? ''}')">Mensaje</button>
             </td>
           </tr>
         `).join('');
@@ -613,8 +652,9 @@
         headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
       });
       const admins = await res.json();
-      if (admins && admins.length > 0) {
-        const admin = admins[0]; // Seleccionamos el primer administrador disponible
+      const listAdmins = admins.data ?? admins;
+      if (listAdmins && listAdmins.length > 0) {
+        const admin = listAdmins[0]; // Seleccionamos el primer administrador disponible
         abrirModalMensaje(admin.id, `Administración (${admin.nombre})`);
       } else {
         alert('No hay administradores disponibles en este momento.');
@@ -756,13 +796,16 @@
   }
 
   let calendarInstance = null;
+  let _compDataEnt = [];
   function initCalendar() {
     if (calendarInstance) return;
     const calendarEl = document.getElementById('calendar');
     fetch(`${API}/competiciones`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
     }).then(r => r.json()).then(data => {
+      _compDataEnt = data;
       const events = data.map(c => ({
+        id: c.id,
         title: c.nombre + (c.conjuntos && c.conjuntos.length > 0 ? ' (' + c.conjuntos.map(cj => cj.nombre).join(', ') + ')' : ''),
         start: c.fecha,
         color: 'var(--burgundy)'
@@ -770,12 +813,86 @@
       calendarInstance = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'es',
-        events: events
+        events: events,
+        eventClick: function(info) {
+          const comp = _compDataEnt.find(c => c.id == info.event.id);
+          showCompetitionDetailEnt(comp);
+        }
       });
       calendarInstance.render();
     }).catch(() => {
       calendarEl.innerHTML = '<p style="color:red">Error cargando calendario.</p>';
     });
+  }
+
+  function showCompetitionDetailEnt(comp) {
+    if (!comp) return;
+    const detail = document.getElementById('comp-detail-ent');
+    detail.classList.add('visible');
+    document.getElementById('comp-title-ent').textContent = comp.nombre;
+
+    // Fecha formateada
+    const fecha = comp.fecha ? new Date(comp.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : '–';
+    document.getElementById('comp-fecha-ent').textContent = fecha;
+
+    // Hora
+    const horaWrap = document.getElementById('comp-hora-wrap-ent');
+    if (comp.hora) {
+      document.getElementById('comp-hora-ent').textContent = comp.hora.substring(0, 5) + ' h';
+      horaWrap.style.display = 'flex';
+    } else {
+      horaWrap.style.display = 'none';
+    }
+
+    // Dirección
+    const dir = comp.direccion ?? comp.lugar ?? null;
+    const dirWrap = document.getElementById('comp-dir-wrap-ent');
+    if (dir) {
+      document.getElementById('comp-dir-ent').textContent = dir;
+      dirWrap.style.display = 'flex';
+    } else {
+      dirWrap.style.display = 'none';
+    }
+
+    // Enlace a Google Maps
+    const mapsLink = document.getElementById('comp-maps-link-ent');
+    if (comp.lat && comp.lng) {
+      mapsLink.href = `https://www.google.com/maps?q=${comp.lat},${comp.lng}`;
+      mapsLink.style.display = 'inline-flex';
+    } else if (dir) {
+      mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir)}`;
+      mapsLink.style.display = 'inline-flex';
+    } else {
+      mapsLink.style.display = 'none';
+    }
+
+    // Mapa
+    const mapEl = document.getElementById('map-ent');
+    mapEl.innerHTML = '';
+    if (comp.lat && comp.lng && typeof google !== 'undefined') {
+      const pos = { lat: parseFloat(comp.lat), lng: parseFloat(comp.lng) };
+      const map = new google.maps.Map(mapEl, {
+        zoom: 15,
+        center: pos,
+        mapTypeControl: false,
+        streetViewControl: false,
+        styles: [
+          { featureType:'poi', elementType:'labels', stylers:[{visibility:'off'}] }
+        ]
+      });
+      new google.maps.Marker({
+        position: pos,
+        map: map,
+        title: comp.nombre,
+        animation: google.maps.Animation.DROP
+      });
+    } else if (dir) {
+      mapEl.innerHTML = `<div class="map-unavailable">📍 ${dir}</div>`;
+    } else {
+      mapEl.innerHTML = '<div class="map-unavailable">Ubicación no disponible</div>';
+    }
+
+    detail.scrollIntoView({ behavior: 'smooth' });
   }
 
   function logout() {

@@ -2,10 +2,15 @@
 
 namespace App\Services;
 
+use App\Mail\WelcomeBienvenidaMail;
+use App\Mail\WelcomeGimnastaMayorMail;
+use App\Mail\WelcomeTutorMail;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class UserService
 {
@@ -15,7 +20,7 @@ class UserService
     public function listar(array $filtros): LengthAwarePaginator
     {
         $query = User::query()
-            ->with(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto'])
+            ->with(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto', 'gimnasta.tutorLegal'])
             ->orderBy('apellidos');
 
         if (isset($filtros['rol'])) {
@@ -50,22 +55,66 @@ class UserService
      */
     public function crear(array $datos): User
     {
-        return DB::transaction(function () use ($datos) {
+        $usuario = DB::transaction(function () use ($datos) {
+            $passwordTemporal = $this->generarPasswordTemporal($datos['nombre'], $datos['apellidos'], $datos['dni']);
+            $username = empty($datos['username']) ? $this->generarUsername($datos['nombre'], $datos['apellidos']) : $datos['username'];
+
             $usuario = User::create([
                 'nombre'    => $datos['nombre'],
                 'apellidos' => $datos['apellidos'],
+                'username'  => $username,
                 'dni'       => strtoupper($datos['dni']),
                 'email'     => $datos['email'] ?? null,
-                'password'  => Hash::make($datos['password']),
+                'password'  => Hash::make($passwordTemporal),
+                'password_temporal' => $passwordTemporal,
                 'rol'       => $datos['rol'],
                 'telefono'  => $datos['telefono'] ?? null,
                 'activo'    => $datos['activo'] ?? true,
             ]);
 
+            // Almacenar contraseña temporal en el objeto retornado en texto plano
+            $usuario->password_temporal = $passwordTemporal;
+
             $this->crearPerfil($usuario, $datos);
 
-            return $usuario->load(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria']);
+            return $usuario;
         });
+
+        // Enviar email de bienvenida con credenciales según el rol
+        if ($usuario->rol === 'gimnasta') {
+            $gimnasta = $usuario->gimnasta;
+            if ($gimnasta && $gimnasta->esMenorDeEdad() && $gimnasta->tutorLegal) {
+                // Gimnasta menor de edad → email al tutor legal
+                try {
+                    Mail::to($gimnasta->tutorLegal->email)
+                        ->send(new WelcomeTutorMail($usuario, $gimnasta->tutorLegal));
+                } catch (\Exception $e) {
+                    // Ignorar errores de envío de correo
+                }
+            } else {
+                // Gimnasta mayor de edad → email a la propia gimnasta
+                if ($usuario->email) {
+                    try {
+                        Mail::to($usuario->email)
+                            ->send(new WelcomeGimnastaMayorMail($usuario));
+                    } catch (\Exception $e) {
+                        // Ignorar errores de envío de correo
+                    }
+                }
+            }
+        } elseif (in_array($usuario->rol, ['entrenadora', 'administrador'])) {
+            // Entrenadora o administrador → email con credenciales directamente
+            if ($usuario->email) {
+                try {
+                    Mail::to($usuario->email)
+                        ->send(new WelcomeBienvenidaMail($usuario));
+                } catch (\Exception $e) {
+                    // Ignorar errores de envío de correo
+                }
+            }
+        }
+
+        return $usuario->load(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.tutorLegal']);
     }
 
     /**
@@ -88,12 +137,13 @@ class UserService
 
             if (! empty($datos['password'])) {
                 $camposUser['password'] = Hash::make($datos['password']);
+                $camposUser['password_temporal'] = $datos['password'];
             }
 
             $usuario->update($camposUser);
             $this->actualizarPerfil($usuario, $datos);
 
-            return $usuario->fresh(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria']);
+            return $usuario->fresh(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.tutorLegal']);
         });
     }
 
@@ -109,19 +159,62 @@ class UserService
         }
     }
 
+    /**
+     * Generar un username único a partir del nombre y apellidos.
+     */
+    public function generarUsername(string $nombre, string $apellidos): string
+    {
+        $firstApellido = explode(' ', trim($apellidos))[0];
+        $baseUsername = Str::slug($nombre . '.' . $firstApellido, '.');
+        
+        $username = $baseUsername;
+        $counter = 1;
+
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername . $counter;
+            $counter++;
+        }
+
+        return $username;
+    }
+
+    /**
+     * Generar una contraseña temporal basada en nombre, apellidos y DNI.
+     */
+    public function generarPasswordTemporal(string $nombre, string $apellidos, string $dni): string
+    {
+        // Primer nombre (sin acentos, minúsculas, primera palabra si es compuesto)
+        $firstNombre = explode(' ', trim($nombre))[0];
+        $cleanNombre = \Illuminate\Support\Str::ascii($firstNombre);
+        $twoNombre = mb_strtolower(mb_substr($cleanNombre, 0, 2));
+
+        // Primer apellido (sin acentos, minúsculas, primera palabra de apellidos)
+        $firstApellido = explode(' ', trim($apellidos))[0];
+        $cleanApellido = \Illuminate\Support\Str::ascii($firstApellido);
+        $twoApellidos = mb_strtolower(mb_substr($cleanApellido, 0, 2));
+
+        // Últimos 3 números del DNI
+        $onlyDigits = preg_replace('/[^0-9]/', '', $dni);
+        $lastThreeDigits = substr($onlyDigits, -3);
+        $lastThreeDigits = str_pad($lastThreeDigits, 3, '0', STR_PAD_LEFT);
+
+        return $twoNombre . $twoApellidos . $lastThreeDigits;
+    }
+
     // ── Helpers de perfil ────────────────────────────────────────────
 
     private function crearPerfil(User $usuario, array $datos): void
     {
-        match ($usuario->rol) {
-            'entrenadora' => $usuario->entrenador()->create([
+        if ($usuario->rol === 'entrenadora') {
+            $usuario->entrenador()->create([
                 'club_id'           => $datos['club_id'],
                 'titulacion'        => $datos['titulacion']        ?? null,
                 'anios_experiencia' => $datos['anios_experiencia'] ?? 0,
                 'horas_semanales'   => $datos['horas_semanales']   ?? 0,
                 'estado'            => $datos['estado']            ?? 'activa',
-            ]),
-            'gimnasta' => $usuario->gimnasta()->create([
+            ]);
+        } elseif ($usuario->rol === 'gimnasta') {
+            $gimnasta = $usuario->gimnasta()->create([
                 'club_id'          => $datos['club_id'],
                 'conjunto_id'      => $datos['conjunto_id']      ?? null,
                 'categoria_id'     => $datos['categoria_id'],
@@ -130,22 +223,32 @@ class UserService
                 'anios_en_club'    => $datos['anios_en_club']    ?? 0,
                 'telefono_contacto'=> $datos['telefono_contacto']?? null,
                 'estado'           => $datos['estado']           ?? 'activa',
-            ]),
-            default => null,
-        };
+            ]);
+
+            if ($gimnasta->esMenorDeEdad() && !empty($datos['tutor_nombre'])) {
+                $gimnasta->tutorLegal()->create([
+                    'nombre' => $datos['tutor_nombre'],
+                    'apellidos' => $datos['tutor_apellidos'],
+                    'email' => $datos['tutor_email'],
+                    'relacion' => $datos['tutor_relacion'],
+                ]);
+            }
+        }
     }
 
     private function actualizarPerfil(User $usuario, array $datos): void
     {
-        match ($usuario->rol) {
-            'entrenadora' => $usuario->entrenador?->update(array_filter([
+        if ($usuario->rol === 'entrenadora' && $usuario->entrenador) {
+            $usuario->entrenador->update(array_filter([
                 'club_id'           => $datos['club_id']           ?? null,
                 'titulacion'        => $datos['titulacion']        ?? null,
                 'anios_experiencia' => $datos['anios_experiencia'] ?? null,
                 'horas_semanales'   => $datos['horas_semanales']   ?? null,
                 'estado'            => $datos['estado']            ?? null,
-            ], fn ($v) => ! is_null($v))),
-            'gimnasta' => $usuario->gimnasta?->update(array_filter([
+            ], fn ($v) => ! is_null($v)));
+        } elseif ($usuario->rol === 'gimnasta' && $usuario->gimnasta) {
+            $gimnasta = $usuario->gimnasta;
+            $gimnasta->update(array_filter([
                 'club_id'          => $datos['club_id']          ?? null,
                 'conjunto_id'      => $datos['conjunto_id']      ?? null,
                 'categoria_id'     => $datos['categoria_id']     ?? null,
@@ -154,8 +257,23 @@ class UserService
                 'anios_en_club'    => $datos['anios_en_club']    ?? null,
                 'telefono_contacto'=> $datos['telefono_contacto']?? null,
                 'estado'           => $datos['estado']           ?? null,
-            ], fn ($v) => ! is_null($v))),
-            default => null,
-        };
+            ], fn ($v) => ! is_null($v)));
+
+            if ($gimnasta->esMenorDeEdad()) {
+                if (!empty($datos['tutor_nombre'])) {
+                    $gimnasta->tutorLegal()->updateOrCreate(
+                        [],
+                        [
+                            'nombre' => $datos['tutor_nombre'],
+                            'apellidos' => $datos['tutor_apellidos'],
+                            'email' => $datos['tutor_email'],
+                            'relacion' => $datos['tutor_relacion'],
+                        ]
+                    );
+                }
+            } else {
+                $gimnasta->tutorLegal()?->delete();
+            }
+        }
     }
 }

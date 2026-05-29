@@ -13,11 +13,13 @@ class UserResource extends JsonResource
             'id'        => $this->id,
             'nombre'    => $this->nombre,
             'apellidos' => $this->apellidos,
+            'username'  => $this->username,
             'dni'       => $this->dni,
             'email'     => $this->email,
             'rol'       => $this->rol,
             'telefono'  => $this->telefono,
             'activo'    => $this->activo,
+            'password_temporal' => $this->password_temporal,
 
             // Perfil entrenadora (solo si existe y está cargado)
             'entrenador' => $this->when(
@@ -69,6 +71,16 @@ class UserResource extends JsonResource
                         fn () => [
                             'id'     => $this->gimnasta->conjunto->id,
                             'nombre' => $this->gimnasta->conjunto->nombre,
+                        ]
+                    ),
+                    'tutor_legal'      => $this->when(
+                        $this->gimnasta->relationLoaded('tutorLegal') && $this->gimnasta->tutorLegal,
+                        fn () => [
+                            'id'        => $this->gimnasta->tutorLegal->id,
+                            'nombre'    => $this->gimnasta->tutorLegal->nombre,
+                            'apellidos' => $this->gimnasta->tutorLegal->apellidos,
+                            'email'     => $this->gimnasta->tutorLegal->email,
+                            'relacion'  => $this->gimnasta->tutorLegal->relacion,
                         ]
                     ),
                 ]

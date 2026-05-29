@@ -12,6 +12,7 @@ class Competicion extends Model
     protected $fillable = [
         'nombre',
         'fecha',
+        'hora',
         'direccion',
         'lat',
         'lng',

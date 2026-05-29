@@ -25,8 +25,10 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         $usuarioId = $this->route('usuario')?->id;
+        $usuarioEditado = $this->route('usuario');
+        $rol = $this->input('rol') ?? $usuarioEditado?->rol;
 
-        return [
+        $rules = [
             // Campos de usuario (todos opcionales en update)
             'nombre'    => ['sometimes', 'string', 'max:255'],
             'apellidos' => ['sometimes', 'string', 'max:255'],
@@ -55,7 +57,33 @@ class UpdateUserRequest extends FormRequest
             // Estado
             'estado' => ['sometimes', 'nullable', 'in:activa,inactiva,baja'],
             'telefono_contacto' => ['sometimes', 'nullable', 'string', 'max:20'],
+
+            // Tutor legal (validación condicional base)
+            'tutor_nombre'      => ['nullable', 'string', 'max:255'],
+            'tutor_apellidos'   => ['nullable', 'string', 'max:255'],
+            'tutor_email'       => ['nullable', 'email', 'max:255'],
+            'tutor_relacion'    => ['nullable', 'string', 'max:255'],
         ];
+
+        // Determinar fecha de nacimiento (enviada o existente)
+        $fechaNacimientoRaw = $this->input('fecha_nacimiento') ?? $usuarioEditado?->gimnasta?->fecha_nacimiento;
+
+        // Si es gimnasta y menor de 18 años, requerir datos del tutor
+        if ($rol === 'gimnasta' && $fechaNacimientoRaw) {
+            try {
+                $fechaNacimiento = \Carbon\Carbon::parse($fechaNacimientoRaw);
+                if ($fechaNacimiento->age < 18) {
+                    $rules['tutor_nombre'] = ['required', 'string', 'max:255'];
+                    $rules['tutor_apellidos'] = ['required', 'string', 'max:255'];
+                    $rules['tutor_email'] = ['required', 'email', 'max:255'];
+                    $rules['tutor_relacion'] = ['required', 'string', 'max:255'];
+                }
+            } catch (\Exception $e) {
+                // Dejar que falle por formato de fecha
+            }
+        }
+
+        return $rules;
     }
 
     public function messages(): array
