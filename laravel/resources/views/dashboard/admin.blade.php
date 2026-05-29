@@ -2394,11 +2394,11 @@
     cargarEntrenadoras();
 
     // IMPRIMIR LISTA PDF
-    async function imprimirListaConjunto(conjuntoId) {
-      if (!conjuntoId) return;
-      const url = `{{ url('/pdf/conjunto') }}/${conjuntoId}?token=${encodeURIComponent(token)}`;
-      window.open(url, '_blank');
-    }
+async function imprimirListaConjunto(conjuntoId) {
+  if (!conjuntoId) return;
+  const url = `http://127.0.0.1:5000/pdf/conjunto/${conjuntoId}?token=${encodeURIComponent(token)}`;
+  window.open(url, '_blank');
+}
   </script>
 </body>
 
