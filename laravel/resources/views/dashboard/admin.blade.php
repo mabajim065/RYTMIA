@@ -983,7 +983,7 @@
     <!-- MAIN CONTENT -->
     <main class="main-content">
 
-      <!-- ── VISTA: EQUIPO TÉCNICO ───────────────────────────────── -->
+      <!--  VISTA: EQUIPO TÉCNICO  -->
       <div class="view active" id="view-equipo">
         <div class="header">
           <div>
@@ -1055,7 +1055,7 @@
         <div class="pagination" id="pagGimnastas"></div>
       </div>
 
-      <!-- ── VISTA: ADMINISTRADORES ──────────────────────────────── -->
+      <!--  VISTA: ADMINISTRADORES  -->
       <div class="view" id="view-admins">
         <div class="header">
           <div>
@@ -1081,7 +1081,7 @@
         </div>
       </div>
 
-      <!-- ── VISTA: CALENDARIO ───────────────────────────────────── -->
+      <!--  VISTA: CALENDARIO  -->
       <div class="view" id="view-calendario">
         <div class="header">
           <div>
@@ -1096,7 +1096,7 @@
       </div>
 
 
-      <!-- ── VISTA: MENSAJES ────────────────────────────────────── -->
+      <!--  VISTA: MENSAJES  -->
       <div id="view-mensajes" class="view">
         <header class="header">
           <div>
@@ -1150,7 +1150,7 @@
 
     </main>
 
-    <!-- ── MODAL PERFIL ENTRENADORA ───────────────────────────────── -->
+    <!--  MODAL PERFIL ENTRENADORA  -->
     <div class="modal-overlay" id="modalPerfil" onclick="cerrarModal('modalPerfil', event)">
       <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -1197,14 +1197,17 @@
       </div>
     </div>
 
-    <!-- ── MODAL GESTIÓN GRUPO ──────────────────────────────────── -->
+    <!--  MODAL GESTIÓN GRUPO  -->
     <div class="modal-overlay" id="modalGrupo" onclick="cerrarModal('modalGrupo', event)">
       <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 700px;">
-        <div class="modal-header" style="margin-bottom:1.5rem">
+        <div class="modal-header" style="margin-bottom:1.5rem; justify-content: space-between; align-items: flex-start;">
           <div>
             <h2 class="modal-name" id="mgTitle">Grupo</h2>
             <div class="modal-subtitle" id="mgCategoria">Categoría</div>
           </div>
+          <button class="btn-outline" onclick="imprimirListaConjunto(grupoActualActivo?.id)" style="white-space:nowrap">
+            Imprimir lista PDF
+          </button>
         </div>
 
         <div class="alert-banner" id="mgAlert"></div>
@@ -1243,7 +1246,7 @@
       </div>
     </div>
 
-    <!-- ── MODAL CREAR / EDITAR USUARIO ──────────────────────────── -->
+    <!--  MODAL CREAR / EDITAR USUARIO  -->
     <div class="modal-overlay" id="modalForm" onclick="cerrarModal('modalForm', event)">
       <div class="modal-content form-modal" onclick="event.stopPropagation()">
         <h2 class="modal-name" id="formTitle" style="margin-bottom:1.5rem">Nuevo Usuario</h2>
@@ -1382,7 +1385,7 @@
         </form>
       </div>
     </div>
-    <!-- ── MODAL NUEVA COMPETICION ─────────────────────────────── -->
+    <!-- MODAL NUEVA COMPETICION -->
     <div class="modal-overlay" id="modalCompeticion" onclick="cerrarModal('modalCompeticion', event)">
       <div class="modal-content form-modal" onclick="event.stopPropagation()">
         <h2 class="modal-name" style="margin-bottom:1.5rem">Nueva Competición</h2>
@@ -1456,9 +1459,9 @@
   </div>
 
   <script>
-    /* ════════════════════════════════════════════════════
+    /* ***************
      * Configuración
-     * ════════════════════════════════════════════════════ */
+     * ***************** */
     const API = '/api';
     const token = localStorage.getItem('rytmia_token');
     const user = JSON.parse(localStorage.getItem('rytmia_user') || '{}');
@@ -1481,9 +1484,9 @@
     document.getElementById('sidebarName').textContent = `${user.nombre ?? ''} ${user.apellidos ?? ''}`.trim();
     document.getElementById('sidebarAvatar').textContent = (user.nombre?.[0] ?? 'A').toUpperCase();
 
-    /* ════════════════════════════════════════════════════
+    /* ***************************
      * Navegación entre vistas
-     * ════════════════════════════════════════════════════ */
+     * **************************** */
     function toggleSidebar() {
       document.querySelector('.sidebar').classList.toggle('open');
     }
@@ -1504,9 +1507,9 @@
       if (name === 'calendario') initCalendar();
     }
 
-    /* ════════════════════════════════════════════════════
+    /* *************************
      * Mensajería (Supervisión)
-     * ════════════════════════════════════════════════════ */
+     * ************************* */
     async function cargarMensajes() {
       const lista = document.getElementById('mensajeLista');
       lista.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Cargando historial...</p></div>';
@@ -1582,9 +1585,9 @@
       }
     }
 
-    /* ════════════════════════════════════════════════════
+    /* ***************************************
      * Helpers fetch
-     * ════════════════════════════════════════════════════ */
+     * *************************************** */
     async function apiFetch(path, opts = {}) {
       const res = await fetch(API + path, {
         ...opts,
@@ -1600,9 +1603,9 @@
       return data;
     }
 
-    /* ════════════════════════════════════════════════════
+    /* ***************************************
      * EQUIPO TÉCNICO — tarjetas entrenadoras
-     * ════════════════════════════════════════════════════ */
+     * *************************************** */
     async function cargarEntrenadoras() {
       const grid = document.getElementById('teamGrid');
       grid.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Cargando entrenadoras…</p></div>`;
@@ -1675,9 +1678,9 @@
       document.getElementById('modalPerfil').classList.add('open');
     }
 
-    /* ════════════════════════════════════════════════════
+    /* **********************************
      * TABLA USUARIOS (gimnastas / admins)
-     * ════════════════════════════════════════════════════ */
+     * *********************************** */
     let paginaActual = { gimnasta: 1, administrador: 1 };
 
     async function cargarTablaUsuarios(rol, pagina = 1) {
@@ -1752,9 +1755,9 @@
       window._searchTimer = setTimeout(() => cargarTablaUsuarios(rol, 1), 400);
     }
 
-    /* ════════════════════════════════════════════════════
+    /* ********************************
      * CRUD — Formulario crear / editar
-     * ════════════════════════════════════════════════════ */
+     * ****************************** */
     function checkGimnastaAge() {
       const dobInput = document.getElementById('formGimnastaNacimiento');
       const secTutorTitle = document.getElementById('sectionTutorLegal');
@@ -1800,9 +1803,9 @@
       }
     }
 
-    /* ════════════════════════════════════════════════════
+    /* ********************************
      * CRUD — Formulario crear / editar
-     * ════════════════════════════════════════════════════ */
+     **********************************/
     function abrirFormUsuario(rol) {
       document.getElementById('userForm').reset();
       document.getElementById('formMode').value = 'crear';
@@ -1986,9 +1989,9 @@
       }
     }
 
-    /* ════════════════════════════════════════════════════
+    /* *********************
      * Alertas formulario
-     * ════════════════════════════════════════════════════ */
+     * ********************* */
     function mostrarAlerta(msg, tipo) {
       const el = document.getElementById('formAlert');
       el.textContent = msg;
@@ -2000,18 +2003,18 @@
       el.textContent = '';
     }
 
-    /* ════════════════════════════════════════════════════
+    /* *************
      * Modal helper
-     * ════════════════════════════════════════════════════ */
+     * ************** */
     function cerrarModal(id, event) {
       if (!event || event.target.classList.contains('modal-overlay')) {
         document.getElementById(id).classList.remove('open');
       }
     }
 
-    /* ════════════════════════════════════════════════════
+    /* *********
      * Logout
-     * ════════════════════════════════════════════════════ */
+     * ********* */
     function logout() {
       fetch(`${API}/logout`, {
         method: 'POST',
@@ -2023,9 +2026,9 @@
       });
     }
 
-    /* ════════════════════════════════════════════════════
+    /* ***************
      * GRUPOS Y CLASES
-     * ════════════════════════════════════════════════════ */
+     * *************** */
     let grupoActualActivo = null;
     let gimnastasDisponibles = [];
 
@@ -2060,6 +2063,7 @@
           </div>
           <div class="card-actions">
             <button class="btn-primary" style="flex:1" onclick='abrirGestionGrupo(${g.id})'>Gestionar Alumnas</button>
+            <button class="btn-outline" onclick='imprimirListaConjunto(${g.id})' title="Imprimir lista PDF">PDF</button>
           </div>
         </div>
       `).join('');
@@ -2090,7 +2094,7 @@
         const resGim = await apiFetch('/usuarios?rol=gimnasta&per_page=1000');
         const allGimnastas = resGim.data ?? [];
 
-        // Filtramos: 
+        // Filtro: 
         // 1. Misma categoría que el grupo
         // 2. Que NO estén ya en este grupo
         gimnastasDisponibles = allGimnastas.filter(u =>
@@ -2175,9 +2179,9 @@
       el.className = 'alert-banner alert-' + tipo;
     }
 
-    /* ════════════════════════════════════════════════════
+    /* ***********************************
      * Selectores dependientes (Gimnastas)
-     * ════════════════════════════════════════════════════ */
+     * ********************************** */
 
     function prepararFormGimnasta(catId = null, conjId = null) {
       const selCat = document.getElementById('formGimnastaCat');
@@ -2209,9 +2213,9 @@
       }
     }
 
-    /* ════════════════════════════════════════════════════
+    /* *********************
      * Modal Competiciones
-     * ════════════════════════════════════════════════════ */
+     ********************** */
     async function abrirFormCompeticion() {
       document.getElementById('competicionForm').reset();
       document.getElementById('compLat').value = '';
@@ -2387,6 +2391,13 @@
     }
 
     cargarEntrenadoras();
+
+    // IMPRIMIR LISTA PDF
+  async function imprimirListaConjunto(conjuntoId) {
+    if (!conjuntoId) return;
+    const url = `http://localhost:5000/pdf/conjunto/${conjuntoId}?token=${encodeURIComponent(token)}`;
+  window.open(url, '_blank');
+}
   </script>
 </body>
 
