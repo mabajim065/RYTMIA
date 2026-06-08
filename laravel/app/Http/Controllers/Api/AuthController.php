@@ -13,8 +13,7 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * Login con DNI + contraseña.
-     * Devuelve un token Sanctum y los datos del usuario.
+     * Autentica al usuario y genera un token de acceso (Sanctum).
      */
     public function login(Request $request): JsonResponse
     {
@@ -33,7 +32,7 @@ class AuthController extends Controller
             ]);
         }
 
-        // Eliminar tokens anteriores (sesión única)
+        // Control de sesión única
         $user->tokens()->delete();
 
         $token = $user->createToken('rytmia-token', [$user->rol])->plainTextToken;
@@ -54,7 +53,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout: revoca el token actual.
+     * Revoca el token de acceso actual.
      */
     public function logout(Request $request): JsonResponse
     {
@@ -64,7 +63,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Devuelve los datos del usuario autenticado.
+     * Obtiene la información y relaciones del usuario autenticado.
      */
     public function me(Request $request): JsonResponse
     {
@@ -86,7 +85,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Enviar enlace de restablecimiento de contraseña.
+     * Genera y envía por email el enlace para recuperar la contraseña.
      */
     public function sendResetLinkEmail(Request $request): JsonResponse
     {
@@ -98,10 +97,9 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->firstOrFail();
 
-        // Generar un token único
+        // Generación de token
         $token = \Illuminate\Support\Str::random(60);
 
-        // Guardar en la tabla password_reset_tokens
         \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
@@ -110,10 +108,8 @@ class AuthController extends Controller
             ]
         );
 
-        // Construir la URL de restablecimiento
+        // Envío de notificación
         $resetUrl = url('/recuperar-password?token=' . $token . '&email=' . urlencode($user->email));
-
-        // Enviar el correo
         \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\RecuperarPasswordMail($resetUrl, $user));
 
         return response()->json([
@@ -122,7 +118,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Restablecer la contraseña usando el token.
+     * Valida el token y actualiza la contraseña en la base de datos.
      */
     public function resetPassword(Request $request): JsonResponse
     {
@@ -132,6 +128,7 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        // Validación de token
         $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->first();
@@ -140,7 +137,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'El enlace de recuperación es inválido o no existe.'], 422);
         }
 
-        // Validar expiración (ej. 60 minutos)
+        // Validación de expiración
         $createdAt = \Carbon\Carbon::parse($record->created_at);
         if ($createdAt->addMinutes(60)->isPast()) {
             \Illuminate\Support\Facades\DB::table('password_reset_tokens')
@@ -149,13 +146,12 @@ class AuthController extends Controller
             return response()->json(['message' => 'El enlace de recuperación ha expirado.'], 422);
         }
 
-        // Actualizar contraseña del usuario
+        // Actualización de credenciales
         $user = User::where('email', $request->email)->firstOrFail();
         $user->password = Hash::make($request->password);
         $user->password_temporal = $request->password;
         $user->save();
 
-        // Borrar el token de restablecimiento
         \Illuminate\Support\Facades\DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->delete();
@@ -164,5 +160,4 @@ class AuthController extends Controller
             'message' => 'Tu contraseña ha sido restablecida correctamente.'
         ]);
     }
-
 }

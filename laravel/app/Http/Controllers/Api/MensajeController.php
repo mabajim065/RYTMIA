@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\Auth;
 
 class MensajeController extends Controller
 {
-    /**
-     * GET /api/mensajes
-     * Obtener mensajes recibidos por el usuario autenticado.
-     */
+
+    // BANDEJA DE ENTRADA
+    // Listado de mensajes recibidos por el usuario actual
+
+    // GET /api/mensajes
     public function index(): JsonResponse
     {
         $query = Mensaje::with(['emisor', 'receptor']);
@@ -27,10 +28,11 @@ class MensajeController extends Controller
         return response()->json($mensajes);
     }
 
-    /**
-     * POST /api/mensajes
-     * Enviar un mensaje.
-     */
+
+    // ENVÍO DE MENSAJES
+    // Validación y creación de nuevos mensajes entre usuarios
+
+    // POST /api/mensajes
     public function store(Request $request): JsonResponse
     {
         $datos = $request->validate([
@@ -49,9 +51,11 @@ class MensajeController extends Controller
         return response()->json($mensaje, 201);
     }
 
-    /**
-     * PATCH /api/mensajes/{mensaje}/marcar-leido
-     */
+
+    // ESTADO DE LECTURA
+    // Actualización del estado (leído/no leído) por parte del receptor
+
+    // PATCH /api/mensajes/{mensaje}/marcar-leido
     public function marcarLeido(Mensaje $mensaje): JsonResponse
     {
         if ($mensaje->receptor_id !== Auth::id()) {

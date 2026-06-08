@@ -14,14 +14,11 @@ class ConjuntoController extends Controller
 {
     public function __construct(private readonly ConjuntoService $service) {}
 
-    // ─────────────────────────────────────────────────────────────
-    // CRUD Conjuntos
-    // ─────────────────────────────────────────────────────────────
 
-    /**
-     * GET /api/conjuntos
-     * Filtros: club_id, categoria_id, search
-     */
+    // GESTIÓN BÁSICA DE CONJUNTOS (CRUD)
+    // Listado, creación, visualización, actualización y borrado
+
+    // GET /api/conjuntos (Filtros: club_id, categoria_id, search)
     public function index(Request $request): AnonymousResourceCollection
     {
         $conjuntos = $this->service->listar(
@@ -31,10 +28,7 @@ class ConjuntoController extends Controller
         return ConjuntoResource::collection($conjuntos);
     }
 
-    /**
-     * GET /api/conjuntos/por-club/{club}
-     * Todos los conjuntos de un club para selects (sin paginación).
-     */
+    // GET /api/conjuntos/por-club/{club} (Sin paginación, ideal para selects)
     public function porClub(int $clubId): AnonymousResourceCollection
     {
         $conjuntos = $this->service->listarPorClub($clubId);
@@ -42,9 +36,7 @@ class ConjuntoController extends Controller
         return ConjuntoResource::collection($conjuntos);
     }
 
-    /**
-     * POST /api/conjuntos
-     */
+    // POST /api/conjuntos
     public function store(Request $request): JsonResponse
     {
         $datos = $request->validate([
@@ -61,9 +53,7 @@ class ConjuntoController extends Controller
             ->setStatusCode(201);
     }
 
-    /**
-     * GET /api/conjuntos/{conjunto}
-     */
+    // GET /api/conjuntos/{conjunto}
     public function show(Conjunto $conjunto): ConjuntoResource
     {
         $conjunto->loadMissing([
@@ -77,9 +67,7 @@ class ConjuntoController extends Controller
         return new ConjuntoResource($conjunto);
     }
 
-    /**
-     * PUT/PATCH /api/conjuntos/{conjunto}
-     */
+    // PUT/PATCH /api/conjuntos/{conjunto}
     public function update(Request $request, Conjunto $conjunto): ConjuntoResource
     {
         $datos = $request->validate([
@@ -94,10 +82,7 @@ class ConjuntoController extends Controller
         return new ConjuntoResource($conjunto);
     }
 
-    /**
-     * DELETE /api/conjuntos/{conjunto}
-     * Usa ?force=1 para eliminar aunque tenga gimnastas.
-     */
+    // DELETE /api/conjuntos/{conjunto} (Usa ?force=1 para eliminar aunque tenga gimnastas)
     public function destroy(Request $request, Conjunto $conjunto): JsonResponse
     {
         $this->service->eliminar($conjunto, (bool) $request->query('force', false));
@@ -105,15 +90,11 @@ class ConjuntoController extends Controller
         return response()->json(['message' => 'Conjunto eliminado correctamente.']);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Asignación de Gimnastas
-    // ─────────────────────────────────────────────────────────────
 
-    /**
-     * POST /api/conjuntos/{conjunto}/gimnastas
-     * Body: { "gimnasta_id": 5 }
-     * Asigna una gimnasta al conjunto (valida categoría).
-     */
+    // VINCULACIÓN DE GIMNASTAS
+    // Añadir, quitar o sincronizar masivamente a las gimnastas del conjunto
+
+    // POST /api/conjuntos/{conjunto}/gimnastas
     public function asignarGimnasta(Request $request, Conjunto $conjunto): JsonResponse
     {
         $request->validate([
@@ -138,10 +119,7 @@ class ConjuntoController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/conjuntos/{conjunto}/gimnastas/{gimnasta}
-     * Quita una gimnasta del conjunto.
-     */
+    // DELETE /api/conjuntos/{conjunto}/gimnastas/{gimnasta}
     public function desasignarGimnasta(Conjunto $conjunto, int $gimnastaId): JsonResponse
     {
         $gimnasta = $this->service->desasignarGimnasta($conjunto, $gimnastaId);
@@ -157,11 +135,7 @@ class ConjuntoController extends Controller
         ]);
     }
 
-    /**
-     * PUT /api/conjuntos/{conjunto}/gimnastas/sync
-     * Body: { "gimnasta_ids": [1, 2, 3] }
-     * Reemplaza la lista completa de gimnastas del conjunto.
-     */
+    // PUT /api/conjuntos/{conjunto}/gimnastas/sync
     public function sincronizarGimnastas(Request $request, Conjunto $conjunto): JsonResponse
     {
         $request->validate([
@@ -183,14 +157,11 @@ class ConjuntoController extends Controller
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Asignación de Entrenadoras
-    // ─────────────────────────────────────────────────────────────
 
-    /**
-     * POST /api/conjuntos/{conjunto}/entrenadores
-     * Body: { "entrenador_id": 2 }
-     */
+    // VINCULACIÓN DE ENTRENADORAS
+    // Añadir, quitar o sincronizar masivamente a las responsables del conjunto
+
+    // POST /api/conjuntos/{conjunto}/entrenadores
     public function asignarEntrenadora(Request $request, Conjunto $conjunto): JsonResponse
     {
         $request->validate([
@@ -211,9 +182,7 @@ class ConjuntoController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/conjuntos/{conjunto}/entrenadores/{entrenador}
-     */
+    // DELETE /api/conjuntos/{conjunto}/entrenadores/{entrenador}
     public function desasignarEntrenadora(Conjunto $conjunto, int $entrenadorId): JsonResponse
     {
         $this->service->desasignarEntrenadora($conjunto, $entrenadorId);
@@ -223,10 +192,7 @@ class ConjuntoController extends Controller
         ]);
     }
 
-    /**
-     * PUT /api/conjuntos/{conjunto}/entrenadores/sync
-     * Body: { "entrenador_ids": [1, 2] }
-     */
+    // PUT /api/conjuntos/{conjunto}/entrenadores/sync
     public function sincronizarEntrenadores(Request $request, Conjunto $conjunto): JsonResponse
     {
         $request->validate([
