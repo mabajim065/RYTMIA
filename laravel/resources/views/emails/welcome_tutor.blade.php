@@ -90,6 +90,23 @@
             width: 150px;
         }
 
+        /* Aviso de seguridad */
+        .warning-box {
+            background-color: #FFF8FA;
+            border-left: 4px solid #C45C7E;
+            padding: 14px 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 13.5px;
+            color: #553E45;
+        }
+
+        .warning-box strong {
+            color: #6B1A3A;
+            display: block;
+            margin-bottom: 4px;
+        }
+
         /* Aviso RGPD */
         .rgpd-box {
             background-color: #FFF8FA;
@@ -176,6 +193,12 @@
                                 <td><code>{{ $user->password_temporal }}</code></td>
                             </tr>
                         </table>
+
+                        <!-- Aviso de seguridad -->
+                        <div class="warning-box">
+                            <strong>🔒 Recomendación de seguridad</strong>
+                            Por mayor seguridad, se recomienda cambiar la contraseña temporal la primera vez que se acceda a la plataforma.
+                        </div>
 
                         <!-- Aviso RGPD -->
                         <div class="rgpd-box">
