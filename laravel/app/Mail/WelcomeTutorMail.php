@@ -17,18 +17,20 @@ class WelcomeTutorMail extends Mailable
     public $user;
     public $tutor;
 
-    /**
-     * Create a new message instance.
-     */
+
+    // CONSTRUCTOR
+    // Recibe los datos de la gimnasta menor y su tutor legal para personalizar el mensaje
+
     public function __construct(User $user, TutorLegal $tutor)
     {
         $this->user = $user;
         $this->tutor = $tutor;
     }
 
-    /**
-     * Get the message envelope.
-     */
+
+    // ENCABEZADO DEL CORREO (ENVELOPE)
+    // Define el asunto principal con el que el mensaje llegará a la bandeja de entrada
+
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -36,9 +38,10 @@ class WelcomeTutorMail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
+
+    // PLANTILLA DEL CORREO (CONTENT)
+    // Vincula el envío con su vista Blade correspondiente
+
     public function content(): Content
     {
         return new Content(
@@ -46,11 +49,10 @@ class WelcomeTutorMail extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
+
+    // ARCHIVOS ADJUNTOS
+    // Define si el correo incluye documentos anexos (vacío en este caso)
+
     public function attachments(): array
     {
         return [];

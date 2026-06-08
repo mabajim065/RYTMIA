@@ -9,6 +9,10 @@ class Conjunto extends Model
 {
     use HasFactory;
 
+
+    // CONFIGURACIÓN DE LA TABLA
+    // Define el nombre exacto de la tabla y los campos de asignación masiva
+
     protected $table = 'conjuntos';
 
     protected $fillable = [
@@ -18,36 +22,25 @@ class Conjunto extends Model
         'horario',
     ];
 
-    // ── Relaciones ───────────────────────────────────────────────
 
-    /**
-     * Club al que pertenece el conjunto.
-     */
+    // RELACIONES DE BASE DE DATOS
+    // Vínculos con el club, la categoría, sus gimnastas y las entrenadoras asignadas
+
     public function club()
     {
         return $this->belongsTo(Club::class);
     }
 
-    /**
-     * Categoría (nivel/edad) del conjunto.
-     */
     public function categoria()
     {
         return $this->belongsTo(Categoria::class);
     }
 
-    /**
-     * Gimnastas asignadas a este conjunto.
-     * La FK conjunto_id vive en la tabla gimnastas.
-     */
     public function gimnastas()
     {
         return $this->hasMany(Gimnasta::class);
     }
 
-    /**
-     * Entrenadoras asignadas a este conjunto (tabla pivote).
-     */
     public function entrenadores()
     {
         return $this->belongsToMany(
@@ -58,29 +51,24 @@ class Conjunto extends Model
         )->withTimestamps();
     }
 
-    // ── Scopes ───────────────────────────────────────────────────
 
-    /**
-     * Filtrar por club.
-     */
+    // SCOPES DE BÚSQUEDA
+    // Filtros reutilizables para facilitar las consultas a la base de datos
+
     public function scopePorClub($query, int $clubId)
     {
         return $query->where('club_id', $clubId);
     }
 
-    /**
-     * Filtrar por categoría.
-     */
     public function scopePorCategoria($query, int $categoriaId)
     {
         return $query->where('categoria_id', $categoriaId);
     }
 
-    // ── Computed ──────────────────────────────────────────────────
 
-    /**
-     * Número de gimnastas actualmente en el conjunto.
-     */
+    // MÉTODOS CALCULADOS
+    // Funciones auxiliares para obtener datos al vuelo sobre este conjunto
+
     public function totalGimnastas(): int
     {
         return $this->gimnastas()->count();

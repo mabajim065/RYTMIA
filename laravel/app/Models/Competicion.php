@@ -9,6 +9,10 @@ class Competicion extends Model
 {
     use HasFactory;
 
+
+    // CONFIGURACIÓN DE LA TABLA
+    // Define los datos de ubicación, fecha y estado que se pueden asignar masivamente
+
     protected $fillable = [
         'nombre',
         'fecha',
@@ -27,6 +31,10 @@ class Competicion extends Model
             'fecha' => 'date',
         ];
     }
+
+
+    // RELACIONES DE BASE DE DATOS (TABLAS PIVOTE)
+    // Vínculos de muchos a muchos con los participantes y categorías del evento
 
     public function categorias()
     {

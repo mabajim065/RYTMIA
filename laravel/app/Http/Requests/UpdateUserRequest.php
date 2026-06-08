@@ -7,6 +7,10 @@ use Illuminate\Validation\Rules\Password;
 
 class UpdateUserRequest extends FormRequest
 {
+
+    // AUTORIZACIÓN
+    // Define quién tiene permisos para editar a este usuario (Admin o el propio usuario)
+
     public function authorize(): bool
     {
         $authUser = $this->user();
@@ -17,10 +21,13 @@ class UpdateUserRequest extends FormRequest
         }
 
         // Una entrenadora o gimnasta solo puede editarse a sí misma
-        // y solo ciertos campos (no el rol, no el estado de activo)
         $usuarioEditado = $this->route('usuario');
         return $authUser?->id === $usuarioEditado?->id;
     }
+
+
+    // REGLAS DE VALIDACIÓN
+    // Define las reglas para la actualización (la mayoría usan 'sometimes' al ser opcionales)
 
     public function rules(): array
     {
@@ -29,7 +36,8 @@ class UpdateUserRequest extends FormRequest
         $rol = $this->input('rol') ?? $usuarioEditado?->rol;
 
         $rules = [
-            // Campos de usuario (todos opcionales en update)
+            
+            // Datos generales del usuario
             'nombre'    => ['sometimes', 'string', 'max:255'],
             'apellidos' => ['sometimes', 'string', 'max:255'],
             'dni'       => ['sometimes', 'string', 'size:9', 'regex:/^\d{8}[A-Za-z]$/', "unique:users,dni,{$usuarioId}"],
@@ -37,54 +45,59 @@ class UpdateUserRequest extends FormRequest
             'password'  => ['sometimes', 'nullable', Password::min(8)->mixedCase()->numbers()],
             'telefono'  => ['sometimes', 'nullable', 'string', 'max:15'],
 
-            // Solo administrador puede cambiar estos campos
-            'rol'    => ['sometimes', 'in:administrador,entrenadora,gimnasta'],
-            'activo' => ['sometimes', 'boolean'],
+            // Campos restringidos (Solo administrador debería poder cambiar esto)
+            'rol'       => ['sometimes', 'in:administrador,entrenadora,gimnasta'],
+            'activo'    => ['sometimes', 'boolean'],
 
-            // Perfil entrenadora / gimnasta
+            // Datos de perfil (Entrenadoras y Gimnastas)
             'club_id'           => ['sometimes', 'integer', 'exists:clubs,id'],
             'titulacion'        => ['sometimes', 'nullable', 'string', 'max:255'],
             'anios_experiencia' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'horas_semanales'   => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'estado'            => ['sometimes', 'nullable', 'in:activa,inactiva,baja'],
+            'telefono_contacto' => ['sometimes', 'nullable', 'string', 'max:20'],
 
-            // Solo gimnasta
+            // Datos específicos (Solo Gimnastas)
             'categoria_id'     => ['sometimes', 'integer', 'exists:categorias,id'],
             'conjunto_id'      => ['sometimes', 'nullable', 'integer', 'exists:conjuntos,id'],
             'numero_licencia'  => ['sometimes', 'nullable', 'string', "unique:gimnastas,numero_licencia,{$usuarioId},user_id"],
             'fecha_nacimiento' => ['sometimes', 'nullable', 'date', 'before:today'],
             'anios_en_club'    => ['sometimes', 'nullable', 'integer', 'min:0'],
 
-            // Estado
-            'estado' => ['sometimes', 'nullable', 'in:activa,inactiva,baja'],
-            'telefono_contacto' => ['sometimes', 'nullable', 'string', 'max:20'],
-
-            // Tutor legal (validación condicional base)
-            'tutor_nombre'      => ['nullable', 'string', 'max:255'],
-            'tutor_apellidos'   => ['nullable', 'string', 'max:255'],
-            'tutor_email'       => ['nullable', 'email', 'max:255'],
-            'tutor_relacion'    => ['nullable', 'string', 'max:255'],
+            // Datos del tutor legal (Opcionales por defecto)
+            'tutor_nombre'     => ['nullable', 'string', 'max:255'],
+            'tutor_apellidos'  => ['nullable', 'string', 'max:255'],
+            'tutor_email'      => ['nullable', 'email', 'max:255'],
+            'tutor_relacion'   => ['nullable', 'string', 'max:255'],
         ];
 
-        // Determinar fecha de nacimiento (enviada o existente)
+
+        // CONDICIONAL: MENORES DE EDAD
+        // Valida la fecha de nacimiento (enviada o existente) para exigir el tutor si es necesario
+
         $fechaNacimientoRaw = $this->input('fecha_nacimiento') ?? $usuarioEditado?->gimnasta?->fecha_nacimiento;
 
-        // Si es gimnasta y menor de 18 años, requerir datos del tutor
         if ($rol === 'gimnasta' && $fechaNacimientoRaw) {
             try {
                 $fechaNacimiento = \Carbon\Carbon::parse($fechaNacimientoRaw);
+                
                 if ($fechaNacimiento->age < 18) {
-                    $rules['tutor_nombre'] = ['required', 'string', 'max:255'];
+                    $rules['tutor_nombre']    = ['required', 'string', 'max:255'];
                     $rules['tutor_apellidos'] = ['required', 'string', 'max:255'];
-                    $rules['tutor_email'] = ['required', 'email', 'max:255'];
-                    $rules['tutor_relacion'] = ['required', 'string', 'max:255'];
+                    $rules['tutor_email']     = ['required', 'email', 'max:255'];
+                    $rules['tutor_relacion']  = ['required', 'string', 'max:255'];
                 }
             } catch (\Exception $e) {
-                // Dejar que falle por formato de fecha
+                // Si falla el parseo, la validación principal de fecha se encargará de rechazarlo
             }
         }
 
         return $rules;
     }
+
+
+    // MENSAJES DE ERROR PERSONALIZADOS
+    // Textos más amigables para los fallos de validación
 
     public function messages(): array
     {

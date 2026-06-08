@@ -9,6 +9,10 @@ class Gimnasta extends Model
 {
     use HasFactory;
 
+
+    // CONFIGURACIÓN DE LA TABLA
+    // Define los campos de asignación masiva y el casteo de tipos de datos (como la fecha)
+
     protected $fillable = [
         'user_id',
         'club_id',
@@ -29,7 +33,9 @@ class Gimnasta extends Model
         ];
     }
 
-    // ── Relaciones ──────────────────────────────────────────────
+
+    // RELACIONES DE BASE DE DATOS
+    // Vínculos con la cuenta, tutor, club, categoría, conjunto y competiciones asignadas
 
     public function user()
     {
@@ -39,14 +45,6 @@ class Gimnasta extends Model
     public function tutorLegal()
     {
         return $this->hasOne(TutorLegal::class);
-    }
-
-    public function esMenorDeEdad(): bool
-    {
-        if (!$this->fecha_nacimiento) {
-            return false;
-        }
-        return $this->fecha_nacimiento->age < 18;
     }
 
     public function club()
@@ -64,7 +62,14 @@ class Gimnasta extends Model
         return $this->belongsTo(Conjunto::class);
     }
 
-    // ── Scopes ──────────────────────────────────────────────────
+    public function competiciones()
+    {
+        return $this->belongsToMany(Competicion::class, 'competicion_gimnasta');
+    }
+
+
+    // SCOPES DE BÚSQUEDA
+    // Filtros rápidos y reutilizables para las consultas de base de datos
 
     public function scopeActivas($query)
     {
@@ -76,8 +81,16 @@ class Gimnasta extends Model
         return $query->where('categoria_id', $categoriaId);
     }
 
-    public function competiciones()
+
+    // MÉTODOS AUXILIARES
+    // Lógica adicional para obtener información calculada sobre la gimnasta
+
+    public function esMenorDeEdad(): bool
     {
-        return $this->belongsToMany(Competicion::class, 'competicion_gimnasta');
+        if (!$this->fecha_nacimiento) {
+            return false;
+        }
+        
+        return $this->fecha_nacimiento->age < 18;
     }
 }

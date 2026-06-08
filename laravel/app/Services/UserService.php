@@ -2,278 +2,197 @@
 
 namespace App\Services;
 
-use App\Mail\WelcomeBienvenidaMail;
-use App\Mail\WelcomeGimnastaMayorMail;
-use App\Mail\WelcomeTutorMail;
-use App\Models\User;
+use App\Models\Conjunto;
+use App\Models\Gimnasta;
+use App\Models\Entrenador;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
-class UserService
+class ConjuntoService
 {
-    /**
-     * Listado paginado con filtros.
-     */
+
+    // OPERACIONES BÁSICAS (CRUD)
+    // Lógica para listar, crear, actualizar y borrar conjuntos en la base de datos
+
+    // Listado paginado con filtros opcionales (club, categoría, búsqueda)
     public function listar(array $filtros): LengthAwarePaginator
     {
-        $query = User::query()
-            ->with(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto', 'gimnasta.tutorLegal'])
-            ->orderBy('apellidos');
+        $query = Conjunto::query()
+            ->with(['club', 'categoria', 'entrenadores.user'])
+            ->withCount('gimnastas')
+            ->orderBy('nombre');
 
-        if (isset($filtros['rol'])) {
-            $query->where('rol', $filtros['rol']);
+        if (! empty($filtros['club_id'])) {
+            $query->where('club_id', $filtros['club_id']);
         }
 
-        if (isset($filtros['activo'])) {
-            $query->where('activo', filter_var($filtros['activo'], FILTER_VALIDATE_BOOLEAN));
+        if (! empty($filtros['categoria_id'])) {
+            $query->where('categoria_id', $filtros['categoria_id']);
+        }
+
+        if (! empty($filtros['entrenador_id'])) {
+            $query->whereHas('entrenadores', function ($q) use ($filtros) {
+                $q->where('entrenadores.id', $filtros['entrenador_id']);
+            });
         }
 
         if (! empty($filtros['search'])) {
             $s = '%' . $filtros['search'] . '%';
-            $query->where(function ($q) use ($s) {
-                $q->where('nombre',    'like', $s)
-                  ->orWhere('apellidos', 'like', $s)
-                  ->orWhere('dni',       'like', $s)
-                  ->orWhere('email',     'like', $s);
-            });
-        }
-
-        if (! empty($filtros['entrenador_id'])) {
-            $query->whereHas('gimnasta.conjunto.entrenadores', function ($q) use ($filtros) {
-                $q->where('entrenadores.id', $filtros['entrenador_id']);
-            });
+            $query->where('nombre', 'like', $s);
         }
 
         return $query->paginate(15);
     }
 
-    /**
-     * Crear usuario y su perfil de rol.
-     */
-    public function crear(array $datos): User
+    // Devuelve todos los conjuntos de un club sin paginar (útil para selects)
+    public function listarPorClub(int $clubId): Collection
     {
-        $usuario = DB::transaction(function () use ($datos) {
-            $passwordTemporal = $this->generarPasswordTemporal($datos['nombre'], $datos['apellidos'], $datos['dni']);
-            $username = empty($datos['username']) ? $this->generarUsername($datos['nombre'], $datos['apellidos']) : $datos['username'];
-
-            $usuario = User::create([
-                'nombre'    => $datos['nombre'],
-                'apellidos' => $datos['apellidos'],
-                'username'  => $username,
-                'dni'       => strtoupper($datos['dni']),
-                'email'     => $datos['email'] ?? null,
-                'password'  => Hash::make($passwordTemporal),
-                'password_temporal' => $passwordTemporal,
-                'rol'       => $datos['rol'],
-                'telefono'  => $datos['telefono'] ?? null,
-                'activo'    => $datos['activo'] ?? true,
-            ]);
-
-            // Almacenar contraseña temporal en el objeto retornado en texto plano
-            $usuario->password_temporal = $passwordTemporal;
-
-            $this->crearPerfil($usuario, $datos);
-
-            return $usuario;
-        });
-
-        // Enviar email de bienvenida con credenciales según el rol
-        if ($usuario->rol === 'gimnasta') {
-            $gimnasta = $usuario->gimnasta;
-            if ($gimnasta && $gimnasta->esMenorDeEdad() && $gimnasta->tutorLegal) {
-                // Gimnasta menor de edad → email al tutor legal
-                try {
-                    Mail::to($gimnasta->tutorLegal->email)
-                        ->send(new WelcomeTutorMail($usuario, $gimnasta->tutorLegal));
-                } catch (\Exception $e) {
-                    // Ignorar errores de envío de correo
-                }
-            } else {
-                // Gimnasta mayor de edad → email a la propia gimnasta
-                if ($usuario->email) {
-                    try {
-                        Mail::to($usuario->email)
-                            ->send(new WelcomeGimnastaMayorMail($usuario));
-                    } catch (\Exception $e) {
-                        // Ignorar errores de envío de correo
-                    }
-                }
-            }
-        } elseif (in_array($usuario->rol, ['entrenadora', 'administrador'])) {
-            // Entrenadora o administrador → email con credenciales directamente
-            if ($usuario->email) {
-                try {
-                    Mail::to($usuario->email)
-                        ->send(new WelcomeBienvenidaMail($usuario));
-                } catch (\Exception $e) {
-                    // Ignorar errores de envío de correo
-                }
-            }
-        }
-
-        return $usuario->load(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.tutorLegal']);
+        return Conjunto::with(['categoria'])
+            ->where('club_id', $clubId)
+            ->orderBy('nombre')
+            ->get();
     }
 
-    /**
-     * Actualizar usuario y perfil.
-     */
-    public function actualizar(User $usuario, array $datos): User
+    // Creación de un nuevo conjunto
+    public function crear(array $datos): Conjunto
     {
-        return DB::transaction(function () use ($usuario, $datos) {
-            $camposUser = array_filter([
-                'nombre'    => $datos['nombre']    ?? null,
-                'apellidos' => $datos['apellidos'] ?? null,
-                'email'     => $datos['email']     ?? null,
-                'telefono'  => $datos['telefono']  ?? null,
-                'activo'    => $datos['activo']    ?? null,
-            ], fn ($v) => ! is_null($v));
+        $conjunto = Conjunto::create([
+            'nombre'       => $datos['nombre'],
+            'club_id'      => $datos['club_id'],
+            'categoria_id' => $datos['categoria_id'],
+            'horario'      => $datos['horario'] ?? null,
+        ]);
 
-            if (isset($datos['dni'])) {
-                $camposUser['dni'] = strtoupper($datos['dni']);
-            }
+        return $conjunto->load(['club', 'categoria', 'gimnastas', 'entrenadores.user']);
+    }
 
-            if (! empty($datos['password'])) {
-                $camposUser['password'] = Hash::make($datos['password']);
-                $camposUser['password_temporal'] = $datos['password'];
-            }
+    // Actualización de un conjunto existente
+    public function actualizar(Conjunto $conjunto, array $datos): Conjunto
+    {
+        $conjunto->update(array_filter([
+            'nombre'       => $datos['nombre']       ?? null,
+            'club_id'      => $datos['club_id']      ?? null,
+            'categoria_id' => $datos['categoria_id'] ?? null,
+            'horario'      => $datos['horario']      ?? null,
+        ], fn ($v) => ! is_null($v)));
 
-            $usuario->update($camposUser);
-            $this->actualizarPerfil($usuario, $datos);
+        return $conjunto->fresh(['club', 'categoria', 'gimnastas', 'entrenadores.user']);
+    }
 
-            return $usuario->fresh(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.tutorLegal']);
+    // Eliminación (solo permite borrar si está vacío, a menos que se fuerce con $force=true)
+    public function eliminar(Conjunto $conjunto, bool $force = false): void
+    {
+        $totalGimnastas = $conjunto->gimnastas()->count();
+
+        if ($totalGimnastas > 0 && ! $force) {
+            throw ValidationException::withMessages([
+                'conjunto' => [
+                    "No se puede eliminar: el conjunto tiene {$totalGimnastas} gimnasta(s) asignada(s). "
+                    . "Usa ?force=1 para eliminar y desasignar a todas las gimnastas.",
+                ],
+            ]);
+        }
+
+        DB::transaction(function () use ($conjunto) {
+            // Desasignar gimnastas y entrenadoras antes de borrar el conjunto
+            $conjunto->gimnastas()->update(['conjunto_id' => null]);
+            $conjunto->entrenadores()->detach();
+            $conjunto->delete();
         });
     }
 
-    /**
-     * Borrado lógico o físico.
-     */
-    public function eliminar(User $usuario, bool $hard = false): void
-    {
-        if ($hard) {
-            $usuario->delete();
-        } else {
-            $usuario->update(['activo' => false]);
-        }
-    }
 
-    /**
-     * Generar un username único a partir del nombre y apellidos.
-     */
-    public function generarUsername(string $nombre, string $apellidos): string
-    {
-        $firstApellido = explode(' ', trim($apellidos))[0];
-        $baseUsername = Str::slug($nombre . '.' . $firstApellido, '.');
-        
-        $username = $baseUsername;
-        $counter = 1;
+    // GESTIÓN DE GIMNASTAS
+    // Lógica para asignar, desasignar o sincronizar a las deportistas del conjunto
 
-        while (User::where('username', $username)->exists()) {
-            $username = $baseUsername . $counter;
-            $counter++;
+    // Asignar una gimnasta validando que la categoría coincida
+    public function asignarGimnasta(Conjunto $conjunto, int $gimnastaId): Gimnasta
+    {
+        $gimnasta = Gimnasta::findOrFail($gimnastaId);
+
+        if ($gimnasta->conjunto_id === $conjunto->id) {
+            return $gimnasta->load(['user', 'categoria', 'conjunto']);
         }
 
-        return $username;
+        if ($gimnasta->categoria_id !== $conjunto->categoria_id) {
+            throw ValidationException::withMessages([
+                'gimnasta' => [
+                    "La gimnasta pertenece a la categoría «{$gimnasta->categoria?->nombre}» "
+                    . "pero el conjunto es de categoría «{$conjunto->categoria?->nombre}».",
+                ],
+            ]);
+        }
+
+        $gimnasta->update(['conjunto_id' => $conjunto->id]);
+
+        return $gimnasta->fresh(['user', 'categoria', 'conjunto.club']);
     }
 
-    /**
-     * Generar una contraseña temporal basada en nombre, apellidos y DNI.
-     */
-    public function generarPasswordTemporal(string $nombre, string $apellidos, string $dni): string
+    // Quitar a una gimnasta del conjunto
+    public function desasignarGimnasta(Conjunto $conjunto, int $gimnastaId): Gimnasta
     {
-        // Primer nombre (sin acentos, minúsculas, primera palabra si es compuesto)
-        $firstNombre = explode(' ', trim($nombre))[0];
-        $cleanNombre = \Illuminate\Support\Str::ascii($firstNombre);
-        $twoNombre = mb_strtolower(mb_substr($cleanNombre, 0, 2));
+        $gimnasta = Gimnasta::findOrFail($gimnastaId);
 
-        // Primer apellido (sin acentos, minúsculas, primera palabra de apellidos)
-        $firstApellido = explode(' ', trim($apellidos))[0];
-        $cleanApellido = \Illuminate\Support\Str::ascii($firstApellido);
-        $twoApellidos = mb_strtolower(mb_substr($cleanApellido, 0, 2));
+        if ($gimnasta->conjunto_id !== $conjunto->id) {
+            throw ValidationException::withMessages([
+                'gimnasta' => ['Esta gimnasta no pertenece al conjunto indicado.'],
+            ]);
+        }
 
-        // Últimos 3 números del DNI
-        $onlyDigits = preg_replace('/[^0-9]/', '', $dni);
-        $lastThreeDigits = substr($onlyDigits, -3);
-        $lastThreeDigits = str_pad($lastThreeDigits, 3, '0', STR_PAD_LEFT);
+        $gimnasta->update(['conjunto_id' => null]);
 
-        return $twoNombre . $twoApellidos . $lastThreeDigits;
+        return $gimnasta->fresh(['user', 'categoria']);
     }
 
-    // ── Helpers de perfil ────────────────────────────────────────────
-
-    private function crearPerfil(User $usuario, array $datos): void
+    // Reemplazar la lista completa de gimnastas validando en bloque
+    public function sincronizarGimnastas(Conjunto $conjunto, array $gimnastaIds): Collection
     {
-        if ($usuario->rol === 'entrenadora') {
-            $usuario->entrenador()->create([
-                'club_id'           => $datos['club_id'],
-                'titulacion'        => $datos['titulacion']        ?? null,
-                'anios_experiencia' => $datos['anios_experiencia'] ?? 0,
-                'horas_semanales'   => $datos['horas_semanales']   ?? 0,
-                'estado'            => $datos['estado']            ?? 'activa',
-            ]);
-        } elseif ($usuario->rol === 'gimnasta') {
-            $gimnasta = $usuario->gimnasta()->create([
-                'club_id'          => $datos['club_id'],
-                'conjunto_id'      => $datos['conjunto_id']      ?? null,
-                'categoria_id'     => $datos['categoria_id'],
-                'numero_licencia'  => $datos['numero_licencia']  ?? null,
-                'fecha_nacimiento' => $datos['fecha_nacimiento'] ?? null,
-                'anios_en_club'    => $datos['anios_en_club']    ?? 0,
-                'telefono_contacto'=> $datos['telefono_contacto']?? null,
-                'estado'           => $datos['estado']           ?? 'activa',
-            ]);
+        return DB::transaction(function () use ($conjunto, $gimnastaIds) {
+            $conjunto->gimnastas()->update(['conjunto_id' => null]);
 
-            if ($gimnasta->esMenorDeEdad() && !empty($datos['tutor_nombre'])) {
-                $gimnasta->tutorLegal()->create([
-                    'nombre' => $datos['tutor_nombre'],
-                    'apellidos' => $datos['tutor_apellidos'],
-                    'email' => $datos['tutor_email'],
-                    'relacion' => $datos['tutor_relacion'],
+            if (empty($gimnastaIds)) {
+                return collect();
+            }
+
+            $gimnastas = Gimnasta::whereIn('id', $gimnastaIds)->get();
+            $invalidas = $gimnastas->filter(fn ($g) => $g->categoria_id !== $conjunto->categoria_id);
+
+            if ($invalidas->isNotEmpty()) {
+                $nombres = $invalidas->map(fn ($g) => $g->user?->nombre ?? "ID {$g->id}")->implode(', ');
+                throw ValidationException::withMessages([
+                    'gimnastas' => [
+                        "Las siguientes gimnastas no pertenecen a la categoría del conjunto: {$nombres}.",
+                    ],
                 ]);
             }
-        }
+
+            Gimnasta::whereIn('id', $gimnastaIds)->update(['conjunto_id' => $conjunto->id]);
+
+            return $conjunto->gimnastas()->with('user')->get();
+        });
     }
 
-    private function actualizarPerfil(User $usuario, array $datos): void
-    {
-        if ($usuario->rol === 'entrenadora' && $usuario->entrenador) {
-            $usuario->entrenador->update(array_filter([
-                'club_id'           => $datos['club_id']           ?? null,
-                'titulacion'        => $datos['titulacion']        ?? null,
-                'anios_experiencia' => $datos['anios_experiencia'] ?? null,
-                'horas_semanales'   => $datos['horas_semanales']   ?? null,
-                'estado'            => $datos['estado']            ?? null,
-            ], fn ($v) => ! is_null($v)));
-        } elseif ($usuario->rol === 'gimnasta' && $usuario->gimnasta) {
-            $gimnasta = $usuario->gimnasta;
-            $gimnasta->update(array_filter([
-                'club_id'          => $datos['club_id']          ?? null,
-                'conjunto_id'      => $datos['conjunto_id']      ?? null,
-                'categoria_id'     => $datos['categoria_id']     ?? null,
-                'numero_licencia'  => $datos['numero_licencia']  ?? null,
-                'fecha_nacimiento' => $datos['fecha_nacimiento'] ?? null,
-                'anios_en_club'    => $datos['anios_en_club']    ?? null,
-                'telefono_contacto'=> $datos['telefono_contacto']?? null,
-                'estado'           => $datos['estado']           ?? null,
-            ], fn ($v) => ! is_null($v)));
 
-            if ($gimnasta->esMenorDeEdad()) {
-                if (!empty($datos['tutor_nombre'])) {
-                    $gimnasta->tutorLegal()->updateOrCreate(
-                        [],
-                        [
-                            'nombre' => $datos['tutor_nombre'],
-                            'apellidos' => $datos['tutor_apellidos'],
-                            'email' => $datos['tutor_email'],
-                            'relacion' => $datos['tutor_relacion'],
-                        ]
-                    );
-                }
-            } else {
-                $gimnasta->tutorLegal()?->delete();
-            }
-        }
+    // GESTIÓN DE ENTRENADORAS
+    // Lógica para asignar o retirar a las responsables del conjunto (Tabla pivote)
+
+    // Asignar a una entrenadora sin borrar las anteriores
+    public function asignarEntrenadora(Conjunto $conjunto, int $entrenadorId): void
+    {
+        $conjunto->entrenadores()->syncWithoutDetaching([$entrenadorId]);
+    }
+
+    // Retirar a una entrenadora del conjunto
+    public function desasignarEntrenadora(Conjunto $conjunto, int $entrenadorId): void
+    {
+        $conjunto->entrenadores()->detach($entrenadorId);
+    }
+
+    // Reemplazar la lista completa de responsables
+    public function sincronizarEntrenadores(Conjunto $conjunto, array $entrenadorIds): void
+    {
+        $conjunto->entrenadores()->sync($entrenadorIds);
     }
 }

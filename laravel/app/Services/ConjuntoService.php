@@ -12,11 +12,11 @@ use Illuminate\Validation\ValidationException;
 
 class ConjuntoService
 {
-    // ── CRUD Conjuntos ───────────────────────────────────────────
 
-    /**
-     * Listado paginado con filtros opcionales: club_id, categoria_id, search
-     */
+    // OPERACIONES BÁSICAS (CRUD)
+    // Lógica para listar, crear, actualizar y borrar conjuntos en la base de datos
+
+    // Listado paginado con filtros opcionales (club, categoría, búsqueda)
     public function listar(array $filtros): LengthAwarePaginator
     {
         $query = Conjunto::query()
@@ -46,9 +46,7 @@ class ConjuntoService
         return $query->paginate(15);
     }
 
-    /**
-     * Devuelve todos los conjuntos de un club sin paginar (para selects).
-     */
+    // Devuelve todos los conjuntos de un club sin paginar (útil para selects)
     public function listarPorClub(int $clubId): Collection
     {
         return Conjunto::with(['categoria'])
@@ -57,9 +55,7 @@ class ConjuntoService
             ->get();
     }
 
-    /**
-     * Crear nuevo conjunto.
-     */
+    // Creación de un nuevo conjunto
     public function crear(array $datos): Conjunto
     {
         $conjunto = Conjunto::create([
@@ -72,9 +68,7 @@ class ConjuntoService
         return $conjunto->load(['club', 'categoria', 'gimnastas', 'entrenadores.user']);
     }
 
-    /**
-     * Actualizar conjunto.
-     */
+    // Actualización de un conjunto existente
     public function actualizar(Conjunto $conjunto, array $datos): Conjunto
     {
         $conjunto->update(array_filter([
@@ -87,9 +81,7 @@ class ConjuntoService
         return $conjunto->fresh(['club', 'categoria', 'gimnastas', 'entrenadores.user']);
     }
 
-    /**
-     * Eliminar conjunto (solo si no tiene gimnastas activas).
-     */
+    // Eliminación (solo permite borrar si está vacío, a menos que se fuerce con $force=true)
     public function eliminar(Conjunto $conjunto, bool $force = false): void
     {
         $totalGimnastas = $conjunto->gimnastas()->count();
@@ -104,33 +96,26 @@ class ConjuntoService
         }
 
         DB::transaction(function () use ($conjunto) {
-            // Desasignar gimnastas (poner conjunto_id a null)
+            // Desasignar gimnastas y entrenadoras antes de borrar el conjunto
             $conjunto->gimnastas()->update(['conjunto_id' => null]);
-            // Quitar entrenadoras de la pivote
             $conjunto->entrenadores()->detach();
-            // Borrar
             $conjunto->delete();
         });
     }
 
-    // ── Asignación de Gimnastas ──────────────────────────────────
 
-    /**
-     * Asignar una gimnasta a un conjunto.
-     * Valida:
-     *  - La gimnasta no tenga ya ese mismo conjunto
-     *  - La categoría de la gimnasta coincida con la del conjunto
-     */
+    // GESTIÓN DE GIMNASTAS
+    // Lógica para asignar, desasignar o sincronizar a las deportistas del conjunto
+
+    // Asignar una gimnasta validando que la categoría coincida
     public function asignarGimnasta(Conjunto $conjunto, int $gimnastaId): Gimnasta
     {
         $gimnasta = Gimnasta::findOrFail($gimnastaId);
 
-        // Ya está en este conjunto → no hacer nada
         if ($gimnasta->conjunto_id === $conjunto->id) {
             return $gimnasta->load(['user', 'categoria', 'conjunto']);
         }
 
-        // Validar que la categoría coincide
         if ($gimnasta->categoria_id !== $conjunto->categoria_id) {
             throw ValidationException::withMessages([
                 'gimnasta' => [
@@ -145,9 +130,7 @@ class ConjuntoService
         return $gimnasta->fresh(['user', 'categoria', 'conjunto.club']);
     }
 
-    /**
-     * Desasignar (quitar) una gimnasta de su conjunto actual.
-     */
+    // Quitar a una gimnasta del conjunto
     public function desasignarGimnasta(Conjunto $conjunto, int $gimnastaId): Gimnasta
     {
         $gimnasta = Gimnasta::findOrFail($gimnastaId);
@@ -163,25 +146,18 @@ class ConjuntoService
         return $gimnasta->fresh(['user', 'categoria']);
     }
 
-    /**
-     * Reemplazar todas las gimnastas de un conjunto de una sola vez.
-     * Útil para el modo "guardar selección completa".
-     */
+    // Reemplazar la lista completa de gimnastas validando en bloque
     public function sincronizarGimnastas(Conjunto $conjunto, array $gimnastaIds): Collection
     {
         return DB::transaction(function () use ($conjunto, $gimnastaIds) {
-            // Primero: desasignar las actuales
             $conjunto->gimnastas()->update(['conjunto_id' => null]);
 
             if (empty($gimnastaIds)) {
                 return collect();
             }
 
-            // Validar categorías
             $gimnastas = Gimnasta::whereIn('id', $gimnastaIds)->get();
-            $invalidas = $gimnastas->filter(
-                fn ($g) => $g->categoria_id !== $conjunto->categoria_id
-            );
+            $invalidas = $gimnastas->filter(fn ($g) => $g->categoria_id !== $conjunto->categoria_id);
 
             if ($invalidas->isNotEmpty()) {
                 $nombres = $invalidas->map(fn ($g) => $g->user?->nombre ?? "ID {$g->id}")->implode(', ');
@@ -192,37 +168,29 @@ class ConjuntoService
                 ]);
             }
 
-            // Asignar todas al conjunto
             Gimnasta::whereIn('id', $gimnastaIds)->update(['conjunto_id' => $conjunto->id]);
 
             return $conjunto->gimnastas()->with('user')->get();
         });
     }
 
-    // ── Asignación de Entrenadoras ───────────────────────────────
 
-    /**
-     * Asignar entrenadora al conjunto (pivote conjunto_entrenador).
-     */
+    // GESTIÓN DE ENTRENADORAS
+    // Lógica para asignar o retirar a las responsables del conjunto (Tabla pivote)
+
+    // Asignar a una entrenadora sin borrar las anteriores
     public function asignarEntrenadora(Conjunto $conjunto, int $entrenadorId): void
     {
-        $entrenador = Entrenador::findOrFail($entrenadorId);
-
-        // sync sin detach = no borrar las ya existentes
         $conjunto->entrenadores()->syncWithoutDetaching([$entrenadorId]);
     }
 
-    /**
-     * Quitar entrenadora del conjunto.
-     */
+    // Retirar a una entrenadora del conjunto
     public function desasignarEntrenadora(Conjunto $conjunto, int $entrenadorId): void
     {
         $conjunto->entrenadores()->detach($entrenadorId);
     }
 
-    /**
-     * Reemplazar todas las entrenadoras de un conjunto.
-     */
+    // Reemplazar la lista completa de responsables
     public function sincronizarEntrenadores(Conjunto $conjunto, array $entrenadorIds): void
     {
         $conjunto->entrenadores()->sync($entrenadorIds);

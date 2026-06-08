@@ -16,18 +16,20 @@ class RecuperarPasswordMail extends Mailable
     public $resetUrl;
     public $user;
 
-    /**
-     * Create a new message instance.
-     */
+
+    // CONSTRUCTOR
+    // Recibe los datos dinámicos: la URL temporal y el usuario que solicitó el reseteo
+
     public function __construct(string $resetUrl, User $user)
     {
         $this->resetUrl = $resetUrl;
         $this->user = $user;
     }
 
-    /**
-     * Get the message envelope.
-     */
+
+    // ENCABEZADO DEL CORREO (ENVELOPE)
+    // Define el asunto principal con el que llegará a la bandeja de entrada
+
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -35,9 +37,10 @@ class RecuperarPasswordMail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
+
+    // PLANTILLA DEL CORREO (CONTENT)
+    // Vincula el envío con su vista Blade correspondiente
+
     public function content(): Content
     {
         return new Content(
@@ -45,11 +48,10 @@ class RecuperarPasswordMail extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
+
+    // ARCHIVOS ADJUNTOS
+    // Define si el correo incluye documentos anexos (vacío en este caso)
+
     public function attachments(): array
     {
         return [];

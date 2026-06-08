@@ -9,6 +9,10 @@ class Categoria extends Model
 {
     use HasFactory;
 
+
+    // CONFIGURACIÓN DE LA TABLA
+    // Define los campos de asignación masiva y el casteo de tipos de datos
+
     protected $fillable = [
         'nombre',
         'edad_min',
@@ -23,7 +27,9 @@ class Categoria extends Model
         ];
     }
 
-    // ── Relaciones ───────────────────────────────────────────────
+
+    // RELACIONES DE BASE DE DATOS
+    // Vínculos con los conjuntos y las gimnastas asociadas a esta categoría
 
     public function conjuntos()
     {
@@ -35,19 +41,24 @@ class Categoria extends Model
         return $this->hasMany(Gimnasta::class);
     }
 
-    // ── Helper: rango de edad como string ───────────────────────
+
+    // MÉTODOS AUXILIARES
+    // Lógica de formato para mostrar el rango de edad en formato texto
 
     public function rangoEdad(): string
     {
         if ($this->edad_min && $this->edad_max) {
             return "{$this->edad_min}–{$this->edad_max} años";
         }
+        
         if ($this->edad_min) {
             return "≥ {$this->edad_min} años";
         }
+        
         if ($this->edad_max) {
             return "≤ {$this->edad_max} años";
         }
+        
         return 'Sin restricción de edad';
     }
 }

@@ -9,7 +9,10 @@ class Entrenador extends Model
 {
     use HasFactory;
 
-    // La tabla se llama 'entrenadores', no 'entrenadors'
+
+    // CONFIGURACIÓN DE LA TABLA
+    // Define el nombre (evitando el plural automático 'entrenadors'), los campos y el tipado
+
     protected $table = 'entrenadores';
 
     protected $fillable = [
@@ -31,7 +34,9 @@ class Entrenador extends Model
         ];
     }
 
-    // ── Relaciones ──────────────────────────────────────────────
+
+    // RELACIONES DE BASE DE DATOS
+    // Vínculos con la cuenta de usuario, el club al que pertenece y sus asignaciones
 
     public function user()
     {
@@ -43,13 +48,6 @@ class Entrenador extends Model
         return $this->belongsTo(Club::class);
     }
 
-    // ── Scopes ──────────────────────────────────────────────────
-
-    public function scopeActivas($query)
-    {
-        return $query->where('estado', 'activa');
-    }
-
     public function conjuntos()
     {
         return $this->belongsToMany(Conjunto::class, 'conjunto_entrenador');
@@ -58,5 +56,14 @@ class Entrenador extends Model
     public function competiciones()
     {
         return $this->belongsToMany(Competicion::class, 'competicion_entrenador');
+    }
+
+
+    // SCOPES DE BÚSQUEDA
+    // Filtros rápidos y reutilizables para las consultas de base de datos
+
+    public function scopeActivas($query)
+    {
+        return $query->where('estado', 'activa');
     }
 }

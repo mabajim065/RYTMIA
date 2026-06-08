@@ -9,6 +9,10 @@ class Club extends Model
 {
     use HasFactory;
 
+
+    // CONFIGURACIÓN DE LA TABLA
+    // Define los campos de contacto y datos básicos que se pueden asignar masivamente
+
     protected $fillable = [
         'nombre',
         'direccion',
@@ -16,7 +20,9 @@ class Club extends Model
         'email',
     ];
 
-    // ── Relaciones ───────────────────────────────────────────────
+
+    // RELACIONES DE BASE DE DATOS
+    // Vínculos con los conjuntos, entrenadoras y gimnastas pertenecientes a este club
 
     public function conjuntos()
     {
