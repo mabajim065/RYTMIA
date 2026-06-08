@@ -13,18 +13,15 @@
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
   @if(config('services.google_maps.key') && config('services.google_maps.key') !== 'vuestra_maps_key_aca')
     <script>
-      // Indica si Google Maps ya terminó de cargar
       window._googleMapsReady = false;
       window._googleMapsCallbacks = [];
 
-      // Google Maps llama a esta función cuando termina de cargar
       function onGoogleMapsLoaded() {
         window._googleMapsReady = true;
         window._googleMapsCallbacks.forEach(fn => fn());
         window._googleMapsCallbacks = [];
       }
 
-      // Ejecuta una función cuando Maps esté listo (o inmediatamente si ya lo está)
       function onGoogleMapsReady(fn) {
         if (window._googleMapsReady) { fn(); } else { window._googleMapsCallbacks.push(fn); }
       }
@@ -102,7 +99,7 @@
       flex-direction: column;
     }
 
-    /* === SIDEBAR === */
+    /* Panel lateral izquierdo fijo */
     .sidebar {
       width: 280px;
       background-color: var(--white);
@@ -209,7 +206,7 @@
       color: var(--error);
     }
 
-    /* === MAIN CONTENT === */
+    /* Área principal de contenido a la derecha */
     .main-content {
       flex: 1;
       margin-left: 280px;
@@ -242,7 +239,7 @@
       margin-top: 0.5rem;
     }
 
-    /* === BUTTONS === */
+    /* Diseño de los botones de interacción */
     .btn-primary {
       background: linear-gradient(135deg, var(--burgundy), var(--rose));
       color: var(--white);
@@ -294,7 +291,7 @@
       background: #ffebee;
     }
 
-    /* === EQUIPO TÉCNICO — listado === */
+    /* Diseño de cuadrícula y tarjetas individuales para el equipo y grupos */
     .team-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -388,7 +385,7 @@
       width: 100%;
     }
 
-    /* === BADGE ESTADO === */
+    /* Etiquetas visuales de estado y disponibilidad */
     .badge {
       display: inline-block;
       padding: 0.2rem 0.75rem;
@@ -414,7 +411,7 @@
       color: var(--badge-baja-text);
     }
 
-    /* === LOADING / EMPTY === */
+    /* Elementos visuales que indican procesos de carga o ausencia de datos */
     .loading-state {
       text-align: center;
       padding: 4rem 2rem;
@@ -458,7 +455,7 @@
       color: var(--muted);
     }
 
-    /* === MODAL PERFIL === */
+    /* Ventanas emergentes superpuestas para mostrar información detallada */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -591,7 +588,7 @@
       color: var(--burgundy);
     }
 
-    /* === MODAL USUARIO (crear/editar) === */
+    /* Campos y estructuras visuales de los formularios en ventanas emergentes */
     .form-modal {
       max-width: 600px;
     }
@@ -688,7 +685,7 @@
       display: block;
     }
 
-    /* === TABLA GESTIÓN === */
+    /* Estilos visuales de las tablas de datos y sus buscadores superiores */
     .table-toolbar {
       display: flex;
       gap: 1rem;
@@ -769,7 +766,7 @@
       gap: 0.5rem;
     }
 
-    /* === MENSAJES === */
+    /* Diseño de los apartados de lectura y listado de mensajes internos */
     .mensaje-lista {
       display: flex;
       flex-direction: column;
@@ -846,7 +843,7 @@
       font-weight: 600;
     }
 
-    /* === PAGINATION === */
+    /* Botones inferiores para pasar las páginas en las vistas de tabla */
     .pagination {
       display: flex;
       justify-content: center;
@@ -872,7 +869,7 @@
       border-color: var(--burgundy);
     }
 
-    /* === NAV MOBILE === */
+    /* Barra superior e interacciones visuales exclusivas para vista en teléfonos móviles */
     .mobile-nav {
       display: none;
       padding: 1rem 1.5rem;
@@ -952,14 +949,12 @@
 
   <div id="app">
 
-    <!-- MOBILE TOP NAV -->
-    <div class="mobile-nav">
+        <div class="mobile-nav">
       <div class="brand">Rytmia.</div>
       <button class="menu-btn" onclick="toggleSidebar()">☰</button>
     </div>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
+        <aside class="sidebar">
       <div class="brand">Rytmia.</div>
       <nav class="nav-links">
         <button class="nav-link active" id="nav-equipo" onclick="showView('equipo')">Equipo Técnico</button>
@@ -980,11 +975,9 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
+        <main class="main-content">
 
-      <!--  VISTA: EQUIPO TÉCNICO  -->
-      <div class="view active" id="view-equipo">
+            <div class="view active" id="view-equipo">
         <div class="header">
           <div>
             <h1 class="page-title">Equipo Técnico</h1>
@@ -1000,8 +993,7 @@
         </div>
       </div>
 
-      <!-- ── VISTA: GRUPOS ───────────────────────────────────────── -->
-      <div class="view" id="view-grupos">
+            <div class="view" id="view-grupos">
         <div class="header">
           <div>
             <h1 class="page-title">Grupos y Clases</h1>
@@ -1016,8 +1008,7 @@
         </div>
       </div>
 
-      <!-- ── VISTA: GIMNASTAS ────────────────────────────────────── -->
-      <div class="view" id="view-gimnastas">
+            <div class="view" id="view-gimnastas">
         <div class="header">
           <div>
             <h1 class="page-title">Gimnastas</h1>
@@ -1055,8 +1046,7 @@
         <div class="pagination" id="pagGimnastas"></div>
       </div>
 
-      <!--  VISTA: ADMINISTRADORES  -->
-      <div class="view" id="view-admins">
+            <div class="view" id="view-admins">
         <div class="header">
           <div>
             <h1 class="page-title">Administradores</h1>
@@ -1081,8 +1071,7 @@
         </div>
       </div>
 
-      <!--  VISTA: CALENDARIO  -->
-      <div class="view" id="view-calendario">
+            <div class="view" id="view-calendario">
         <div class="header">
           <div>
             <h1 class="page-title">Calendario de Competiciones</h1>
@@ -1096,8 +1085,7 @@
       </div>
 
 
-      <!--  VISTA: MENSAJES  -->
-      <div id="view-mensajes" class="view">
+            <div id="view-mensajes" class="view">
         <header class="header">
           <div>
             <h1 class="page-title">Supervisión de Mensajes</h1>
@@ -1106,8 +1094,7 @@
         </header>
 
         <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
-          <!-- Lista de mensajes -->
-          <div class="table-wrap" style="height: 600px; overflow-y: auto;">
+                    <div class="table-wrap" style="height: 600px; overflow-y: auto;">
             <div id="mensajeLista" class="mensaje-lista">
               <div class="loading-state">
                 <div class="loading-spinner"></div>
@@ -1115,8 +1102,7 @@
             </div>
           </div>
 
-          <!-- Detalle del mensaje -->
-          <div id="mensajeDetalle" class="perfil-card"
+                    <div id="mensajeDetalle" class="perfil-card"
             style="min-height: 400px; padding: 2.5rem; display: none; background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--blush); box-shadow: var(--shadow-soft);">
             <div id="mensajeContenido">
               <h3 id="detAsunto"
@@ -1150,8 +1136,7 @@
 
     </main>
 
-    <!--  MODAL PERFIL ENTRENADORA  -->
-    <div class="modal-overlay" id="modalPerfil" onclick="cerrarModal('modalPerfil', event)">
+        <div class="modal-overlay" id="modalPerfil" onclick="cerrarModal('modalPerfil', event)">
       <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
           <div class="modal-avatar" id="mpAvatar">L</div>
@@ -1197,8 +1182,7 @@
       </div>
     </div>
 
-    <!--  MODAL GESTIÓN GRUPO  -->
-    <div class="modal-overlay" id="modalGrupo" onclick="cerrarModal('modalGrupo', event)">
+        <div class="modal-overlay" id="modalGrupo" onclick="cerrarModal('modalGrupo', event)">
       <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 700px;">
         <div class="modal-header"
           style="margin-bottom:1.5rem; justify-content: space-between; align-items: flex-start;">
@@ -1247,8 +1231,7 @@
       </div>
     </div>
 
-    <!--  MODAL CREAR / EDITAR USUARIO  -->
-    <div class="modal-overlay" id="modalForm" onclick="cerrarModal('modalForm', event)">
+        <div class="modal-overlay" id="modalForm" onclick="cerrarModal('modalForm', event)">
       <div class="modal-content form-modal" onclick="event.stopPropagation()">
         <h2 class="modal-name" id="formTitle" style="margin-bottom:1.5rem">Nuevo Usuario</h2>
         <div class="alert-banner" id="formAlert"></div>
@@ -1289,8 +1272,7 @@
                 style="background:var(--cream); cursor:not-allowed;" />
             </div>
 
-            <!-- Campos entrenadora -->
-            <div id="fieldsEntrenadora" style="display:contents">
+                        <div id="fieldsEntrenadora" style="display:contents">
               <div class="form-section-title full">Perfil Entrenadora</div>
               <div class="form-group">
                 <label class="form-label" for="formTitulacion">Titulación</label>
@@ -1319,8 +1301,7 @@
               </div>
             </div>
 
-            <!-- Campos Gimnasta -->
-            <div id="fieldsGimnasta" style="display:none">
+                        <div id="fieldsGimnasta" style="display:none">
               <div class="form-section-title full">Perfil Gimnasta</div>
               <div class="form-group">
                 <label class="form-label" for="formGimnastaCat">Categoría <span
@@ -1344,8 +1325,7 @@
                   placeholder="Teléfono de contacto" />
               </div>
 
-              <!-- Tutor legal (sección condicional) -->
-              <div id="sectionTutorLegal" style="display:none" class="form-section-title full">Datos del Tutor Legal
+                            <div id="sectionTutorLegal" style="display:none" class="form-section-title full">Datos del Tutor Legal
               </div>
               <div id="fieldsTutorLegal" style="display:none; contents">
                 <div class="form-group">
@@ -1368,8 +1348,7 @@
               </div>
             </div>
 
-            <!-- Activo (solo edición) -->
-            <div class="form-group" id="activoField" style="display:none">
+                        <div class="form-group" id="activoField" style="display:none">
               <label class="form-label" for="formActivo">Estado de cuenta</label>
               <select class="form-select" id="formActivo">
                 <option value="1">Activa / Activo</option>
@@ -1386,8 +1365,7 @@
         </form>
       </div>
     </div>
-    <!-- MODAL NUEVA COMPETICION -->
-    <div class="modal-overlay" id="modalCompeticion" onclick="cerrarModal('modalCompeticion', event)">
+        <div class="modal-overlay" id="modalCompeticion" onclick="cerrarModal('modalCompeticion', event)">
       <div class="modal-content form-modal" onclick="event.stopPropagation()">
         <h2 class="modal-name" style="margin-bottom:1.5rem">Nueva Competición</h2>
         <div class="alert-banner" id="compAlert"></div>
@@ -1460,9 +1438,7 @@
   </div>
 
   <script>
-    /* ***************
-     * Configuración
-     * ***************** */
+    // Variables iniciales de sesión y protección de la vista de administrador
     const API = '/api';
     const token = localStorage.getItem('rytmia_token');
     const user = JSON.parse(localStorage.getItem('rytmia_user') || '{}');
@@ -1470,30 +1446,26 @@
     let _categoriasGlobales = [];
     let _conjuntosGlobales = [];
 
-    // Guardia de seguridad: solo admins
     if (!token || user.rol !== 'administrador') {
       window.location.href = '/';
     }
 
-    // Cifrado de cat y conjuntos en fondo
     Promise.all([
       apiFetch('/categorias').then(r => _categoriasGlobales = (r.data || r)),
       apiFetch('/conjuntos').then(r => _conjuntosGlobales = (r.data || []))
     ]).catch(() => console.error("Error pre-cargando cat/conj"));
 
-    // Nombre en sidebar
+    // Renderizado de los datos del usuario logueado en el panel izquierdo
     document.getElementById('sidebarName').textContent = `${user.nombre ?? ''} ${user.apellidos ?? ''}`.trim();
     document.getElementById('sidebarAvatar').textContent = (user.nombre?.[0] ?? 'A').toUpperCase();
 
-    /* ***************************
-     * Navegación entre vistas
-     * **************************** */
+    // Control visual de las pestañas laterales para cambiar el bloque de pantalla activo
     function toggleSidebar() {
       document.querySelector('.sidebar').classList.toggle('open');
     }
 
     function showView(name) {
-      document.querySelector('.sidebar').classList.remove('open'); // Cerrar en móviles si estaba abierto
+      document.querySelector('.sidebar').classList.remove('open');
 
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -1508,9 +1480,7 @@
       if (name === 'calendario') initCalendar();
     }
 
-    /* *************************
-     * Mensajería (Supervisión)
-     * ************************* */
+    // Renderizado del historial de mensajes en la lista lateral
     async function cargarMensajes() {
       const lista = document.getElementById('mensajeLista');
       lista.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Cargando historial...</p></div>';
@@ -1536,6 +1506,7 @@
       }
     }
 
+    // Expansión del mensaje seleccionado en el bloque derecho de lectura
     let selectedMsg = null;
     function verMensaje(m) {
       selectedMsg = m;
@@ -1550,11 +1521,11 @@
       document.getElementById('detTexto').textContent = m.contenido;
       document.getElementById('resContenido').value = '';
 
-      // Resaltar en la lista
       document.querySelectorAll('.mensaje-item').forEach(el => el.classList.remove('active'));
       event.currentTarget.classList.add('active');
     }
 
+    // Limpieza de la caja de respuesta una vez enviada
     async function enviarRespuesta() {
       const contenido = document.getElementById('resContenido').value.trim();
       if (!contenido || !selectedMsg) return;
@@ -1568,7 +1539,6 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            // El admin responde al emisor original
             receptor_id: selectedMsg.emisor_id,
             asunto: `RE: ${selectedMsg.asunto || 'Mensaje'}`,
             contenido: contenido
@@ -1586,9 +1556,7 @@
       }
     }
 
-    /* ***************************************
-     * Helpers fetch
-     * *************************************** */
+    // Función general de conexión para el flujo de la vista
     async function apiFetch(path, opts = {}) {
       const res = await fetch(API + path, {
         ...opts,
@@ -1604,9 +1572,7 @@
       return data;
     }
 
-    /* ***************************************
-     * EQUIPO TÉCNICO — tarjetas entrenadoras
-     * *************************************** */
+    // Renderizado gráfico de las tarjetas dinámicas del equipo en pantalla
     async function cargarEntrenadoras() {
       const grid = document.getElementById('teamGrid');
       grid.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Cargando entrenadoras…</p></div>`;
@@ -1653,6 +1619,7 @@
       }
     }
 
+    // Mapeo de datos para abrir la ventana modal superpuesta con la ficha de entrenadora
     function abrirPerfilEntrenadora(u) {
       document.getElementById('mpAvatar').textContent = (u.nombre?.[0] ?? '?').toUpperCase();
       document.getElementById('mpName').textContent = `${u.nombre} ${u.apellidos ?? ''}`;
@@ -1679,9 +1646,7 @@
       document.getElementById('modalPerfil').classList.add('open');
     }
 
-    /* **********************************
-     * TABLA USUARIOS (gimnastas / admins)
-     * *********************************** */
+    // Renderizado de la tabla de listado para usuarios y manejo de paginación visual inferior
     let paginaActual = { gimnasta: 1, administrador: 1 };
 
     async function cargarTablaUsuarios(rol, pagina = 1) {
@@ -1733,7 +1698,6 @@
           }).join('');
         }
 
-        // Paginación
         if (pagId && data.last_page > 1) {
           const pagEl = document.getElementById(pagId);
           pagEl.innerHTML = '';
@@ -1756,9 +1720,7 @@
       window._searchTimer = setTimeout(() => cargarTablaUsuarios(rol, 1), 400);
     }
 
-    /* ********************************
-     * CRUD — Formulario crear / editar
-     * ****************************** */
+    // Control de visibilidad del formulario de tutor legal en función de la fecha de nacimiento introducida
     function checkGimnastaAge() {
       const dobInput = document.getElementById('formGimnastaNacimiento');
       const secTutorTitle = document.getElementById('sectionTutorLegal');
@@ -1804,9 +1766,7 @@
       }
     }
 
-    /* ********************************
-     * CRUD — Formulario crear / editar
-     **********************************/
+    // Limpieza y preparación visual de la ventana modal al hacer click en crear un nuevo usuario
     function abrirFormUsuario(rol) {
       document.getElementById('userForm').reset();
       document.getElementById('formMode').value = 'crear';
@@ -1933,9 +1893,8 @@
         payload.conjunto_id = document.getElementById('formGimnastaConj').value || null;
         payload.fecha_nacimiento = document.getElementById('formGimnastaNacimiento').value || undefined;
         payload.telefono_contacto = document.getElementById('formTelefonoContacto').value.trim() || undefined;
-        payload.club_id = 1; // Asumimos club maestra 1
+        payload.club_id = 1;
 
-        // Verificar si es menor para incluir los campos del tutor legal
         if (payload.fecha_nacimiento) {
           const birthDate = new Date(payload.fecha_nacimiento);
           const today = new Date();
@@ -1962,7 +1921,6 @@
 
         document.getElementById('modalForm').classList.remove('open');
 
-        // Recargar vista correspondiente
         if (rol === 'entrenadora') cargarEntrenadoras();
         else if (rol === 'gimnasta') cargarTablaUsuarios('gimnasta', paginaActual.gimnasta);
         else cargarTablaUsuarios('administrador', paginaActual.administrador);
@@ -1980,7 +1938,6 @@
       if (!confirm(`¿Deseas desactivar ${label}? (borrado lógico)`)) return;
       try {
         await apiFetch(`/usuarios/${id}`, { method: 'DELETE' });
-        // Recargar vista activa
         const vActiva = document.querySelector('.view.active')?.id;
         if (vActiva === 'view-equipo') cargarEntrenadoras();
         if (vActiva === 'view-gimnastas') cargarTablaUsuarios('gimnasta', paginaActual.gimnasta);
@@ -1990,9 +1947,7 @@
       }
     }
 
-    /* *********************
-     * Alertas formulario
-     * ********************* */
+    // Mostrar u ocultar banners informativos en los formularios modales
     function mostrarAlerta(msg, tipo) {
       const el = document.getElementById('formAlert');
       el.textContent = msg;
@@ -2004,18 +1959,14 @@
       el.textContent = '';
     }
 
-    /* *************
-     * Modal helper
-     * ************** */
+    // Cierre manual y por click en el overlay oscuro de las ventanas modales
     function cerrarModal(id, event) {
       if (!event || event.target.classList.contains('modal-overlay')) {
         document.getElementById(id).classList.remove('open');
       }
     }
 
-    /* *********
-     * Logout
-     * ********* */
+    // Cierre de sesión y retorno visual al portal inicial
     function logout() {
       fetch(`${API}/logout`, {
         method: 'POST',
@@ -2027,9 +1978,7 @@
       });
     }
 
-    /* ***************
-     * GRUPOS Y CLASES
-     * *************** */
+    // Renderizado de tarjetas visuales en la pantalla de gestión de grupos y clases
     let grupoActualActivo = null;
     let gimnastasDisponibles = [];
 
@@ -2080,7 +2029,6 @@
       document.getElementById('mgAlert').textContent = '';
 
       try {
-        // Fetch completo del grupo (gimnastas incluidas)
         const resp = await apiFetch(`/conjuntos/${id}`);
         const g = resp.data;
         grupoActualActivo = g;
@@ -2091,13 +2039,9 @@
 
         renderTablaGimnastasGrupo(g.gimnastas ?? []);
 
-        // Fetch de TODAS las gimnastas para filtrarlas
         const resGim = await apiFetch('/usuarios?rol=gimnasta&per_page=1000');
         const allGimnastas = resGim.data ?? [];
 
-        // Filtro: 
-        // 1. Misma categoría que el grupo
-        // 2. Que NO estén ya en este grupo
         gimnastasDisponibles = allGimnastas.filter(u =>
           u.gimnasta?.categoria?.id === g.categoria?.id &&
           u.gimnasta?.conjunto?.id !== g.id
@@ -2150,8 +2094,8 @@
           body: JSON.stringify({ gimnasta_id: parseInt(gId) })
         });
         mostrarAlertaMg('Gimnasta añadida con éxito.', 'success');
-        abrirGestionGrupo(grupoActualActivo.id); // Recargar
-        cargarGrupos(); // Actualizar listado de grupos de fondo
+        abrirGestionGrupo(grupoActualActivo.id);
+        cargarGrupos();
       } catch (err) {
         const msgs = err.message ?? (err.errors ? Object.values(err.errors).flat().join(', ') : 'Error al asignar');
         mostrarAlertaMg(msgs, 'error');
@@ -2167,8 +2111,8 @@
           method: 'DELETE'
         });
         mostrarAlertaMg('Gimnasta desvinculada del grupo.', 'success');
-        abrirGestionGrupo(grupoActualActivo.id); // Recargar
-        cargarGrupos(); // Actualizar listado
+        abrirGestionGrupo(grupoActualActivo.id);
+        cargarGrupos();
       } catch (err) {
         mostrarAlertaMg(err.message ?? 'Error al desasignar.', 'error');
       }
@@ -2180,10 +2124,7 @@
       el.className = 'alert-banner alert-' + tipo;
     }
 
-    /* ***********************************
-     * Selectores dependientes (Gimnastas)
-     * ********************************** */
-
+    // Actualización dinámica de los desplegables del formulario dependientes del nivel
     function prepararFormGimnasta(catId = null, conjId = null) {
       const selCat = document.getElementById('formGimnastaCat');
       selCat.innerHTML = '<option value="">Selecciona una categoría...</option>';
@@ -2214,9 +2155,7 @@
       }
     }
 
-    /* *********************
-     * Modal Competiciones
-     ********************** */
+    // Inicialización visual y control del formulario para programar competiciones en el calendario
     async function abrirFormCompeticion() {
       document.getElementById('competicionForm').reset();
       document.getElementById('compLat').value = '';
@@ -2262,14 +2201,13 @@
         selGim.innerHTML = '<option value="">Error cargando gimnastas</option>';
       }
 
-      // Inicializa el autocompletar de Google Places en el campo de dirección
+      // Integración y despliegue del componente de Google Maps para buscar ubicaciones
       function initPlacesAutocomplete() {
         const dirInput = document.getElementById('compDireccion');
         const latInput = document.getElementById('compLat');
         const lngInput = document.getElementById('compLng');
         const mapPreview = document.getElementById('compMapPreview');
 
-        // Evita registrar el autocompletar dos veces si el modal se abre varias veces
         if (dirInput._autocompleteInit) return;
         dirInput._autocompleteInit = true;
 
@@ -2278,7 +2216,6 @@
           fields: ['formatted_address', 'geometry', 'name']
         });
 
-        // Cuando el usuario elige una dirección de la lista
         autocomplete.addListener('place_changed', () => {
           const place = autocomplete.getPlace();
           if (!place.geometry) return;
@@ -2289,7 +2226,6 @@
           lngInput.value = lng;
           dirInput.value = place.formatted_address || place.name;
 
-          // Muestra un mini-mapa con la ubicación seleccionada
           mapPreview.style.display = 'block';
           const previewMap = new google.maps.Map(mapPreview, {
             zoom: 15,
@@ -2302,7 +2238,6 @@
           new google.maps.Marker({ position: { lat, lng }, map: previewMap, title: place.name });
         });
 
-        // Si el usuario escribe manualmente, limpia las coordenadas y oculta el mapa
         dirInput.addEventListener('input', () => {
           latInput.value = '';
           lngInput.value = '';
@@ -2310,7 +2245,6 @@
         });
       }
 
-      // Espera a que Maps esté listo antes de inicializar el autocompletar
       if (typeof onGoogleMapsReady === 'function') {
         onGoogleMapsReady(initPlacesAutocomplete);
       } else if (typeof google !== 'undefined') {
@@ -2352,7 +2286,6 @@
         });
         document.getElementById('modalCompeticion').classList.remove('open');
 
-        // Recargar el calendario si está visible
         if (document.getElementById('view-calendario').classList.contains('active')) {
           calendarInstance.destroy();
           calendarInstance = null;
@@ -2393,7 +2326,7 @@
 
     cargarEntrenadoras();
 
-    // IMPRIMIR LISTA PDF
+    // Apertura en nueva pestaña para generación e impresión de lista de clase
 async function imprimirListaConjunto(conjuntoId) {
   if (!conjuntoId) return;
   const url = `http://127.0.0.1:5000/pdf/conjunto/${conjuntoId}?token=${encodeURIComponent(token)}`;

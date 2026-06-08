@@ -13,6 +13,8 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+
+        /* Contenedor principal */
         .wrapper {
             width: 100%;
             table-layout: fixed;
@@ -20,6 +22,7 @@
             padding-top: 40px;
             padding-bottom: 40px;
         }
+
         .main-card {
             width: 100%;
             max-width: 600px;
@@ -30,34 +33,43 @@
             box-shadow: 0 8px 40px rgba(107,26,58,.08);
             border: 1px solid #F2D5DF;
         }
+
+        /* Cabecera */
         .header {
             background: linear-gradient(135deg, #6B1A3A 0%, #C45C7E 100%);
             padding: 40px 30px;
             text-align: center;
             color: #ffffff;
         }
+
         .header h1 {
             margin: 0;
             font-size: 28px;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
+
         .header p {
             margin: 8px 0 0 0;
             font-size: 16px;
             opacity: 0.9;
         }
+
+        /* Cuerpo del correo */
         .content {
             padding: 40px 30px;
             color: #2A1520;
             line-height: 1.6;
         }
+
         .content h2 {
             margin-top: 0;
             font-size: 20px;
             color: #6B1A3A;
             font-weight: 600;
         }
+
+        /* Badge de rol */
         .role-badge {
             display: inline-block;
             background-color: #F2D5DF;
@@ -69,6 +81,8 @@
             margin-bottom: 20px;
             text-transform: capitalize;
         }
+
+        /* Caja de credenciales */
         .credentials-box {
             width: 100%;
             background-color: #FAF6F1;
@@ -77,6 +91,7 @@
             margin: 24px 0;
             overflow: hidden;
         }
+
         .credentials-box .box-header {
             background-color: #F2D5DF;
             padding: 10px 16px;
@@ -86,23 +101,28 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
         .credentials-table {
             width: 100%;
             border-collapse: collapse;
         }
+
         .credentials-table td {
             padding: 12px 16px;
             font-size: 15px;
             border-bottom: 1px solid #F2D5DF;
         }
+
         .credentials-table tr:last-child td {
             border-bottom: none;
         }
+
         .credentials-table td.label {
             font-weight: 600;
             color: #6B1A3A;
             width: 160px;
         }
+
         .credentials-table code {
             background-color: #FFF0F5;
             padding: 2px 8px;
@@ -112,6 +132,8 @@
             color: #6B1A3A;
             border: 1px solid #F2D5DF;
         }
+
+        /* Aviso de seguridad */
         .warning-box {
             background-color: #FFF8FA;
             border-left: 4px solid #C45C7E;
@@ -121,16 +143,20 @@
             font-size: 13.5px;
             color: #553E45;
         }
+
         .warning-box strong {
             color: #6B1A3A;
             display: block;
             margin-bottom: 4px;
         }
+
+        /* Botón de acción */
         .btn-container {
             text-align: center;
             margin-top: 32px;
             margin-bottom: 32px;
         }
+
         .btn {
             background-color: #6B1A3A;
             color: #ffffff !important;
@@ -142,6 +168,8 @@
             display: inline-block;
             box-shadow: 0 4px 12px rgba(107, 26, 58, 0.2);
         }
+
+        /* Pie de página */
         .footer {
             text-align: center;
             padding: 24px 30px;
@@ -149,6 +177,7 @@
             color: #9B7080;
             border-top: 1px solid #F2D5DF;
         }
+
         .footer p {
             margin: 4px 0;
         }
@@ -166,7 +195,7 @@
                         <p>Tu espacio de entrenamiento</p>
                     </div>
 
-                    <!-- Content -->
+                    <!-- Contenido -->
                     <div class="content">
                         <h2>¡Hola, {{ $user->nombre }}!</h2>
 
@@ -188,7 +217,7 @@
                             <p>Como <strong>administrador/a</strong>, tendrás acceso completo a la gestión de usuarios, clubes, competiciones y configuración de la plataforma.</p>
                         @endif
 
-                        <!-- Credentials box -->
+                        <!-- Credenciales de acceso -->
                         <div class="credentials-box">
                             <div class="box-header">🔑 Tus credenciales de acceso</div>
                             <table class="credentials-table" cellpadding="0" cellspacing="0">
@@ -207,11 +236,13 @@
                             </table>
                         </div>
 
+                        <!-- Aviso de seguridad -->
                         <div class="warning-box">
                             <strong>⚠️ Importante</strong>
                             Por seguridad, te recomendamos cambiar tu contraseña la primera vez que accedas a la plataforma. Esta contraseña es temporal y ha sido generada automáticamente.
                         </div>
 
+                        <!-- Botón -->
                         <div class="btn-container">
                             <a href="{{ url('/') }}" class="btn">Iniciar Sesión en Rytmia</a>
                         </div>

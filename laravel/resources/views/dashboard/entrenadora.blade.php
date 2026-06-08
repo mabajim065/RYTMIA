@@ -39,7 +39,7 @@
     .view { display: none; }
     .view.active { display: block; }
 
-    /* === SIDEBAR === */
+    /* SIDEBAR */
     .sidebar {
       width: 280px;
       background-color: var(--white);
@@ -62,13 +62,13 @@
     .logout-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2rem; transition: color 0.3s; }
     .logout-btn:hover { color: var(--error); }
 
-    /* === MAIN === */
+    /* MAIN */
     .main-content { flex: 1; margin-left: 280px; padding: 3rem; }
     .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; }
     .page-title { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--burgundy); }
     .page-subtitle { color: var(--muted); margin-top: 0.5rem; }
 
-    /* === WELCOME CARD === */
+    /* WELCOME CARD */
     .welcome-card {
       background: linear-gradient(135deg, var(--burgundy) 0%, var(--rose) 100%);
       border-radius: var(--radius-lg);
@@ -90,13 +90,13 @@
     .welcome-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; margin-bottom: 0.5rem; }
     .welcome-sub { opacity: 0.85; font-size: 0.95rem; }
 
-    /* === STATS === */
+    /* STATS */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
     .stat-card { background: var(--white); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--burgundy); }
     .stat-desc { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
 
-    /* === CARDS & GRIDS === */
+    /* CARDS & GRIDS */
     .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
     .team-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-soft); border: 1px solid var(--blush); display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.3s; }
     .team-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(107,26,58,.12); }
@@ -113,7 +113,7 @@
     .btn-outline { background: transparent; border: 1.5px solid var(--blush); color: var(--text); padding: 0.6rem 1.2rem; border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 100%; }
     .btn-outline:hover { border-color: var(--burgundy); color: var(--burgundy); background-color: var(--cream); }
 
-    /* === INFO PERFIL === */
+    /* INFO PERFIL */
     .perfil-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .perfil-title { font-family: 'Cormorant Garamond', serif; color: var(--burgundy); font-size: 1.5rem; margin-bottom: 1.5rem; }
     .perfil-row { display: flex; gap: 0.75rem; align-items: baseline; padding: 0.75rem 0; border-bottom: 1px solid var(--blush); }
@@ -121,7 +121,7 @@
     .perfil-label { color: var(--muted); font-size: 0.85rem; min-width: 160px; }
     .perfil-value { color: var(--text); font-weight: 500; }
 
-    /* === MAP & COMPETITION DETAIL === */
+    /* MAP & COMPETITION DETAIL */
     #map-ent { height: 300px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
     .competition-detail { margin-top: 1.5rem; display: none; padding: 2rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .competition-detail.visible { display: block; }
@@ -132,7 +132,7 @@
     .comp-location-link:hover { color: var(--burgundy); }
     .map-unavailable { display: flex; align-items: center; justify-content: center; height: 100px; background: var(--cream); border-radius: var(--radius-md); border: 1px dashed var(--blush); color: var(--muted); font-size: 0.9rem; margin-top: 1rem; }
 
-    /* === TABLE === */
+    /* TABLE */
     .table-wrap { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); overflow-x: auto; -webkit-overflow-scrolling: touch; }
     table { width: 100%; min-width: 750px; border-collapse: collapse; }
     thead { background: var(--cream); }
@@ -140,7 +140,7 @@
     td { padding: 0.85rem 1rem; font-size: 0.85rem; border-top: 1px solid var(--blush); white-space: nowrap; }
     tr:hover td { background: var(--off-white); }
 
-    /* === MODAL === */
+    /* MODAL */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(42,21,32,.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
     .modal-overlay.open { opacity: 1; pointer-events: auto; }
     .modal-content { background: var(--white); width: 90%; max-width: 700px; border-radius: var(--radius-lg); padding: 2.5rem; position: relative; transform: translateY(20px); transition: transform 0.3s; box-shadow: 0 20px 60px rgba(0,0,0,.15); max-height: 90vh; overflow-y: auto; }
@@ -148,18 +148,18 @@
     .modal-close-btn { width: 100%; padding: 0.8rem; background: var(--off-white); border: 1px solid var(--blush); border-radius: var(--radius-md); color: var(--muted); cursor: pointer; transition: all 0.3s; font-family: 'DM Sans', sans-serif; margin-top: 1.5rem; }
     .modal-close-btn:hover { background: var(--blush); color: var(--burgundy); }
 
-    /* === LOADING === */
+    /* LOADING */
     .loading-state { text-align: center; padding: 4rem 2rem; color: var(--muted); grid-column: 1 / -1; }
     .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--blush); border-top-color: var(--rose); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* === MOBILE NAV === */
+    /* MOBILE NAV */
     .mobile-nav { display: none; padding: 1rem 1.5rem; background: var(--white); border-bottom: 1px solid var(--blush); align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20; }
     .mobile-nav .brand { padding: 0; border: none; font-size: 1.8rem; text-align: left; }
     .menu-btn { background: none; border: none; font-size: 1.8rem; color: var(--burgundy); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
     .td-actions { display: flex; gap: 0.5rem; }
 
-    /* === MENSAJES === */
+    /* MENSAJES */
     .mensaje-lista { display: flex; flex-direction: column; }
     .mensaje-item { padding: 1.5rem; border-bottom: 1px solid var(--blush); cursor: pointer; transition: background 0.2s; position: relative; }
     .mensaje-item:hover { background: var(--cream); }
@@ -170,7 +170,7 @@
     .msg-snippet { font-size: 0.8rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .msg-fecha { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; display: block; text-align: right; }
 
-    /* === FORM FIELDS === */
+    /* FORM FIELDS */
     .form-group { margin-bottom: 1rem; }
     .form-group.full { grid-column: 1 / -1; }
     .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
@@ -192,13 +192,11 @@
 
 <div id="app">
 
-  <!-- MOBILE TOP NAV -->
   <div class="mobile-nav">
     <div class="brand">Rytmia.</div>
     <button class="menu-btn" onclick="toggleSidebar()">☰</button>
   </div>
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">Rytmia.</div>
     <nav class="nav-links">
@@ -218,10 +216,8 @@
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
   <main class="main-content">
 
-    <!-- ── VISTA: MI PANEL (DASHBOARD) ─────────────────────────── -->
     <div id="view-panel" class="view active">
       <header class="header">
         <div>
@@ -264,7 +260,6 @@
       </div>
     </div>
 
-    <!-- ── VISTA: MENSAJES ────────────────────────────────────── -->
     <div id="view-mensajes" class="view">
       <header class="header">
         <div>
@@ -275,14 +270,12 @@
       </header>
 
       <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
-        <!-- Lista de mensajes -->
         <div class="table-wrap" style="height: 600px; overflow-y: auto;">
           <div id="mensajeLista" class="mensaje-lista">
             <div class="loading-state"><div class="loading-spinner"></div></div>
           </div>
         </div>
 
-        <!-- Detalle del mensaje -->
         <div id="mensajeDetalle" class="perfil-card" style="min-height: 400px; display: none;">
           <div id="mensajeContenido">
             <h3 id="detAsunto" style="font-family:'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--burgundy); margin-bottom: 0.5rem;">Asunto</h3>
@@ -306,7 +299,6 @@
       </div>
     </div>
 
-    <!-- ── VISTA: MIS GRUPOS ──────────────────────────────────── -->
     <div id="view-grupos" class="view">
       <header class="header">
         <div>
@@ -323,7 +315,6 @@
       </div>
     </div>
 
-    <!-- ── VISTA: GIMNASTAS ────────────────────────────────────── -->
     <div id="view-gimnastas" class="view">
       <header class="header">
         <div>
@@ -347,14 +338,12 @@
             </tr>
           </thead>
           <tbody id="tbodyGimnastasTabla">
-            <!-- Cargado dinámicamente -->
-          </tbody>
+            </tbody>
         </table>
       </div>
       <div class="pagination" id="pagGimnastas" style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 0.5rem;"></div>
     </div>
 ...
-  <!-- ── MODAL NUEVO MENSAJE ─────────────────────────────────── -->
   <div class="modal-overlay" id="modalMensaje" onclick="cerrarModal('modalMensaje', event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
       <h2 class="modal-name" style="margin-bottom: 1.5rem;">Enviar mensaje a <span id="nmDestinatario">...</span></h2>
@@ -376,7 +365,6 @@
     </div>
   </div>
 
-    <!-- ── VISTA: CALENDARIO ───────────────────────────────────── -->
     <div id="view-calendario" class="view">
       <header class="header">
         <div>
@@ -388,7 +376,6 @@
         <div id="calendar"></div>
       </div>
 
-      <!-- Detalle de competición -->
       <div id="comp-detail-ent" class="competition-detail">
         <h2 class="perfil-title" id="comp-title-ent">Nombre Competición</h2>
         <div class="comp-meta">
@@ -405,7 +392,6 @@
 
   </main>
 
-  <!-- ── MODAL LISTA GIMNASTAS (desde grupos) ──────────────────── -->
   <div class="modal-overlay" id="modalGimnastasG" onclick="cerrarModal('modalGimnastasG', event)">
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="header" style="margin-bottom: 2rem;">
@@ -426,8 +412,7 @@
             </tr>
           </thead>
           <tbody id="tbodyGimnastasModal">
-            <!-- Cargado dinámicamente -->
-          </tbody>
+            </tbody>
         </table>
       </div>
 

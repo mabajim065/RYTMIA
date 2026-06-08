@@ -13,6 +13,8 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+
+        /* Contenedor principal */
         .wrapper {
             width: 100%;
             table-layout: fixed;
@@ -20,6 +22,7 @@
             padding-top: 40px;
             padding-bottom: 40px;
         }
+
         .main-card {
             width: 100%;
             max-width: 600px;
@@ -30,34 +33,43 @@
             box-shadow: 0 8px 40px rgba(107,26,58,.08);
             border: 1px solid #F2D5DF;
         }
+
+        /* Cabecera */
         .header {
             background: linear-gradient(135deg, #6B1A3A 0%, #C45C7E 100%);
             padding: 40px 30px;
             text-align: center;
             color: #ffffff;
         }
+
         .header h1 {
             margin: 0;
             font-size: 28px;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
+
         .header p {
             margin: 8px 0 0 0;
             font-size: 16px;
             opacity: 0.9;
         }
+
+        /* Cuerpo del correo */
         .content {
             padding: 40px 30px;
             color: #2A1520;
             line-height: 1.6;
         }
+
         .content h2 {
             margin-top: 0;
             font-size: 20px;
             color: #6B1A3A;
             font-weight: 600;
         }
+
+        /* Caja de credenciales */
         .credentials-table {
             width: 100%;
             background-color: #FAF6F1;
@@ -66,15 +78,19 @@
             margin: 24px 0;
             padding: 16px;
         }
+
         .credentials-table td {
             padding: 8px 12px;
             font-size: 15px;
         }
+
         .credentials-table td.label {
             font-weight: 600;
             color: #6B1A3A;
             width: 150px;
         }
+
+        /* Aviso RGPD */
         .rgpd-box {
             background-color: #FFF8FA;
             border-left: 4px solid #C45C7E;
@@ -84,16 +100,20 @@
             font-size: 13.5px;
             color: #553E45;
         }
+
         .rgpd-box strong {
             color: #6B1A3A;
             display: block;
             margin-bottom: 6px;
         }
+
+        /* Botón de acción */
         .btn-container {
             text-align: center;
             margin-top: 32px;
             margin-bottom: 32px;
         }
+
         .btn {
             background-color: #6B1A3A;
             color: #ffffff !important;
@@ -106,9 +126,12 @@
             box-shadow: 0 4px 12px rgba(107, 26, 58, 0.2);
             transition: background-color 0.2s ease;
         }
+
         .btn:hover {
             background-color: #C45C7E;
         }
+
+        /* Pie de página */
         .footer {
             text-align: center;
             padding: 24px 30px;
@@ -116,6 +139,7 @@
             color: #9B7080;
             border-top: 1px solid #F2D5DF;
         }
+
         .footer p {
             margin: 4px 0;
         }
@@ -133,14 +157,15 @@
                         <p>Espacio del Tutor Legal</p>
                     </div>
 
-                    <!-- Content -->
+                    <!-- Contenido -->
                     <div class="content">
                         <h2>Estimado/a {{ $tutor->nombre }} {{ $tutor->apellidos }},</h2>
-                        
+
                         <p>Le escribimos para informarle de que la gimnasta menor de edad <strong>{{ $user->nombre }} {{ $user->apellidos }}</strong>, bajo su tutela legal, ha sido dada de alta en nuestra plataforma Rytmia.</p>
-                        
+
                         <p>Como tutor/a legal, le proporcionamos las credenciales de acceso a su cuenta para que pueda supervisar y gestionar el uso de la plataforma. La menor no ha recibido este correo.</p>
 
+                        <!-- Credenciales de acceso -->
                         <table class="credentials-table" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td class="label">Usuario de la menor:</td>
@@ -158,6 +183,7 @@
                             De conformidad con el Reglamento General de Protección de Datos (RGPD) y la LOPDGDD, le informamos de que tratamos los datos de la gimnasta menor y del tutor legal con la exclusiva finalidad de gestionar su participación deportiva y actividades en el club. Al ser tutor legal, recae sobre usted la responsabilidad de supervisar la cuenta de la menor. Puede ejercer sus derechos de acceso, rectificación, supresión y limitación escribiendo a la dirección del administrador de su club.
                         </div>
 
+                        <!-- Botón -->
                         <div class="btn-container">
                             <a href="{{ url('/') }}" class="btn">Acceder a Rytmia</a>
                         </div>

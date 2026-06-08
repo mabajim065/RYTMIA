@@ -13,6 +13,7 @@
   @endif
 
   <style>
+    /* Variables globales */
     :root {
       --burgundy: #6B1A3A;
       --rose:     #C45C7E;
@@ -30,7 +31,8 @@
     body { font-family: 'DM Sans', sans-serif; background-color: var(--off-white); color: var(--text); display: flex; min-height: 100vh; }
     .view { display: none; }
     .view.active { display: block; }
-    /* === SIDEBAR === */
+
+    /* Sidebar */
     .sidebar { width: 280px; background-color: var(--white); border-right: 1px solid var(--blush); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10; }
     .brand { padding: 2rem; font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 600; color: var(--burgundy); text-align: center; border-bottom: 1px solid var(--blush); }
     .nav-links { flex: 1; padding: 2rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -43,12 +45,14 @@
     .user-role { font-size: 0.8rem; color: var(--muted); }
     .logout-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2rem; transition: color 0.3s; }
     .logout-btn:hover { color: #D94F4F; }
-    /* === MAIN === */
+
+    /* Contenido principal */
     .main-content { flex: 1; margin-left: 280px; padding: 3rem; }
     .header { margin-bottom: 3rem; }
     .page-title { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--burgundy); }
     .page-subtitle { color: var(--muted); margin-top: 0.5rem; }
-    /* === WELCOME CARD === */
+
+    /* Tarjeta de bienvenida */
     .welcome-card {
       background: linear-gradient(135deg, var(--rose) 0%, var(--blush) 100%);
       border-radius: var(--radius-lg);
@@ -61,12 +65,14 @@
     .welcome-card::after { content: ''; position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); font-size: 5rem; opacity: 0.2; }
     .welcome-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; margin-bottom: 0.5rem; }
     .welcome-sub { opacity: 0.8; font-size: 0.95rem; }
-    /* === STATS === */
+
+    /* Estadísticas */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
     .stat-card { background: var(--white); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--burgundy); }
     .stat-desc { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
-    /* === PERFIL === */
+
+    /* Ficha de perfil */
     .perfil-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .perfil-title { font-family: 'Cormorant Garamond', serif; color: var(--burgundy); font-size: 1.5rem; margin-bottom: 1.5rem; }
     .perfil-row { display: flex; gap: 0.75rem; align-items: baseline; padding: 0.75rem 0; border-bottom: 1px solid var(--blush); }
@@ -78,7 +84,7 @@
     .badge-inactiva { background-color: #fff8e1; color: #f57f17; }
     .badge-baja { background-color: #ffebee; color: #c62828; }
 
-    /* === MAP === */
+    /* Mapa y detalle de competición */
     #map { height: 320px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
     .competition-detail { margin-top: 1.5rem; display: none; padding: 2rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .competition-detail.visible { display: block; }
@@ -89,16 +95,16 @@
     .comp-location-link:hover { color: var(--burgundy); }
     .map-unavailable { display: flex; align-items: center; justify-content: center; height: 120px; background: var(--cream); border-radius: var(--radius-md); border: 1px dashed var(--blush); color: var(--muted); font-size: 0.9rem; margin-top: 1rem; }
 
-    /* === FORM FIELDS === */
+    /* Campos de formulario */
     .form-group { margin-bottom: 1rem; }
     .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
     .form-input, .form-select, .form-textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid var(--blush); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--cream); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
     .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--rose); background: var(--white); box-shadow: 0 0 0 3px rgba(196,92,126,.12); }
     .form-textarea { resize: vertical; min-height: 100px; }
-
     .btn-primary { background: linear-gradient(135deg, var(--burgundy), var(--rose)); color: var(--white); padding: 0.8rem 1.5rem; border-radius: var(--radius-md); border: none; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: opacity 0.3s, transform 0.2s; }
     .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
 
+    /* Responsive */
     @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; padding: 1.5rem; } }
   </style>
 </head>
@@ -123,6 +129,8 @@
   </aside>
 
   <main class="main-content">
+
+    <!-- Vista: Mi Panel -->
     <div id="view-panel" class="view active">
       <header class="header">
         <h1 class="page-title">Mi Panel</h1>
@@ -147,49 +155,20 @@
 
       <div class="perfil-card">
         <div class="perfil-title">Mi Ficha</div>
-        <div class="perfil-row">
-          <span class="perfil-label">Nombre completo</span>
-          <span class="perfil-value" id="perfilNombre">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">DNI</span>
-          <span class="perfil-value" id="perfilDni">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">Email</span>
-          <span class="perfil-value" id="perfilEmail">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">Teléfono usuario</span>
-          <span class="perfil-value" id="perfilTelefono">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">Teléfono contacto</span>
-          <span class="perfil-value" id="perfilContacto">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">Nº de licencia</span>
-          <span class="perfil-value" id="perfilLicencia">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">Fecha de nacimiento</span>
-          <span class="perfil-value" id="perfilFecha">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">Conjunto</span>
-          <span class="perfil-value" id="perfilConjunto">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">Club</span>
-          <span class="perfil-value" id="perfilClub">–</span>
-        </div>
-        <div class="perfil-row">
-          <span class="perfil-label">Estado</span>
-          <span class="perfil-value" id="perfilEstado">–</span>
-        </div>
+        <div class="perfil-row"><span class="perfil-label">Nombre completo</span><span class="perfil-value" id="perfilNombre">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">DNI</span><span class="perfil-value" id="perfilDni">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">Email</span><span class="perfil-value" id="perfilEmail">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">Teléfono usuario</span><span class="perfil-value" id="perfilTelefono">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">Teléfono contacto</span><span class="perfil-value" id="perfilContacto">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">Nº de licencia</span><span class="perfil-value" id="perfilLicencia">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">Fecha de nacimiento</span><span class="perfil-value" id="perfilFecha">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">Conjunto</span><span class="perfil-value" id="perfilConjunto">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">Club</span><span class="perfil-value" id="perfilClub">–</span></div>
+        <div class="perfil-row"><span class="perfil-label">Estado</span><span class="perfil-value" id="perfilEstado">–</span></div>
       </div>
     </div>
-    
+
+    <!-- Vista: Calendario -->
     <div id="view-calendario" class="view">
       <header class="header">
         <h1 class="page-title">Calendario</h1>
@@ -213,6 +192,7 @@
       </div>
     </div>
 
+    <!-- Vista: Mi Entrenadora -->
     <div id="view-entrenadora" class="view">
       <header class="header">
         <h1 class="page-title">Mi Entrenadora</h1>
@@ -225,6 +205,7 @@
       </div>
     </div>
 
+    <!-- Vista: Mensajes -->
     <div id="view-mensajes" class="view">
       <header class="header">
         <h1 class="page-title">Mensajes</h1>
@@ -256,10 +237,11 @@
       <div class="perfil-card">
         <h2 class="perfil-title" style="margin-bottom: 1rem; font-size: 1.2rem;">Bandeja de Entrada</h2>
         <div id="lista-mensajes" style="display: flex; flex-direction: column; gap: 1rem;">
-           <p style="color: var(--muted);">Cargando mensajes...</p>
+          <p style="color: var(--muted);">Cargando mensajes...</p>
         </div>
       </div>
     </div>
+
   </main>
 
 <script>
@@ -272,7 +254,7 @@
     window.location.href = '/';
   }
 
-  // UI inmediata
+  // Rellenar UI con datos del localStorage
   const nombreCompleto = `${user.nombre ?? ''} ${user.apellidos ?? ''}`.trim();
   document.getElementById('sidebarName').textContent      = nombreCompleto;
   document.getElementById('sidebarAvatar').textContent    = (user.nombre?.[0] ?? 'G').toUpperCase();
@@ -283,7 +265,7 @@
   document.getElementById('perfilEmail').textContent       = user.email ?? '–';
   document.getElementById('perfilTelefono').textContent    = user.telefono ?? '–';
 
-  // Perfil completo desde API
+  // Cargar perfil completo desde la API
   fetch(`${API}/me`, {
     headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
   })
@@ -303,16 +285,15 @@
       const estadoEl = document.getElementById('perfilEstado');
       estadoEl.innerHTML = `<span class="badge badge-${g.estado ?? 'activa'}">${g.estado ?? '–'}</span>`;
 
-      // Cargar entrenadoras en la vista correspondiente
+      // Renderizar entrenadoras del conjunto
       if (g.conjunto && g.conjunto.entrenadores && g.conjunto.entrenadores.length > 0) {
         const container = document.getElementById('entrenadoras-container');
         const selectReceptor = document.getElementById('mensajeReceptor');
-        
+
         container.innerHTML = '';
         g.conjunto.entrenadores.forEach(entrenador => {
           const u = entrenador.user;
           if (u) {
-            // Añadir a la vista
             container.innerHTML += `
               <div class="perfil-card">
                 <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
@@ -327,7 +308,6 @@
                 <div class="perfil-row"><span class="perfil-label">Biografía</span><span class="perfil-value">${entrenador.biografia ?? 'Sin biografía disponible.'}</span></div>
               </div>
             `;
-            // Añadir al select de mensajes
             selectReceptor.innerHTML += `<option value="${u.id}">Entrenadora: ${u.nombre} ${u.apellidos}</option>`;
           }
         });
@@ -341,25 +321,25 @@
     }
   })
   .catch(() => {});
-  
+
+  // Navegación entre vistas
   function showView(name) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
     document.getElementById('view-' + name).classList.add('active');
     document.getElementById('nav-' + name).classList.add('active');
-    
+
     if (name === 'calendario') initCalendar();
     if (name === 'mensajes') cargarMensajes();
   }
 
-  // Cargar administradores para el desplegable de mensajes
+  // Cargar administradores en el desplegable de mensajes
   fetch(`${API}/usuarios-por-rol/administrador`, {
     headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
   })
   .then(r => r.json())
   .then(admins => {
     const select = document.getElementById('mensajeReceptor');
-    // Limpiamos solo la opción inicial de cargando, si existe
     if (select.querySelector('option[value=""]')) {
       select.querySelector('option[value=""]').textContent = 'Selecciona un destinatario...';
     }
@@ -372,6 +352,7 @@
   })
   .catch(() => {});
 
+  // Bandeja de entrada
   function cargarMensajes() {
     fetch(`${API}/mensajes`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
@@ -388,7 +369,7 @@
         const remitente = m.emisor ? `${m.emisor.nombre} ${m.emisor.apellidos}` : 'Usuario desconocido';
         const leidoStyle = m.leido_at ? 'opacity: 0.7;' : 'font-weight: bold; border-left: 4px solid var(--rose);';
         const fecha = new Date(m.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-        
+
         lista.innerHTML += `
           <div style="padding: 1rem; border: 1px solid var(--blush); border-radius: var(--radius-md); background: var(--white); ${leidoStyle}">
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
@@ -406,11 +387,12 @@
     });
   }
 
+  // Envío de mensaje
   function enviarMensaje(e) {
     e.preventDefault();
     const btn = document.getElementById('btnEnviarMensaje');
     const feedback = document.getElementById('mensajeFeedback');
-    
+
     const payload = {
       receptor_id: document.getElementById('mensajeReceptor').value,
       asunto: document.getElementById('mensajeAsunto').value,
@@ -425,11 +407,11 @@
 
     btn.disabled = true;
     btn.textContent = 'Enviando...';
-    
+
     fetch(`${API}/mensajes`, {
       method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${token}`, 
+      headers: {
+        'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
@@ -455,6 +437,7 @@
     });
   }
 
+  // Calendario de competiciones
   let calendarInstance = null;
   function initCalendar() {
     if (calendarInstance) return;
@@ -482,17 +465,18 @@
     });
   }
 
+  // Detalle de competición con mapa
   function showCompetitionDetail(comp) {
     if (!comp) return;
 
     document.getElementById('competition-detail').classList.add('visible');
     document.getElementById('comp-title').textContent = comp.nombre;
 
-    // Fecha formateada
-    const fecha = comp.fecha ? new Date(comp.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : '–';
+    const fecha = comp.fecha
+      ? new Date(comp.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+      : '–';
     document.getElementById('comp-fecha').textContent = fecha;
 
-    // Hora
     const horaWrap = document.getElementById('comp-hora-wrap');
     if (comp.hora) {
       document.getElementById('comp-hora').textContent = comp.hora.substring(0, 5) + ' h';
@@ -501,7 +485,6 @@
       horaWrap.style.display = 'none';
     }
 
-    // Dirección texto
     const dir = comp.direccion ?? comp.lugar ?? null;
     const dirWrap = document.getElementById('comp-dir-wrap');
     if (dir) {
@@ -511,7 +494,6 @@
       dirWrap.style.display = 'none';
     }
 
-    // Enlace a Google Maps
     const mapsLink = document.getElementById('comp-maps-link');
     if (comp.lat && comp.lng) {
       mapsLink.href = `https://www.google.com/maps?q=${comp.lat},${comp.lng}`;
@@ -523,7 +505,6 @@
       mapsLink.style.display = 'none';
     }
 
-    // Mapa interactivo
     const mapEl = document.getElementById('map');
     mapEl.innerHTML = '';
     if (comp.lat && comp.lng && typeof google !== 'undefined') {
@@ -552,6 +533,7 @@
     document.getElementById('competition-detail').scrollIntoView({ behavior: 'smooth' });
   }
 
+  // Cerrar sesión
   function logout() {
     fetch(`${API}/logout`, {
       method: 'POST',

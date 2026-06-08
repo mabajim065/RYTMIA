@@ -57,13 +57,12 @@
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
-      /* Subtle patterned background */
       background-image:
         radial-gradient(ellipse 80% 60% at 70% 10%, rgba(196,92,126,.12) 0%, transparent 60%),
         radial-gradient(ellipse 60% 50% at 10% 90%, rgba(107,26,58,.08) 0%, transparent 55%);
     }
 
-    /* ── Card ───────────────────────────────────────────────────── */
+    /* Card */
     .card {
       background: var(--card-bg);
       border-radius: 24px;
@@ -79,7 +78,7 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Logo ───────────────────────────────────────────────────── */
+    /* Logo */
     .logo-wrap {
       display: flex;
       flex-direction: column;
@@ -114,7 +113,7 @@
       text-transform: uppercase;
     }
 
-    /* ── Form ───────────────────────────────────────────────────── */
+    /* Form */
     .field {
       margin-bottom: 1.2rem;
     }
@@ -157,7 +156,7 @@
     /* DNI uppercase */
     #dni { text-transform: uppercase; letter-spacing: .06em; }
 
-    /* ── Password toggle ────────────────────────────────────────── */
+    /* Password toggle */
     .password-wrap {
       position: relative;
     }
@@ -181,7 +180,7 @@
 
     .toggle-pw:hover { color: var(--rose); }
 
-    /* ── Error message ──────────────────────────────────────────── */
+    /* Error message */
     .error-msg {
       display: none;
       font-size: .8rem;
@@ -191,7 +190,7 @@
 
     .error-msg.visible { display: block; }
 
-    /* ── Alert banner ───────────────────────────────────────────── */
+    /* Alert banner */
     .alert {
       display: none;
       background: #FEF0F0;
@@ -213,11 +212,11 @@
 
     @keyframes shake {
       0%,100% { transform: translateX(0); }
-      25%      { transform: translateX(-6px); }
-      75%      { transform: translateX(6px); }
+      25%     { transform: translateX(-6px); }
+      75%     { transform: translateX(6px); }
     }
 
-    /* ── Submit button ──────────────────────────────────────────── */
+    /* Submit button */
     .btn-login {
       width: 100%;
       padding: .85rem;
@@ -296,7 +295,7 @@
     .divider:not(:empty)::before { margin-right: .75rem; }
     .divider:not(:empty)::after { margin-left: .75rem; }
 
-    /* ── Footer ─────────────────────────────────────────────────── */
+    /* Footer */
     .card-footer {
       text-align: center;
       margin-top: 1.6rem;
@@ -304,7 +303,7 @@
       color: var(--muted);
     }
 
-    /* ── Responsive ─────────────────────────────────────────────── */
+    /* Responsive */
     @media (max-width: 480px) {
       .card { padding: 2rem 1.5rem; }
     }
@@ -323,7 +322,6 @@
 
   <!-- Alert de error global -->
   <div id="alert" class="alert" role="alert" aria-live="polite"></div>
-
 
   <!-- Formulario -->
   <form id="loginForm" novalidate>
@@ -356,7 +354,6 @@
           required
         />
         <button type="button" class="toggle-pw" aria-label="Mostrar contraseña" id="togglePw">
-          <!-- Eye icon -->
           <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
             <circle cx="12" cy="12" r="3"/>
@@ -412,10 +409,8 @@
 </div>
 
 <script>
-  /* ── Config ──────────────────────────────────────────────────────────── */
-  const API_BASE = '/api'; // Cambia a tu URL si es necesario
+  const API_BASE = '/api';
 
-  /* ── Helpers ─────────────────────────────────────────────────────────── */
   const $ = id => document.getElementById(id);
 
   function validateDni(value) {
@@ -440,7 +435,6 @@
     $('alert').classList.remove('visible');
   }
 
-  /* ── Toggle password visibility ──────────────────────────────────────── */
   $('togglePw').addEventListener('click', () => {
     const inp = $('password');
     const isText = inp.type === 'text';
@@ -449,7 +443,6 @@
     $('eyeClosed').style.display = isText ? 'none'  : 'block';
   });
 
-  /* ── Form submit ─────────────────────────────────────────────────────── */
   $('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAlert();
@@ -457,7 +450,6 @@
     const usernameVal = $('username').value.trim();
     const pwVal       = $('password').value;
 
-    // Validación front
     let valid = true;
     if (!usernameVal) { setError($('username'), $('username-error'), true);  valid = false; }
     else              { setError($('username'), $('username-error'), false); }
@@ -466,7 +458,6 @@
 
     if (!valid) return;
 
-    // Loading state
     const btn = $('btnLogin');
     btn.disabled = true;
     btn.classList.add('loading');
@@ -481,17 +472,14 @@
       const data = await res.json();
 
       if (!res.ok) {
-        // 422 de Laravel Validation
         const msg = data.errors?.username?.[0] ?? data.message ?? 'Credenciales incorrectas.';
         showAlert(msg);
         return;
       }
 
-      // Guardar token
       localStorage.setItem('rytmia_token', data.token);
       localStorage.setItem('rytmia_user',  JSON.stringify(data.user));
 
-      // Redirigir según rol
       const redirects = {
         administrador: '/dashboard/admin',
         entrenadora:   '/dashboard/entrenadora',
@@ -508,7 +496,6 @@
     }
   });
 
-  // Toggle forgot/login forms
   $('forgotPwLink').addEventListener('click', (e) => {
     e.preventDefault();
     hideAlert();
@@ -523,7 +510,6 @@
     $('loginForm').style.display = 'block';
   });
 
-  // Forgot form submit
   $('forgotForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAlert();

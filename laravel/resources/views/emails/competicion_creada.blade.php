@@ -15,6 +15,7 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
+        /* Contenedor principal */
         .wrapper {
             width: 100%;
             table-layout: fixed;
@@ -34,6 +35,7 @@
             border: 1px solid #e2e8f0;
         }
 
+        /* Cabecera */
         .header {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             padding: 40px 30px;
@@ -54,6 +56,7 @@
             opacity: 0.9;
         }
 
+        /* Cuerpo del correo */
         .content {
             padding: 40px 30px;
             color: #334155;
@@ -67,6 +70,7 @@
             font-weight: 600;
         }
 
+        /* Tarjeta de detalles */
         .details-card {
             background-color: #f1f5f9;
             border-radius: 12px;
@@ -106,6 +110,7 @@
             color: #4338ca;
         }
 
+        /* Botón de acción */
         .btn-container {
             text-align: center;
             margin-top: 32px;
@@ -129,6 +134,7 @@
             background-color: #4338ca;
         }
 
+        /* Pie de página */
         .footer {
             text-align: center;
             padding: 24px 30px;
@@ -157,7 +163,7 @@
                         <p>Nueva convocatoria para competición</p>
                     </div>
 
-                    <!-- Content -->
+                    <!-- Contenido -->
                     <div class="content">
                         <h2>¡Hola, {{ $user->nombre }}!</h2>
 
@@ -169,6 +175,7 @@
                                 una nueva competición con nuestro club. A continuación, tienes los detalles del evento:</p>
                         @endif
 
+                        <!-- Detalles de la competición -->
                         <div class="details-card">
                             <div class="detail-row">
                                 <span class="detail-label">Nombre:</span>
@@ -181,8 +188,7 @@
                             @if($competicion->hora)
                                 <div class="detail-row">
                                     <span class="detail-label">Hora:</span>
-                                    <span class="detail-value"><strong>{{ substr($competicion->hora, 0, 5) }}
-                                            h</strong></span>
+                                    <span class="detail-value"><strong>{{ substr($competicion->hora, 0, 5) }} h</strong></span>
                                 </div>
                             @endif
                             @if($competicion->direccion)
@@ -211,9 +217,9 @@
                             </div>
                         </div>
 
-                        <p>Por favor, asegúrate de revisar el horario de salida y la planificación en tu área personal.
-                        </p>
+                        <p>Por favor, asegúrate de revisar el horario de salida y la planificación en tu área personal.</p>
 
+                        <!-- Botón -->
                         <div class="btn-container">
                             @if($user->esEntrenadora())
                                 <a href="{{ url('/dashboard/entrenadora') }}" class="btn">Ver en el Dashboard</a>

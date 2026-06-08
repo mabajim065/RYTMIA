@@ -1,7 +1,5 @@
 <?php
 
-// bootstrap/app.php
-// Añade esto a tu archivo existente de bootstrap/app.php
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
