@@ -24,8 +24,8 @@ app = FastAPI(
 # URL base de la API de Laravel — aquí es donde Python pide los datos
 # ──────────────────────────────────────────────────────────────
 
-LARAVEL_BASE_URL = "http://localhost:8000/api"  # Cambia según tu entorno
-
+import os
+LARAVEL_BASE_URL = os.getenv("LARAVEL_BASE_URL", "http://rytmia_nginx/api")
 
 # Construye las cabeceras HTTP con el token del usuario autenticado
 # Así Python puede llamar a la API de Laravel con los permisos correctos

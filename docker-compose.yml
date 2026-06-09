@@ -15,7 +15,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
-      - "3306:3306"          # expuesto al host para DBeaver / TablePlus
+      - "3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secret"]
       interval: 10s
@@ -37,7 +37,7 @@ services:
       mysql:
         condition: service_healthy
     volumes:
-      - ./.env.docker:/var/www/html/.env      # monta las variables como .env
+      - ./.env.docker:/var/www/html/.env
       - app_storage:/var/www/html/storage
       - app_bootstrap:/var/www/html/bootstrap/cache
     networks:
@@ -57,6 +57,23 @@ services:
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./laravel/public:/var/www/html/public:ro
+    networks:
+      - rytmia_net
+
+  # ─────────────────────────────────────────────
+  # Microservicio Python — Generación de PDFs
+  # ─────────────────────────────────────────────
+  pdf:
+    build:
+      context: ./laravel/rytmia_pdf
+    container_name: rytmia_pdf
+    restart: unless-stopped
+    environment:
+      - LARAVEL_BASE_URL=http://rytmia_nginx/api
+    depends_on:
+      - nginx
+    ports:
+      - "5000:5000"
     networks:
       - rytmia_net
 
