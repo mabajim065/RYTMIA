@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  {{-- 2. SE CARGA EL SCRIPT DE GOOGLE MAPS
+       Solo si la clave está configurada en .env. El parámetro 'libraries=places'
+       activa el autocompletado de direcciones. 'async defer' evita que bloquee la carga. --}}
   @if(env('GOOGLE_MAPS_API_KEY') && env('GOOGLE_MAPS_API_KEY') !== 'vuestra_maps_key_aca')
   <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places" async defer></script>
   @endif
@@ -85,6 +88,8 @@
     .badge-baja { background-color: #ffebee; color: #c62828; }
 
     /* Mapa y detalle de competición */
+    /* 3. SE DEFINE EL TAMAÑO DEL CONTENEDOR DEL MAPA
+       Google Maps necesita un div con altura fija para renderizarse correctamente */
     #map { height: 320px; width: 100%; border-radius: var(--radius-md); margin-top: 1rem; border: 1px solid var(--blush); }
     .competition-detail { margin-top: 1.5rem; display: none; padding: 2rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--blush); }
     .competition-detail.visible { display: block; }
@@ -438,6 +443,8 @@
   }
 
   // Calendario de competiciones
+  // 4. SE INICIALIZA EL CALENDARIO CON LAS COMPETICIONES DE LA API
+  //    Al hacer clic en un evento del calendario, se llama a showCompetitionDetail() para mostrar el mapa
   let calendarInstance = null;
   function initCalendar() {
     if (calendarInstance) return;
@@ -465,7 +472,11 @@
     });
   }
 
-  // Detalle de competición con mapa
+  // 5. SE MUESTRA EL DETALLE DE LA COMPETICIÓN CON EL MAPA
+  //    Rellena los datos (nombre, fecha, hora, dirección) y decide cómo mostrar la ubicación:
+  //    - Si tiene lat/lng guardados → renderiza el mapa de Google Maps con un marcador
+  //    - Si solo tiene dirección   → muestra un enlace a Google Maps para buscarla
+  //    - Si no tiene ubicación     → avisa de que no hay datos
   function showCompetitionDetail(comp) {
     if (!comp) return;
 
@@ -507,6 +518,8 @@
 
     const mapEl = document.getElementById('map');
     mapEl.innerHTML = '';
+    // 6. SE RENDERIZA EL MAPA: se crea el objeto Map centrado en las coordenadas
+    //    y se añade un Marker con animación DROP sobre la sede de la competición
     if (comp.lat && comp.lng && typeof google !== 'undefined') {
       const pos = { lat: parseFloat(comp.lat), lng: parseFloat(comp.lng) };
       const map = new google.maps.Map(mapEl, {

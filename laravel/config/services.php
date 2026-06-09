@@ -24,6 +24,8 @@ return [
     ],
 
 
+    // 1. SE REGISTRA LA CLAVE DE GOOGLE MAPS
+    // Laravel la lee desde el .env y la pone disponible en toda la app con config('services.google_maps.key')
     'google_maps' => [
         'key' => env('GOOGLE_MAPS_API_KEY'),
     ],

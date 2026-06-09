@@ -195,6 +195,9 @@
                                 <div class="detail-row">
                                     <span class="detail-label">Ubicación:</span>
                                     <span class="detail-value">
+                                        {{-- 7. ENLACE A GOOGLE MAPS EN EL CORREO
+                                             Si la competición tiene coordenadas exactas (lat/lng) se usa el enlace de pin directo.
+                                             Si solo tiene dirección de texto, se usa la búsqueda de Google Maps. --}}
                                         @if($competicion->lat && $competicion->lng)
                                             <a href="https://www.google.com/maps?q={{ $competicion->lat }},{{ $competicion->lng }}"
                                                 target="_blank"

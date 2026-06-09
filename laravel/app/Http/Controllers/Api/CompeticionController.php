@@ -99,6 +99,7 @@ class CompeticionController extends Controller
         ]);
         
         // 2. Creación del registro principal en la base de datos
+        // lat y lng llegan del autocompletado de Google Maps del formulario del admin
         $competicion = Competicion::create([
             'nombre'    => $data['nombre'],
             'fecha'     => $data['fecha'],
