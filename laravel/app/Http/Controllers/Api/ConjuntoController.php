@@ -14,31 +14,28 @@ class ConjuntoController extends Controller
 {
     public function __construct(private readonly ConjuntoService $service) {}
 
-
-    // GESTIÓN BÁSICA DE CONJUNTOS (CRUD)
-    // Listado, creación, visualización, actualización y borrado
-
-    // GET /api/conjuntos (Filtros: club_id, categoria_id, search)
+    // listar conjuntos
     public function index(Request $request): AnonymousResourceCollection
     {
+        // obtiene conjuntos con filtros
         $conjuntos = $this->service->listar(
             $request->only(['club_id', 'categoria_id', 'entrenador_id', 'search'])
         );
-
         return ConjuntoResource::collection($conjuntos);
     }
 
-    // GET /api/conjuntos/por-club/{club} (Sin paginación, ideal para selects)
+    // listar conjuntos de un club
     public function porClub(int $clubId): AnonymousResourceCollection
     {
+        // busca conjuntos por club
         $conjuntos = $this->service->listarPorClub($clubId);
-
         return ConjuntoResource::collection($conjuntos);
     }
 
-    // POST /api/conjuntos
+    // crear conjunto
     public function store(Request $request): JsonResponse
     {
+        //comprobar datos
         $datos = $request->validate([
             'nombre'       => ['required', 'string', 'max:45'],
             'club_id'      => ['required', 'integer', 'exists:clubs,id'],
@@ -46,6 +43,7 @@ class ConjuntoController extends Controller
             'horario'      => ['nullable', 'string', 'max:255'],
         ]);
 
+        // crea conjunto
         $conjunto = $this->service->crear($datos);
 
         return (new ConjuntoResource($conjunto))
@@ -53,9 +51,10 @@ class ConjuntoController extends Controller
             ->setStatusCode(201);
     }
 
-    // GET /api/conjuntos/{conjunto}
+    // ver un conjunto
     public function show(Conjunto $conjunto): ConjuntoResource
     {
+        // carga datos relacionados
         $conjunto->loadMissing([
             'club',
             'categoria',
@@ -63,13 +62,13 @@ class ConjuntoController extends Controller
             'gimnastas.categoria',
             'entrenadores.user',
         ]);
-
         return new ConjuntoResource($conjunto);
     }
 
-    // PUT/PATCH /api/conjuntos/{conjunto}
+    // actualizar conjunto
     public function update(Request $request, Conjunto $conjunto): ConjuntoResource
     {
+        // valida datos opcionales
         $datos = $request->validate([
             'nombre'       => ['sometimes', 'string', 'max:45'],
             'club_id'      => ['sometimes', 'integer', 'exists:clubs,id'],
@@ -77,33 +76,34 @@ class ConjuntoController extends Controller
             'horario'      => ['sometimes', 'nullable', 'string', 'max:255'],
         ]);
 
+        // actualiza conjunto
         $conjunto = $this->service->actualizar($conjunto, $datos);
-
         return new ConjuntoResource($conjunto);
     }
 
-    // DELETE /api/conjuntos/{conjunto} (Usa ?force=1 para eliminar aunque tenga gimnastas)
+    // eliminar conjunto
     public function destroy(Request $request, Conjunto $conjunto): JsonResponse
     {
+        // elimina o fuerza eliminación
         $this->service->eliminar($conjunto, (bool) $request->query('force', false));
-
         return response()->json(['message' => 'Conjunto eliminado correctamente.']);
     }
 
-
-    // VINCULACIÓN DE GIMNASTAS
-    // Añadir, quitar o sincronizar masivamente a las gimnastas del conjunto
-
-    // POST /api/conjuntos/{conjunto}/gimnastas
+    // asignar gimnasta
     public function asignarGimnasta(Request $request, Conjunto $conjunto): JsonResponse
     {
+        // valida gimnasta
         $request->validate([
             'gimnasta_id' => ['required', 'integer', 'exists:gimnastas,id'],
         ]);
 
+        // carga categoría del conjunto
         $conjunto->loadMissing('categoria');
+
+        // asigna gimnasta
         $gimnasta = $this->service->asignarGimnasta($conjunto, $request->gimnasta_id);
 
+        // devuelve resultado
         return response()->json([
             'message'  => "Gimnasta asignada correctamente al conjunto «{$conjunto->nombre}».",
             'gimnasta' => [
@@ -119,11 +119,13 @@ class ConjuntoController extends Controller
         ]);
     }
 
-    // DELETE /api/conjuntos/{conjunto}/gimnastas/{gimnasta}
+    // quitar gimnasta
     public function desasignarGimnasta(Conjunto $conjunto, int $gimnastaId): JsonResponse
     {
+        // desasigna gimnasta
         $gimnasta = $this->service->desasignarGimnasta($conjunto, $gimnastaId);
 
+        // devuelve resultado
         return response()->json([
             'message'  => "Gimnasta retirada del conjunto «{$conjunto->nombre}».",
             'gimnasta' => [
@@ -135,17 +137,22 @@ class ConjuntoController extends Controller
         ]);
     }
 
-    // PUT /api/conjuntos/{conjunto}/gimnastas/sync
+    // sincronizar gimnastas
     public function sincronizarGimnastas(Request $request, Conjunto $conjunto): JsonResponse
     {
+        // valida lista de gimnastas
         $request->validate([
             'gimnasta_ids'   => ['required', 'array'],
             'gimnasta_ids.*' => ['integer', 'exists:gimnastas,id'],
         ]);
 
+        // carga categoría del conjunto
         $conjunto->loadMissing('categoria');
+
+        // reemplaza gimnastas del conjunto
         $gimnastas = $this->service->sincronizarGimnastas($conjunto, $request->gimnasta_ids);
 
+        // devuelve resultado
         return response()->json([
             'message'    => "Asignación sincronizada. Total gimnastas: {$gimnastas->count()}.",
             'total'      => $gimnastas->count(),
@@ -157,21 +164,21 @@ class ConjuntoController extends Controller
         ]);
     }
 
-
-    // VINCULACIÓN DE ENTRENADORAS
-    // Añadir, quitar o sincronizar masivamente a las responsables del conjunto
-
-    // POST /api/conjuntos/{conjunto}/entrenadores
+    // asignar entrenadora
     public function asignarEntrenadora(Request $request, Conjunto $conjunto): JsonResponse
     {
+        // valida entrenadora
         $request->validate([
             'entrenador_id' => ['required', 'integer', 'exists:entrenadores,id'],
         ]);
 
+        // asigna entrenadora
         $this->service->asignarEntrenadora($conjunto, $request->entrenador_id);
 
+        // carga entrenadoras
         $conjunto->load('entrenadores.user');
 
+        // devuelve resultado
         return response()->json([
             'message'      => "Entrenadora asignada al conjunto «{$conjunto->nombre}».",
             'entrenadores' => $conjunto->entrenadores->map(fn ($e) => [
@@ -182,27 +189,34 @@ class ConjuntoController extends Controller
         ]);
     }
 
-    // DELETE /api/conjuntos/{conjunto}/entrenadores/{entrenador}
+    // quitar entrenadora
     public function desasignarEntrenadora(Conjunto $conjunto, int $entrenadorId): JsonResponse
     {
+        // desasigna entrenadora
         $this->service->desasignarEntrenadora($conjunto, $entrenadorId);
 
+        // devuelve mensaje
         return response()->json([
             'message' => 'Entrenadora desvinculada del conjunto.',
         ]);
     }
 
-    // PUT /api/conjuntos/{conjunto}/entrenadores/sync
+    // sincronizar entrenadoras
     public function sincronizarEntrenadores(Request $request, Conjunto $conjunto): JsonResponse
     {
+        // valida lista de entrenadoras
         $request->validate([
             'entrenador_ids'   => ['required', 'array'],
             'entrenador_ids.*' => ['integer', 'exists:entrenadores,id'],
         ]);
 
+        // reemplaza entrenadoras del conjunto
         $this->service->sincronizarEntrenadores($conjunto, $request->entrenador_ids);
+
+        // carga entrenadoras
         $conjunto->load('entrenadores.user');
 
+        // devuelve resultado
         return response()->json([
             'message'      => 'Entrenadoras del conjunto actualizadas.',
             'entrenadores' => $conjunto->entrenadores->map(fn ($e) => [

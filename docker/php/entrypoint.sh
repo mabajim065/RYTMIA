@@ -16,7 +16,7 @@ npm run build
 
 #3. Generar clave de aplicación si no existe 
 echo "[3/7] Verificando APP_KEY..."
-php artisan key:generate --force
+#php artisan key:generate --force
 
 #4. Ejecutar migraciones
 echo "[4/7] Ejecutando migraciones..."

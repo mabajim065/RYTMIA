@@ -10,37 +10,31 @@ use Illuminate\Support\Facades\Auth;
 
 class MensajeController extends Controller
 {
-
-    // BANDEJA DE ENTRADA
-    // Listado de mensajes recibidos por el usuario actual
-
-    // GET /api/mensajes
+    // listar mensajes
     public function index(): JsonResponse
     {
+        // consulta con emisor y receptor
         $query = Mensaje::with(['emisor', 'receptor']);
-
+        // si no es admin, solo ve sus recibidos
         if (Auth::user()->rol !== 'administrador') {
             $query->where('receptor_id', Auth::id());
         }
-
+        // ordenar del más nuevo al más antiguo
         $mensajes = $query->orderBy('created_at', 'desc')->get();
-
+        // devolver mensajes
         return response()->json($mensajes);
     }
-
-
-    // ENVÍO DE MENSAJES
-    // Validación y creación de nuevos mensajes entre usuarios
-
-    // POST /api/mensajes
+    // enviar mensaje
     public function store(Request $request): JsonResponse
     {
+        // validar datos
         $datos = $request->validate([
             'receptor_id' => ['required', 'integer', 'exists:users,id'],
             'asunto'      => ['nullable', 'string', 'max:255'],
             'contenido'   => ['required', 'string'],
         ]);
 
+        // crear mensaje
         $mensaje = Mensaje::create([
             'emisor_id'   => Auth::id(),
             'receptor_id' => $datos['receptor_id'],
@@ -48,22 +42,20 @@ class MensajeController extends Controller
             'contenido'   => $datos['contenido'],
         ]);
 
+        // devolver mensaje creado
         return response()->json($mensaje, 201);
     }
 
-
-    // ESTADO DE LECTURA
-    // Actualización del estado (leído/no leído) por parte del receptor
-
-    // PATCH /api/mensajes/{mensaje}/marcar-leido
+    // marcar como leído
     public function marcarLeido(Mensaje $mensaje): JsonResponse
     {
+        // solo el receptor puede marcarlo
         if ($mensaje->receptor_id !== Auth::id()) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
-
+        // guardar fecha de lectura
         $mensaje->update(['leido_at' => now()]);
-
+        // devolver mensaje actualizado
         return response()->json($mensaje);
     }
 }

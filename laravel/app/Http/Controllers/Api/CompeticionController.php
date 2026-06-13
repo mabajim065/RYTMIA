@@ -12,75 +12,97 @@ use App\Mail\CompeticionCreadaMail;
 
 class CompeticionController extends Controller
 {
-
-    // LISTADO DE COMPETICIONES
-    // Devuelve las competiciones filtradas según el rol del usuario actual
-
+    // listar competiciones
     public function index(Request $request)
     {
+        // usuario logueado
         $user = $request->user();
 
-        // Rol: Administrador (Ve todas las competiciones)
+        // si es admin, ve todas
         if ($user->esAdministrador()) {
-            return response()->json(Competicion::with(['conjuntos', 'entrenadoras', 'gimnastas'])->get());
+            return response()->json(
+                Competicion::with(['conjuntos', 'entrenadoras', 'gimnastas'])->get()
+            );
         }
 
-        // Rol: Gimnasta (Ve competiciones de su conjunto o asignadas a ella directamente)
+        // si es gimnasta
         if ($user->esGimnasta()) {
+
+            // obtener perfil de gimnasta
             $gimnasta = $user->gimnasta;
+
+            // si no tiene perfil, no ve nada
             if (!$gimnasta) {
                 return response()->json([]);
             }
-            
+
+            // conjunto de la gimnasta
             $conjuntoId = $gimnasta->conjunto_id;
-            
+
+            // buscar competiciones de su conjunto o asignadas a ella
             $competiciones = Competicion::where(function($query) use ($conjuntoId, $gimnasta) {
+
+                // competiciones de su conjunto
                 if ($conjuntoId) {
                     $query->whereHas('conjuntos', function($q) use ($conjuntoId) {
                         $q->where('conjuntos.id', $conjuntoId);
                     });
                 }
+
+                // competiciones asignadas directamente
                 $query->orWhereHas('gimnastas', function($q) use ($gimnasta) {
                     $q->where('gimnastas.id', $gimnasta->id);
                 });
+
             })->with(['conjuntos', 'entrenadoras', 'gimnastas'])->get();
-            
+
+            // devolver competiciones
             return response()->json($competiciones);
         }
 
-        // Rol: Entrenadora (Ve competiciones de sus conjuntos o asignadas a ella directamente)
+        // si es entrenadora
         if ($user->esEntrenadora()) {
+
+            // obtener perfil de entrenadora
             $entrenador = $user->entrenador;
+
+            // si no tiene perfil, no ve nada
             if (!$entrenador) {
                 return response()->json([]);
             }
-            
+
+            // conjuntos de la entrenadora
             $conjuntoIds = $entrenador->conjuntos()->pluck('conjuntos.id')->unique();
-            
+
+            // buscar competiciones de sus conjuntos o asignadas a ella
             $competiciones = Competicion::where(function($query) use ($conjuntoIds, $entrenador) {
+
+                // competiciones de sus conjuntos
                 if ($conjuntoIds->isNotEmpty()) {
                     $query->whereHas('conjuntos', function($q) use ($conjuntoIds) {
                         $q->whereIn('conjuntos.id', $conjuntoIds);
                     });
                 }
+
+                // competiciones asignadas directamente
                 $query->orWhereHas('entrenadoras', function($q) use ($entrenador) {
                     $q->where('entrenadores.id', $entrenador->id);
                 });
+
             })->with(['conjuntos', 'entrenadoras', 'gimnastas'])->get();
-            
+
+            // devolver competiciones
             return response()->json($competiciones);
         }
 
+        // si no coincide ningún rol
         return response()->json([]);
     }
 
-
-    // CREACIÓN DE COMPETICIÓN
-    // Valida datos, guarda el registro, sincroniza relaciones y notifica por email
-
+    // crear competición
     public function store(Request $request)
     {
-        // 1. Validación de datos de entrada
+        // validar datos
         $data = $request->validate([
             'nombre'       => 'required|string',
             'fecha'        => 'required|date',
@@ -94,12 +116,11 @@ class CompeticionController extends Controller
             'entrenadoras.*' => 'exists:entrenadores,id',
             'gimnastas'    => 'nullable|array',
             'gimnastas.*'  => 'exists:gimnastas,id',
-            'invitados_ids' => 'nullable|array', 
+            'invitados_ids' => 'nullable|array',
             'invitados_ids.*' => 'exists:users,id',
         ]);
-        
-        // 2. Creación del registro principal en la base de datos
-        // lat y lng llegan del autocompletado de Google Maps del formulario del admin
+
+        // crear competición
         $competicion = Competicion::create([
             'nombre'    => $data['nombre'],
             'fecha'     => $data['fecha'],
@@ -110,40 +131,51 @@ class CompeticionController extends Controller
             'tipo'      => 'promesas',
             'estado'    => 'confirmada'
         ]);
-        
-        // 3. Sincronización de relaciones (Tablas pivote)
+
+        // guardar conjuntos asignados
         if (!empty($data['conjuntos'])) {
             $competicion->conjuntos()->sync($data['conjuntos']);
         }
+
+        // guardar entrenadoras asignadas
         if (!empty($data['entrenadoras'])) {
             $competicion->entrenadoras()->sync($data['entrenadoras']);
         }
+
+        // guardar gimnastas asignadas
         if (!empty($data['gimnastas'])) {
             $competicion->gimnastas()->sync($data['gimnastas']);
         }
 
-        // 4. Sistema de notificaciones por correo electrónico
+        // enviar correos
         try {
-            // Recopilación de gimnastas asignadas directamente
+
+            // usuarios de gimnastas directas
             $directGimnastasUsers = User::whereHas('gimnasta', function($q) use ($competicion) {
                 $q->whereIn('gimnastas.id', $competicion->gimnastas()->pluck('gimnastas.id'));
             })->whereNotNull('email')->get();
 
-            // Recopilación de entrenadoras asignadas directamente
+            // usuarios de entrenadoras directas
             $directEntrenadorasUsers = User::whereHas('entrenador', function($q) use ($competicion) {
                 $q->whereIn('entrenadores.id', $competicion->entrenadoras()->pluck('entrenadores.id'));
             })->whereNotNull('email')->get();
 
-            // Recopilación de usuarios a través de los conjuntos asignados
+            // conjuntos asignados
             $conjuntoIds = $competicion->conjuntos()->pluck('conjuntos.id');
+
+            // listas vacías
             $conjuntoGimnastasUsers = collect();
             $conjuntoEntrenadorasUsers = collect();
 
+            // si hay conjuntos
             if ($conjuntoIds->isNotEmpty()) {
+
+                // gimnastas de esos conjuntos
                 $conjuntoGimnastasUsers = User::whereHas('gimnasta', function($q) use ($conjuntoIds) {
                     $q->whereIn('conjunto_id', $conjuntoIds);
                 })->whereNotNull('email')->get();
 
+                // entrenadoras de esos conjuntos
                 $conjuntoEntrenadorasUsers = User::whereHas('entrenador', function($q) use ($conjuntoIds) {
                     $q->whereHas('conjuntos', function($q2) use ($conjuntoIds) {
                         $q2->whereIn('conjuntos.id', $conjuntoIds);
@@ -151,27 +183,31 @@ class CompeticionController extends Controller
                 })->whereNotNull('email')->get();
             }
 
-            // Unificación de destinatarios (evitando envíos duplicados al mismo ID)
+            // unir destinatarios sin repetir
             $recipients = $directGimnastasUsers
                 ->merge($directEntrenadorasUsers)
                 ->merge($conjuntoGimnastasUsers)
                 ->merge($conjuntoEntrenadorasUsers)
                 ->unique('id');
 
-            // Envío en bucle
+            // enviar email a cada destinatario
             foreach ($recipients as $user) {
                 Mail::to($user->email)->send(new CompeticionCreadaMail($competicion, $user));
             }
-            
+
         } catch (\Exception $e) {
-            // Registro de errores si falla el envío de correos
-            Log::error('Error al enviar correos de competición creada a las gimnastas y entrenadoras convocadas: ' . $e->getMessage(), [
+
+            // guardar error si falla el correo
+            Log::error('error al enviar correos de competición creada: ' . $e->getMessage(), [
                 'competicion_id' => $competicion->id,
                 'exception' => $e
             ]);
         }
-        
-        // 5. Respuesta de éxito
-        return response()->json($competicion->load(['conjuntos', 'entrenadoras', 'gimnastas']), 201);
+
+        // devolver competición creada
+        return response()->json(
+            $competicion->load(['conjuntos', 'entrenadoras', 'gimnastas']),
+            201
+        );
     }
 }
