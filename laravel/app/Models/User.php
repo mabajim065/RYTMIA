@@ -35,11 +35,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    /* cifrado de contraseña*/
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
-            'activo'   => 'boolean',
+            'activo' => 'boolean',
         ];
     }
 
@@ -52,7 +53,7 @@ class User extends Authenticatable
             if (empty($user->username)) {
                 $firstApellido = explode(' ', trim($user->apellidos))[0];
                 $baseUsername = \Illuminate\Support\Str::slug($user->nombre . '.' . $firstApellido, '.');
-                
+
                 $username = $baseUsername;
                 $counter = 1;
 

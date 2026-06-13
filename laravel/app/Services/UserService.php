@@ -61,6 +61,7 @@ class UserService
                 'username' => $username,
                 'dni' => strtoupper($datos['dni']),
                 'email' => $datos['email'] ?? null,
+                /*hasheo manual de la contraseña temporal para que no se guarde en texto plano en la base de datos*/
                 'password' => Hash::make($passwordTemporal),
                 'password_temporal' => $passwordTemporal,
                 'rol' => $datos['rol'],

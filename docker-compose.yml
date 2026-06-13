@@ -1,8 +1,5 @@
 services:
-
-  # ─────────────────────────────────────────────
-  # Base de datos MySQL 8
-  # ─────────────────────────────────────────────
+ # Base de datos MySQL
   mysql:
     image: mysql:8.0
     container_name: rytmia_mysql
@@ -16,6 +13,8 @@ services:
       - mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
+
+  # Comprueba si MySQL ya está listo
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secret"]
       interval: 10s
@@ -24,28 +23,27 @@ services:
     networks:
       - rytmia_net
 
-  # ─────────────────────────────────────────────
-  # Aplicación Laravel (PHP 8.3-FPM)
-  # ─────────────────────────────────────────────
+ # Aplicación Laravel con PHP-FPM
   app:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
     container_name: rytmia_app
     restart: unless-stopped
+# Laravel espera a que MySQL esté listo
     depends_on:
       mysql:
         condition: service_healthy
     volumes:
-      - ./.env.docker:/var/www/html/.env
+   # Monta el archivo .env dentro de Laravel
+      - ./.env:/var/www/html/.env
       - app_storage:/var/www/html/storage
+  #guarda la cache de bootstrap para que no se pierda al reiniciar el contenedor
       - app_bootstrap:/var/www/html/bootstrap/cache
     networks:
       - rytmia_net
 
-  # ─────────────────────────────────────────────
-  # Servidor web Nginx
-  # ─────────────────────────────────────────────
+ # Monta el archivo .env dentro de Laravel
   nginx:
     image: nginx:alpine
     container_name: rytmia_nginx
@@ -60,14 +58,14 @@ services:
     networks:
       - rytmia_net
 
-  # ─────────────────────────────────────────────
-  # Microservicio Python — Generación de PDFs
-  # ─────────────────────────────────────────────
+    # Microservicio Python para generar PDFs
+
   pdf:
     build:
       context: ./laravel/rytmia_pdf
     container_name: rytmia_pdf
     restart: unless-stopped
+    # El microservicio llama a Laravel usando el nombre del contenedor Nginx
     environment:
       - LARAVEL_BASE_URL=http://rytmia_nginx/api
     depends_on:
@@ -77,17 +75,13 @@ services:
     networks:
       - rytmia_net
 
-# ─────────────────────────────────────────────
-# Volúmenes persistentes
-# ─────────────────────────────────────────────
+# Volúmenes que no se pierden al reiniciar los contenedores
 volumes:
   mysql_data:
   app_storage:
   app_bootstrap:
 
-# ─────────────────────────────────────────────
-# Red interna
-# ─────────────────────────────────────────────
+# Red interna para que los contenedores se comuniquen
 networks:
   rytmia_net:
     driver: bridge

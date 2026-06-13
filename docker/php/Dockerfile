@@ -1,6 +1,6 @@
 FROM php:8.3-fpm-alpine
 
-# ── Dependencias del sistema ──────────────────────────────────────────────────
+# Instala dependencias del sistema necesarias para Laravel
 RUN apk add --no-cache \
     bash \
     curl \
@@ -13,7 +13,7 @@ RUN apk add --no-cache \
     nodejs \
     npm
 
-# ── Extensiones PHP ───────────────────────────────────────────────────────────
+# Configura la extensión GD para trabajar con imágenes
 RUN docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
@@ -28,7 +28,7 @@ RUN docker-php-ext-configure gd \
         zip \
         opcache
 
-# ── OPcache (configuración de producción) ────────────────────────────────────
+# Configuración de OPcache
 RUN { \
         echo 'opcache.enable=1'; \
         echo 'opcache.memory_consumption=128'; \
@@ -38,20 +38,20 @@ RUN { \
         echo 'opcache.fast_shutdown=1'; \
     } > /usr/local/etc/php/conf.d/opcache.ini
 
-# ── Composer ─────────────────────────────────────────────────────────────────
+# Copia Composer desde la imagen oficial de Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# ── Directorio de trabajo ─────────────────────────────────────────────────────
+# Define la carpeta principal donde vivirá Laravel dentro del contenedor
 WORKDIR /var/www/html
 
-# ── Código fuente ─────────────────────────────────────────────────────────────
+#copia el codigo de laravel al contenedor
 COPY laravel/ .
 
-# ── Entrypoint ────────────────────────────────────────────────────────────────
+# Copia el script que se ejecutará al arrancar el contenedor
 COPY docker/php/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# ── Permisos de storage ───────────────────────────────────────────────────────
+# Crea carpetas necesarias para Laravel y ajusta permisos
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache \

@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * Autentica al usuario y genera un token de acceso (Sanctum).
+     * Autentica al usuario y genera un token de acceso.
      */
     public function login(Request $request): JsonResponse
     {
@@ -53,7 +53,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Revoca el token de acceso actual.
+     * sirve para cerrar la sesión del usuario autenticado y quitar su token de acceso.
      */
     public function logout(Request $request): JsonResponse
     {
