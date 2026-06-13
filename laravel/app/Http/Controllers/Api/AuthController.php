@@ -12,20 +12,21 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Autentica al usuario y genera un token de acceso.
-     */
+    /*Autentica al usuario y genera un token de acceso.*/
     public function login(Request $request): JsonResponse
     {
+        /* Validación de los datos de entrada */
         $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
+        /* Intento de autenticación */
         $user = User::where('username', $request->username)
                     ->where('activo', true)
                     ->first();
 
+        /* Verificación de credenciales */
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'username' => ['Las credenciales no son correctas.'],
@@ -34,9 +35,9 @@ class AuthController extends Controller
 
         // Control de sesión única
         $user->tokens()->delete();
-
+        /* Generación del token de acceso con el rol del usuario como permiso */
         $token = $user->createToken('rytmia-token', [$user->rol])->plainTextToken;
-
+        /* Respuesta con el token nuevo  y  información del usuario */
         return response()->json([
             'token' => $token,
             'user'  => [
@@ -52,9 +53,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * sirve para cerrar la sesión del usuario autenticado y quitar su token de acceso.
-     */
+    /*sirve para cerrar la sesión del usuario autenticado y quitar su token de acceso.*/
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
@@ -62,9 +61,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Sesión cerrada correctamente.']);
     }
 
-    /**
-     * Obtiene la información y relaciones del usuario autenticado.
-     */
+    // devuelve los datos del usuario autenticicado
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -84,9 +81,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Genera y envía por email el enlace para recuperar la contraseña.
-     */
+    /* Genera y envía por email el enlace para recuperar la contraseña.*/
     public function sendResetLinkEmail(Request $request): JsonResponse
     {
         $request->validate([
@@ -100,6 +95,7 @@ class AuthController extends Controller
         // Generación de token
         $token = \Illuminate\Support\Str::random(60);
 
+        // Guardar token en la base de datos
         \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
@@ -117,11 +113,10 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Valida el token y actualiza la contraseña en la base de datos.
-     */
+    /* Valida el token y actualiza la contraseña en la base de datos. */
     public function resetPassword(Request $request): JsonResponse
     {
+        // Validación de los datos de entrada
         $request->validate([
             'token' => ['required', 'string'],
             'email' => ['required', 'email', 'exists:users,email'],
@@ -132,7 +127,7 @@ class AuthController extends Controller
         $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->first();
-
+    
         if (! $record || ! Hash::check($request->token, $record->token)) {
             return response()->json(['message' => 'El enlace de recuperación es inválido o no existe.'], 422);
         }
@@ -152,6 +147,7 @@ class AuthController extends Controller
         $user->password_temporal = $request->password;
         $user->save();
 
+        // elimino el token de recuperacion
         \Illuminate\Support\Facades\DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->delete();

@@ -14,21 +14,20 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class UserController extends Controller
 {
+
     public function __construct(private readonly UserService $userService) {}
 
 
-    // LISTADO Y VISUALIZACIÓN
-    // Recuperación de usuarios generales, por ID o filtrados por rol
-
-    // GET /api/usuarios (Listado paginado con filtros opcionales: rol, activo, search)
+    // Devuelve una lista paginada de usuarios, con filtros.
     public function index(Request $request): AnonymousResourceCollection
     {
+        // Pedimos al servicio que liste usuarios con los filtros (rol, activo, búsqueda).
         $usuarios = $this->userService->listar($request->only(['rol', 'activo', 'search']));
 
         return UserResource::collection($usuarios);
     }
 
-    // GET /api/usuarios/{usuario} (Detalles del usuario y sus relaciones)
+     // MUESTRA UN USUARIO
     public function show(User $usuario): UserResource
     {
         $usuario->loadMissing(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto']);
@@ -36,7 +35,7 @@ class UserController extends Controller
         return new UserResource($usuario);
     }
 
-    // GET /api/usuarios-por-rol/{rol} (Atajo sin paginar para usuarios activos de un rol concreto)
+    //lista usuarios por rol
     public function porRol(string $rol): AnonymousResourceCollection
     {
         abort_unless(in_array($rol, ['administrador', 'entrenadora', 'gimnasta']), 422, 'Rol no válido.');
@@ -47,12 +46,10 @@ class UserController extends Controller
     }
 
 
-    // CREACIÓN Y EDICIÓN
-    // Alta y modificación de credenciales y perfiles asociados
-
-    // POST /api/usuarios (Crea el usuario y su perfil correspondiente según el rol)
+    // CREAR UN NUEVO USUARIO
     public function store(StoreUserRequest $request): JsonResponse
     {
+         // Le pedimos al servicio que cree el usuario con los datos validados.
         $usuario = $this->userService->crear($request->validated());
 
         return (new UserResource($usuario))
@@ -60,7 +57,7 @@ class UserController extends Controller
             ->setStatusCode(201);
     }
 
-    // PUT/PATCH /api/usuarios/{usuario} (Actualiza el usuario y su perfil)
+    // actualizar un usuario existente
     public function update(UpdateUserRequest $request, User $usuario): UserResource
     {
         $usuario = $this->userService->actualizar($usuario, $request->validated());
@@ -69,10 +66,7 @@ class UserController extends Controller
     }
 
 
-    // ESTADO Y ELIMINACIÓN
-    // Activar/desactivar accesos y borrado del sistema
-
-    // PATCH /api/usuarios/{usuario}/toggle-activo (Alterna entre cuenta activa o suspendida)
+// Activa o desactiva un usuario
     public function toggleActivo(User $usuario): UserResource
     {
         $usuario->update(['activo' => ! $usuario->activo]);
@@ -80,7 +74,7 @@ class UserController extends Controller
         return new UserResource($usuario);
     }
 
-    // DELETE /api/usuarios/{usuario} (Borrado lógico por defecto, o físico usando ?hard=1)
+   // Elimina un usuario
     public function destroy(Request $request, User $usuario): JsonResponse
     {
         $this->userService->eliminar($usuario, (bool) $request->query('hard', false));

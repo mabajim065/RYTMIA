@@ -11,9 +11,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Los atributos que se pueden asignar masivamente.
-     */
+    /*campos que se pueden guardar en la base de datos.*/
     protected $fillable = [
         'nombre',
         'apellidos',
@@ -27,15 +25,13 @@ class User extends Authenticatable
         'activo',
     ];
 
-    /**
-     * Atributos ocultos en la serialización.
-     */
+    /**campos ocultos en la serialización*/
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /* cifrado de contraseña*/
+    /** cifrado de contraseña*/
     protected function casts(): array
     {
         return [
@@ -44,19 +40,21 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Boot del modelo para autogenerar username en creación si no está establecido.
-     */
+    /**Esto se ejecuta justo antes de crear un usuario  esto sirve para crear un username automático */
     protected static function booted(): void
     {
         static::creating(function ($user) {
+            // Si el usuario no tiene username, se genera uno
             if (empty($user->username)) {
+                // Cogemos el primer apellido
                 $firstApellido = explode(' ', trim($user->apellidos))[0];
+                //el nombre de usuario nombre.apellido1
                 $baseUsername = \Illuminate\Support\Str::slug($user->nombre . '.' . $firstApellido, '.');
 
                 $username = $baseUsername;
                 $counter = 1;
 
+                // Si el username ya existe, se añade un número al final
                 while (static::where('username', $username)->exists()) {
                     $username = $baseUsername . $counter;
                     $counter++;
@@ -67,7 +65,7 @@ class User extends Authenticatable
         });
     }
 
-    // ── Relaciones ──────────────────────────────────────────────
+    //Relaciones
 
     public function entrenador()
     {
@@ -79,7 +77,7 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\Gimnasta::class);
     }
 
-    // ── Helpers de rol ──────────────────────────────────────────
+    // comprobar el rol de el usuario
 
     public function esAdministrador(): bool
     {

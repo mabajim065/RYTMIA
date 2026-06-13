@@ -1,104 +1,117 @@
 <?php
-
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ConjuntoController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MensajeController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Rutas públicas (sin autenticación)
-|--------------------------------------------------------------------------
-*/
-
+// Rutas públicas
 Route::post('/login', [AuthController::class, 'login']);
-
+// Recuperación de contraseña
 Route::post('/password/forgot', [AuthController::class, 'sendResetLinkEmail']);
 Route::post('/password/reset',  [AuthController::class, 'resetPassword']);
 
-
-
-/*
-|--------------------------------------------------------------------------
-| Rutas protegidas (requieren token Sanctum)
-|--------------------------------------------------------------------------
-*/
-
+// Rutas protegidas q necesitan token Sanctum
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Auth
+    // Cerrar sesión
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/me',      [AuthController::class, 'me']);
+
+    // Obtener datos del usuario logueado
+    Route::get('/me', [AuthController::class, 'me']);
     
-    // Competiciones (Lectura general para todos los roles)
+    // Ver competiciones
+    // Todos los roles pueden entrar, pero luego el controlador filtra
     Route::get('competiciones', [\App\Http\Controllers\Api\CompeticionController::class, 'index']);
 
-    // Mensajería (General para todos los roles)
-    Route::get('mensajes',                [MensajeController::class, 'index']);
-    Route::post('mensajes',               [MensajeController::class, 'store']);
+    // Mensajería interna
+    Route::get('mensajes', [MensajeController::class, 'index']);
+    Route::post('mensajes', [MensajeController::class, 'store']);
     Route::patch('mensajes/{mensaje}/marcar-leido', [MensajeController::class, 'marcarLeido']);
 
-    // Consulta usuarios por rol (Útil para buscar destinatarios)
+    // Buscar usuarios por rol
     Route::get('usuarios-por-rol/{rol}', [UserController::class, 'porRol'])
          ->name('usuarios.por-rol');
 
-    /*
-    |----------------------------------------------------------------------
-    | Gestión de usuarios
-    |----------------------------------------------------------------------
-    */
-    // Lectura (Admin y Entrenadora)
+    // Gestion de usuarios para solo lectura
+    // Solo administrador y entrenadora pueden ver usuarios
+
     Route::middleware('role:administrador,entrenadora')->group(function () {
-        Route::get('usuarios',         [UserController::class, 'index']);
+        // Ver lista de usuarios
+        Route::get('usuarios', [UserController::class, 'index']);
+
+        // Ver detalle de un usuario
         Route::get('usuarios/{usuario}', [UserController::class, 'show']);
     });
 
-    // Escritura (Solo Admin)
+    // Gestión de usuarios de escritura
+    // Solo administrador puede crear, editar o borrar usuarios
+
     Route::middleware('role:administrador')->group(function () {
-        Route::post  ('usuarios',            [UserController::class, 'store']);
-        Route::put   ('usuarios/{usuario}',   [UserController::class, 'update']);
-        Route::patch ('usuarios/{usuario}',   [UserController::class, 'update']);
-        Route::delete('usuarios/{usuario}',   [UserController::class, 'destroy']);
+
+        // Crear usuario
+        Route::post('usuarios', [UserController::class, 'store']);
+
+        // Editar usuario
+        Route::put('usuarios/{usuario}', [UserController::class, 'update']);
+        Route::patch('usuarios/{usuario}', [UserController::class, 'update']);
+
+        // Eliminar usuario
+        Route::delete('usuarios/{usuario}', [UserController::class, 'destroy']);
         
+        // Activar o desactivar usuario
         Route::patch('usuarios/{usuario}/toggle-activo', [UserController::class, 'toggleActivo'])
              ->name('usuarios.toggle-activo');
 
-        // Competiciones (Crear)
+        // Crear competición
         Route::post('competiciones', [\App\Http\Controllers\Api\CompeticionController::class, 'store']);
 
-        // CRUD conjuntos
-        Route::post  ('conjuntos',            [ConjuntoController::class, 'store']);
-        Route::put   ('conjuntos/{conjunto}', [ConjuntoController::class, 'update']);
-        Route::patch ('conjuntos/{conjunto}', [ConjuntoController::class, 'update']);
+        // Crear conjunto
+        Route::post('conjuntos', [ConjuntoController::class, 'store']);
+
+        // Editar conjunto
+        Route::put('conjuntos/{conjunto}', [ConjuntoController::class, 'update']);
+        Route::patch('conjuntos/{conjunto}', [ConjuntoController::class, 'update']);
+
+        // Eliminar conjunto
         Route::delete('conjuntos/{conjunto}', [ConjuntoController::class, 'destroy']);
 
-        // Gestión de entrenadoras en un conjunto
-        Route::post  ('conjuntos/{conjunto}/entrenadores',                    [ConjuntoController::class, 'asignarEntrenadora']);
-        Route::delete('conjuntos/{conjunto}/entrenadores/{entrenadorId}',     [ConjuntoController::class, 'desasignarEntrenadora']);
-        Route::put   ('conjuntos/{conjunto}/entrenadores/sync',               [ConjuntoController::class, 'sincronizarEntrenadores']);
+        // Asignar entrenadora a un conjunto
+        Route::post('conjuntos/{conjunto}/entrenadores', [ConjuntoController::class, 'asignarEntrenadora']);
+
+        // Quitar entrenadora de un conjunto
+        Route::delete('conjuntos/{conjunto}/entrenadores/{entrenadorId}', [ConjuntoController::class, 'desasignarEntrenadora']);
+
+        // Reemplazar todas las entrenadoras del conjunto
+        Route::put('conjuntos/{conjunto}/entrenadores/sync', [ConjuntoController::class, 'sincronizarEntrenadores']);
     });
 
-    /*
-    |----------------------------------------------------------------------
-    | Consultas y asignaciones — administrador y entrenadora
-    |----------------------------------------------------------------------
-    */
+    // Consultar y asignar gimnastas
+    // Administrador y entrenadora pueden gestionar conjuntos y gimnastas
+
     Route::middleware('role:administrador,entrenadora')->group(function () {
 
-        // Categorías
+        //Ver categorías ordenadas
         Route::get('categorias', function () {
             return response()->json(\App\Models\Categoria::orderBy('nombre')->get());
         });
 
-        // Consulta de conjuntos (lectura)
-        Route::get('conjuntos',                    [ConjuntoController::class, 'index']);
-        Route::get('conjuntos/por-club/{clubId}',  [ConjuntoController::class, 'porClub']);
-        Route::get('conjuntos/{conjunto}',         [ConjuntoController::class, 'show']);
+        //Ver conjuntos
+        Route::get('conjuntos', [ConjuntoController::class, 'index']);
 
-        // Asignación de gimnastas a conjuntos
-        Route::post  ('conjuntos/{conjunto}/gimnastas',              [ConjuntoController::class, 'asignarGimnasta']);
+        //Ver conjuntos de un club concreto
+        Route::get('conjuntos/por-club/{clubId}', [ConjuntoController::class, 'porClub']);
+
+        //Ver detalle de un conjunto
+        Route::get('conjuntos/{conjunto}', [ConjuntoController::class, 'show']);
+
+        //Asignar gimnasta a un conjunto
+        Route::post('conjuntos/{conjunto}/gimnastas', [ConjuntoController::class, 'asignarGimnasta']);
+
+        //Quitar gimnasta de un conjunto
         Route::delete('conjuntos/{conjunto}/gimnastas/{gimnastaId}', [ConjuntoController::class, 'desasignarGimnasta']);
-        Route::put   ('conjuntos/{conjunto}/gimnastas/sync',         [ConjuntoController::class, 'sincronizarGimnastas']);
+
+        //Reemplazar todas las gimnastas del conjunto
+        Route::put('conjuntos/{conjunto}/gimnastas/sync', [ConjuntoController::class, 'sincronizarGimnastas']);
     });
 });
