@@ -10,8 +10,7 @@ class Mensaje extends Model
     use HasFactory;
 
 
-    // CONFIGURACIÓN DE LA TABLA
-    // Define los campos que se pueden guardar masivamente y el casteo de fechas
+   // datos que se pueden guardar
 
     protected $fillable = [
         'emisor_id',
@@ -26,8 +25,7 @@ class Mensaje extends Model
     ];
 
 
-    // RELACIONES DE BASE DE DATOS
-    // Vínculos con los usuarios involucrados en la comunicación (remitente y destinatario)
+   // relaciones
 
     public function emisor()
     {

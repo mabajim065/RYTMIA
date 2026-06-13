@@ -10,11 +10,8 @@ class Conjunto extends Model
     use HasFactory;
 
 
-    // CONFIGURACIÓN DE LA TABLA
-    // Define el nombre exacto de la tabla y los campos de asignación masiva
-
+    // datos que se pueden guardar
     protected $table = 'conjuntos';
-
     protected $fillable = [
         'nombre',
         'club_id',
@@ -23,9 +20,7 @@ class Conjunto extends Model
     ];
 
 
-    // RELACIONES DE BASE DE DATOS
-    // Vínculos con el club, la categoría, sus gimnastas y las entrenadoras asignadas
-
+    // relaciones
     public function club()
     {
         return $this->belongsTo(Club::class);
@@ -52,8 +47,7 @@ class Conjunto extends Model
     }
 
 
-    // SCOPES DE BÚSQUEDA
-    // Filtros reutilizables para facilitar las consultas a la base de datos
+    // filtros de consulta
 
     public function scopePorClub($query, int $clubId)
     {
@@ -66,8 +60,7 @@ class Conjunto extends Model
     }
 
 
-    // MÉTODOS CALCULADOS
-    // Funciones auxiliares para obtener datos al vuelo sobre este conjunto
+    // obtener el total de gimnastas en el conjunto
 
     public function totalGimnastas(): int
     {

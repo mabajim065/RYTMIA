@@ -9,10 +9,6 @@ class Gimnasta extends Model
 {
     use HasFactory;
 
-
-    // CONFIGURACIÓN DE LA TABLA
-    // Define los campos de asignación masiva y el casteo de tipos de datos (como la fecha)
-
     protected $fillable = [
         'user_id',
         'club_id',
@@ -24,7 +20,6 @@ class Gimnasta extends Model
         'estado',
         'telefono_contacto',
     ];
-
     protected function casts(): array
     {
         return [
@@ -34,9 +29,7 @@ class Gimnasta extends Model
     }
 
 
-    // RELACIONES DE BASE DE DATOS
-    // Vínculos con la cuenta, tutor, club, categoría, conjunto y competiciones asignadas
-
+    // relaciones
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -68,8 +61,7 @@ class Gimnasta extends Model
     }
 
 
-    // SCOPES DE BÚSQUEDA
-    // Filtros rápidos y reutilizables para las consultas de base de datos
+    // scopes para filtrar gimnastas por estado y categoría
 
     public function scopeActivas($query)
     {
@@ -82,8 +74,7 @@ class Gimnasta extends Model
     }
 
 
-    // MÉTODOS AUXILIARES
-    // Lógica adicional para obtener información calculada sobre la gimnasta
+    //calcular si la fimnasta es menor de edad
 
     public function esMenorDeEdad(): bool
     {

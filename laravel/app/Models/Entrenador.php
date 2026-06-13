@@ -10,8 +10,7 @@ class Entrenador extends Model
     use HasFactory;
 
 
-    // CONFIGURACIÓN DE LA TABLA
-    // Define el nombre (evitando el plural automático 'entrenadors'), los campos y el tipado
+    // datos que se pueden guardar  
 
     protected $table = 'entrenadores';
 
@@ -35,8 +34,7 @@ class Entrenador extends Model
     }
 
 
-    // RELACIONES DE BASE DE DATOS
-    // Vínculos con la cuenta de usuario, el club al que pertenece y sus asignaciones
+    // relaciones
 
     public function user()
     {
@@ -59,9 +57,8 @@ class Entrenador extends Model
     }
 
 
-    // SCOPES DE BÚSQUEDA
-    // Filtros rápidos y reutilizables para las consultas de base de datos
-
+    
+    //scopes para filtrar entrenadores por estado
     public function scopeActivas($query)
     {
         return $query->where('estado', 'activa');
