@@ -1872,8 +1872,11 @@
         rol,
       };
 
-      const pw = document.getElementById('formPassword').value;
-      if (pw) payload.password = pw;
+      const pw = document.getElementById('formPassword').value.trim();
+
+      if (modo === 'editar' && pw) {
+        payload.password = pw;
+    }
 
       if (modo === 'editar') {
         payload.activo = document.getElementById('formActivo').value === '1';

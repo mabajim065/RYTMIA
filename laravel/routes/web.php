@@ -7,6 +7,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/login', function () {
+    return redirect('/');
+})->name('login');
+
 // Dashboard admin
 Route::get('/dashboard/admin', function () {
     return view('dashboard.admin');

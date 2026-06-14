@@ -2,6 +2,11 @@
 
 namespace App\Services;
 
+use App\Mail\WelcomeBienvenidaMail;
+use App\Mail\WelcomeGimnastaMayorMail;
+use App\Mail\WelcomeTutorMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -46,38 +51,80 @@ class UserService
 
     /*Crear usuario y su perfil de rol.*/
     public function crear(array $datos): User
-    {
-        return DB::transaction(function () use ($datos) {
-            /*genero la contraseña temporal */
-            $passwordTemporal = $this->generarPasswordTemporal($datos['nombre'], $datos['apellidos'], $datos['dni']);
-            $username = empty($datos['username']) ? $this->generarUsername($datos['nombre'], $datos['apellidos']) : $datos['username'];
+{
+    $usuario = DB::transaction(function () use ($datos) {
+        $passwordTemporal = $this->generarPasswordTemporal($datos['nombre'], $datos['apellidos'], $datos['dni']);
 
-            // Crea el usuario en la tabla users
-            $usuario = User::create([
-                'nombre' => $datos['nombre'],
-                'apellidos' => $datos['apellidos'],
-                'username' => $username,
-                'dni' => strtoupper($datos['dni']),
-                'email' => $datos['email'] ?? null,
-                
-                /**hasheo manual de la contraseña temporal para que no se guarde en texto plano en la base de datos*/
-                'password' => Hash::make($passwordTemporal),
-                'password_temporal' => $passwordTemporal,
-                'rol' => $datos['rol'],
-                'telefono' => $datos['telefono'] ?? null,
-                'activo' => $datos['activo'] ?? true,
-            ]);
+        $username = empty($datos['username'])
+            ? $this->generarUsername($datos['nombre'], $datos['apellidos'])
+            : $datos['username'];
+  // Crea el usuario en la tabla users
+        $usuario = User::create([
+            'nombre' => $datos['nombre'],
+            'apellidos' => $datos['apellidos'],
+            'username' => $username,
+            'dni' => strtoupper($datos['dni']),
+            'email' => $datos['email'] ?? null,
+            'password' => Hash::make($passwordTemporal),
+            'password_temporal' => $passwordTemporal,
+            'rol' => $datos['rol'],
+            'telefono' => $datos['telefono'] ?? null,
+            'activo' => $datos['activo'] ?? true,
+        ]);
 
-            //guarda la contraseña temporal 
-            $usuario->password_temporal = $passwordTemporal;
+        //guarda la contraseña temporal disponible para la vista del correo.
+        $usuario->password_temporal = $passwordTemporal;
 
-            $this->crearPerfil($usuario, $datos);
-            
-            // Guarda el rol del usuario 
-            return $usuario->load(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria']);
-        });
+        $this->crearPerfil($usuario, $datos);
+
+        return $usuario;
+    });
+
+    $usuario->load([
+        'entrenador.club',
+        'gimnasta.club',
+        'gimnasta.categoria',
+        'gimnasta.tutorLegal',
+    ]);
+
+    $this->enviarCorreoBienvenida($usuario);
+
+    return $usuario;
+}
+
+private function enviarCorreoBienvenida(User $usuario): void
+{
+    try {
+        if ($usuario->rol === 'gimnasta') {
+            $gimnasta = $usuario->gimnasta;
+
+            if ($gimnasta && $gimnasta->esMenorDeEdad() && $gimnasta->tutorLegal?->email) {
+                Mail::to($gimnasta->tutorLegal->email)
+                    ->send(new WelcomeTutorMail($usuario, $gimnasta->tutorLegal));
+
+                return;
+            }
+
+            if ($usuario->email) {
+                Mail::to($usuario->email)
+                    ->send(new WelcomeGimnastaMayorMail($usuario));
+            }
+
+            return;
+        }
+
+        if (in_array($usuario->rol, ['entrenadora', 'administrador']) && $usuario->email) {
+            Mail::to($usuario->email)
+                ->send(new WelcomeBienvenidaMail($usuario));
+        }
+    } catch (\Throwable $e) {
+        Log::error('Error enviando correo de bienvenida', [
+            'usuario_id' => $usuario->id,
+            'email' => $usuario->email,
+            'error' => $e->getMessage(),
+        ]);
     }
-
+}
     /*Actualiza los datos de un usuario.*/
     public function actualizar(User $usuario, array $datos): User
     {
