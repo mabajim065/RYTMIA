@@ -17,9 +17,7 @@ class RecuperarPasswordMail extends Mailable
     public $user;
 
 
-    // CONSTRUCTOR
-    // Recibe los datos dinámicos: la URL temporal y el usuario que solicitó el reseteo
-
+       // recibe el enlace y el usuario
     public function __construct(string $resetUrl, User $user)
     {
         $this->resetUrl = $resetUrl;
@@ -27,9 +25,7 @@ class RecuperarPasswordMail extends Mailable
     }
 
 
-    // ENCABEZADO DEL CORREO (ENVELOPE)
-    // Define el asunto principal con el que llegará a la bandeja de entrada
-
+       // asunto del correo
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -38,9 +34,7 @@ class RecuperarPasswordMail extends Mailable
     }
 
 
-    // PLANTILLA DEL CORREO (CONTENT)
-    // Vincula el envío con su vista Blade correspondiente
-
+       // vista del correo
     public function content(): Content
     {
         return new Content(
@@ -48,10 +42,7 @@ class RecuperarPasswordMail extends Mailable
         );
     }
 
-
-    // ARCHIVOS ADJUNTOS
-    // Define si el correo incluye documentos anexos (vacío en este caso)
-
+//defino si hay archivos adjuntos q no hay 
     public function attachments(): array
     {
         return [];

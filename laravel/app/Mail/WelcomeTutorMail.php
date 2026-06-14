@@ -18,9 +18,7 @@ class WelcomeTutorMail extends Mailable
     public $tutor;
 
 
-    // CONSTRUCTOR
-    // Recibe los datos de la gimnasta menor y su tutor legal para personalizar el mensaje
-
+    // recibe el usuario y el tutor legal
     public function __construct(User $user, TutorLegal $tutor)
     {
         $this->user = $user;
@@ -28,8 +26,7 @@ class WelcomeTutorMail extends Mailable
     }
 
 
-    // ENCABEZADO DEL CORREO (ENVELOPE)
-    // Define el asunto principal con el que el mensaje llegará a la bandeja de entrada
+    // asunto del correo
 
     public function envelope(): Envelope
     {
@@ -39,19 +36,13 @@ class WelcomeTutorMail extends Mailable
     }
 
 
-    // PLANTILLA DEL CORREO (CONTENT)
-    // Vincula el envío con su vista Blade correspondiente
-
+    // vista del correo
     public function content(): Content
     {
         return new Content(
             view: 'emails.welcome_tutor',
         );
     }
-
-
-    // ARCHIVOS ADJUNTOS
-    // Define si el correo incluye documentos anexos (vacío en este caso)
 
     public function attachments(): array
     {

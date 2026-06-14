@@ -16,18 +16,14 @@ class WelcomeBienvenidaMail extends Mailable
     public $user;
 
 
-    // CONSTRUCTOR
-    // Recibe los datos del usuario recién registrado para poder personalizar el mensaje
-
+    // recibe el usuario
     public function __construct(User $user)
     {
         $this->user = $user;
     }
 
 
-    // ENCABEZADO DEL CORREO (ENVELOPE)
-    // Define el asunto principal con el que el mensaje llegará a la bandeja de entrada
-
+   // asunto del correo
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -35,10 +31,7 @@ class WelcomeBienvenidaMail extends Mailable
         );
     }
 
-
-    // PLANTILLA DEL CORREO (CONTENT)
-    // Vincula el envío con su vista Blade correspondiente
-
+    // vista del correo
     public function content(): Content
     {
         return new Content(
@@ -46,9 +39,6 @@ class WelcomeBienvenidaMail extends Mailable
         );
     }
 
-
-    // ARCHIVOS ADJUNTOS
-    // Define si el correo incluye documentos anexos (vacío en este caso)
 
     public function attachments(): array
     {

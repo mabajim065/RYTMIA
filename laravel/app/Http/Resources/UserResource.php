@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'activo'    => $this->activo,
             'password_temporal' => $this->password_temporal,
 
-            // Perfil entrenadora (solo si existe y está cargado)
+            // Perfil entrenadora 
             'entrenador' => $this->when(
                 $this->relationLoaded('entrenador') && $this->entrenador,
                 fn () => [
@@ -42,7 +42,7 @@ class UserResource extends JsonResource
                 ]
             ),
 
-            // Perfil gimnasta (solo si existe y está cargado)
+            // Perfil gimnasta 
             'gimnasta' => $this->when(
                 $this->relationLoaded('gimnasta') && $this->gimnasta,
                 fn () => [

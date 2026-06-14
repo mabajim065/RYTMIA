@@ -9,14 +9,11 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckRole
 {
 
-    // MIDDLEWARE DE ROLES
-    // Intercepta la petición para validar los permisos (Ej: Route::middleware('role:administrador,entrenadora'))
-
+    
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $user = $request->user();
 
-        // 1. Verificación de acceso
         // Comprueba si el usuario existe y si su rol coincide con los requeridos por la ruta
         if (! $user || ! in_array($user->rol, $roles)) {
             return response()->json([
@@ -26,8 +23,7 @@ class CheckRole
             ], 403);
         }
 
-        // 2. Autorización concedida
-        // Permite que la petición continúe su flujo normal hacia el controlador
+        // Permite que la peticion continue su flujo normal hacia el controlador
         return $next($request);
     }
 }

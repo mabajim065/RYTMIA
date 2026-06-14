@@ -64,9 +64,12 @@ class AuthController extends Controller
     // devuelve los datos del usuario autenticicado
     public function me(Request $request): JsonResponse
     {
+        //craga los datos relacionados
         $user = $request->user();
+        //carga las relaciones
         $user->loadMissing(['entrenador.club', 'gimnasta.club', 'gimnasta.categoria', 'gimnasta.conjunto.entrenadores.user']);
 
+        //devuelve los datos del usuario
         return response()->json([
             'id'        => $user->id,
             'nombre'    => $user->nombre,
@@ -81,18 +84,20 @@ class AuthController extends Controller
         ]);
     }
 
-    /* Genera y envía por email el enlace para recuperar la contraseña.*/
+    /* Genera y envia por email el enlace para recuperar la contraseña.*/
     public function sendResetLinkEmail(Request $request): JsonResponse
     {
+        //se comprueban los dstos de entrada
         $request->validate([
             'email' => ['required', 'email', 'exists:users,email'],
         ], [
             'email.exists' => 'El correo electrónico no está registrado en Rytmia.',
         ]);
 
+        //obtengo el usuario por su correo electronico
         $user = User::where('email', $request->email)->firstOrFail();
 
-        // Generación de token
+        // creacion  de token
         $token = \Illuminate\Support\Str::random(60);
 
         // Guardar token en la base de datos
@@ -104,7 +109,7 @@ class AuthController extends Controller
             ]
         );
 
-        // Envío de notificación
+        // se envia la notificacion
         $resetUrl = url('/recuperar-password?token=' . $token . '&email=' . urlencode($user->email));
         \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\RecuperarPasswordMail($resetUrl, $user));
 
@@ -116,14 +121,14 @@ class AuthController extends Controller
     /* Valida el token y actualiza la contraseña en la base de datos. */
     public function resetPassword(Request $request): JsonResponse
     {
-        // Validación de los datos de entrada
+        // comprueba de los datos de entrada
         $request->validate([
             'token' => ['required', 'string'],
             'email' => ['required', 'email', 'exists:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        // Validación de token
+        // comprueba  token
         $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->first();
@@ -132,7 +137,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'El enlace de recuperación es inválido o no existe.'], 422);
         }
 
-        // Validación de expiración
+        // comprueba  q no halla caducado
         $createdAt = \Carbon\Carbon::parse($record->created_at);
         if ($createdAt->addMinutes(60)->isPast()) {
             \Illuminate\Support\Facades\DB::table('password_reset_tokens')
@@ -141,10 +146,13 @@ class AuthController extends Controller
             return response()->json(['message' => 'El enlace de recuperación ha expirado.'], 422);
         }
 
-        // Actualización de credenciales
+        // Actualizacion de credenciales
         $user = User::where('email', $request->email)->firstOrFail();
+        // actualiza la contraseña y la guarda en la base de datos
         $user->password = Hash::make($request->password);
+        // guarda la contraseña temporal para poder notificar al usuario
         $user->password_temporal = $request->password;
+        
         $user->save();
 
         // elimino el token de recuperacion
