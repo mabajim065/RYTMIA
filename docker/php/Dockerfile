@@ -1,5 +1,4 @@
-FROM php:8.3-fpm-alpine
-
+FROM php:8.4-fpm-alpine
 # Instala dependencias del sistema necesarias para Laravel
 RUN apk add --no-cache \
     bash \
@@ -10,6 +9,7 @@ RUN apk add --no-cache \
     freetype-dev \
     libzip-dev \
     oniguruma-dev \
+    libxml2-dev \
     nodejs \
     npm
 
@@ -19,14 +19,19 @@ RUN docker-php-ext-configure gd \
         --with-jpeg \
         --with-webp \
     && docker-php-ext-install \
-        pdo_mysql \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        gd \
-        zip \
-        opcache
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip \
+    opcache \
+    dom \
+    xml \
+    xmlreader \
+    xmlwriter \
+    simplexml
 
 # Configuración de OPcache
 RUN { \
@@ -49,7 +54,7 @@ COPY laravel/ .
 
 # Copia el script que se ejecutará al arrancar el contenedor
 COPY docker/php/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Crea carpetas necesarias para Laravel y ajusta permisos
 RUN mkdir -p storage/framework/{sessions,views,cache} \

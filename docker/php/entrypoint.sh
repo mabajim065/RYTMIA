@@ -7,8 +7,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 
 #  1. Instalar dependencias PHP (producción)
 echo "[1/7] Instalando dependencias PHP..."
-composer update --no-dev --optimize-autoloader --no-interaction --quiet
-
+composer install --no-dev --optimize-autoloader --no-interaction
 #2. Instalar dependencias Node y compilar assets Vite
 echo "[2/7] Compilando assets Vite + TailwindCSS..."
 npm ci --quiet
